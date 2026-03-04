@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
 import { AddNewButton } from '../../components/ui/ActionButton';
@@ -52,10 +53,10 @@ const columns: Column<Worker>[] = [
 
 export default function WorkersPage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
 
   const handleAddNew = () => {
-    console.log('Add new worker');
-    
+    router.push('/workers/add-worker');
   };
 
   return (

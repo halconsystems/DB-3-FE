@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column, Tab } from '../../components/tables/DataTable';
 import { AddNewButton } from '../../components/ui/ActionButton';
@@ -59,13 +60,14 @@ const columns: Column<Member>[] = [
   { key: 'card', header: 'Card' },
 ];
 
+
 export default function ResidentialPage() {
   const [activeTab, setActiveTab] = useState('commercial');
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
 
   const handleAddNew = () => {
-    console.log('Add new member');
-    
+    router.push('/residential/add-new');
   };
 
   return (

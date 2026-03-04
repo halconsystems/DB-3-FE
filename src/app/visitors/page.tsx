@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
 import { ActionIcon, IconButton, AddNewButton } from '../../components/ui/ActionButton';
@@ -34,9 +35,10 @@ const sampleVisitors: Visitor[] = [
 
 export default function VisitorsPage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
 
   const handleAddNew = () => {
-    console.log('Add new visitor');
+    router.push('/visitors/add-visitor');
   };
 
   const handleEdit = (visitor: Visitor) => {

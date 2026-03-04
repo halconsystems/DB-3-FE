@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
 import { ActionIcon, AddNewButton } from '../../components/ui/ActionButton';
@@ -33,9 +34,10 @@ const sampleLuggagePasses: LuggagePass[] = [
 
 export default function LuggagePage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
 
   const handleAddNew = () => {
-    console.log('Add new luggage pass');
+    router.push('/luggage/add-luggage');
   };
 
   const handleEdit = (luggage: LuggagePass) => {
