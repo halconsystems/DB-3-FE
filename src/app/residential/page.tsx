@@ -72,7 +72,7 @@ export default function ResidentialPage() {
 
   return (
     <DashboardLayout pageTitle="Residential / Commercial">
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
         <AddNewButton onClick={handleAddNew} />
       </div>
       <DataTable<Member>

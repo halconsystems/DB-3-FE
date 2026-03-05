@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
-import { ActionIcon, IconButton, AddNewButton } from '../../components/ui/ActionButton';
+import CircularButton from '../../components/ui/CircularButton';
+import { AddNewButton } from '../../components/ui/ActionButton';
 
 interface Visitor {
   id: number;
@@ -55,7 +56,7 @@ export default function VisitorsPage() {
     { 
       key: 'hostDetails', 
       header: 'Host Details',
-      render: () => <IconButton icon="/icons/host.png" alt="Host" />
+      render: () => <CircularButton imagePath="/icons/host.svg" imageAlt="Host" width={32} height={32} />
     },
     { 
       key: 'status', 
@@ -65,7 +66,7 @@ export default function VisitorsPage() {
     { 
       key: 'action', 
       header: 'Action',
-      render: (_, row) => <ActionIcon onClick={() => handleEdit(row)} />
+      render: (_, row) => <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
     },
   ];
 

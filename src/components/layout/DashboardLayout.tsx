@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import styles from "./DashboardLayout.module.css";
+import CircularButton from "../ui/CircularButton";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -26,6 +27,11 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
 
   const handleLogout = () => {
     router.push('/auth/sign-in');
+  };
+
+  const handleSearch = () => {
+    // Add your search logic here
+    console.log('Search button clicked');
   };
 
   return (
@@ -124,9 +130,7 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
           <div className={styles.headerRight}>
             <div className={styles.searchBox}>
               <input type="text" placeholder="Search" className={styles.searchInput} />
-              <button className={styles.searchIcon}>
-                <img src="/icons/Search Icon.svg" alt="" className={styles.searchIconImg} />
-              </button>
+              <CircularButton imagePath="/icons/Search Icon.svg" imageAlt="Search" width={32} height={32} onClick={handleSearch} pos="abs"/>
             </div>
             <Link href="/notification" className={styles.notificationWrapper}>
               <img src="/icons/basil_notification-on-solid.png" alt="" className={styles.notificationIconImg} />

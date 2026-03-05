@@ -1,0 +1,36 @@
+.circularButton {
+  opacity: 1;
+  border-radius: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  outline: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #F9FAFB;
+  box-shadow: -10px -10px 20px 0px #FFFFFF, 3px 3px 10px 0px #AAAACC80;
+
+}
+
+.posAbsolute {
+    position: absolute;
+    right: 10px;
+    background: #F3F6F9;
+    box-shadow: -10px -10px 20px 0px rgba(255, 255, 255, 1), 3px 3px 20px 0px rgba(170, 170, 204, 0.5);
+}
+
+.circularButton:hover {
+  box-shadow: 3px 3px 25px 0px rgba(170, 170, 204, 0.6);
+  transform: scale(1.05);
+}
+
+.circularButton:active {
+  transform: scale(0.95);
+}
+
+.buttonIcon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}

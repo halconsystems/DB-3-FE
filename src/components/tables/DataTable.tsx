@@ -98,7 +98,7 @@ export default function DataTable<T extends Record<string, any>>({
           onClick={() => onPageChange?.(currentPage - 1)}
           disabled={currentPage === 1}
         >
-          &lt;
+          <img src="/icons/leftArrow.svg" alt="" />
         </button>
         {pages.map((page, index) => (
           <button
@@ -114,7 +114,7 @@ export default function DataTable<T extends Record<string, any>>({
           onClick={() => onPageChange?.(currentPage + 1)}
           disabled={currentPage === totalPages}
         >
-          &gt;
+         <img src="/icons/rightArrow.svg" alt="" />
         </button>
       </div>
     );
@@ -132,10 +132,10 @@ export default function DataTable<T extends Record<string, any>>({
       {tabs && tabs.length > 0 && (
         <div className={styles.tabsRow}>
           <div className={styles.tabsContainer}>
-            {tabs.map((tab) => (
+            {tabs.map((tab, ind) => (
               <button
                 key={tab.key}
-                className={`${styles.tab} ${activeTab === tab.key ? styles.tabActive : ''}`}
+                className={`${styles.tab} ${activeTab === tab.key ? styles.tabActive : ''} ${ind==0 ? styles.tabEdgeLeft : ''} ${ind === tabs.length - 1 ? styles.tabEdgeRight : ''}`}
                 onClick={() => onTabChange?.(tab.key)}
               >
                 {tab.label}
@@ -156,14 +156,16 @@ export default function DataTable<T extends Record<string, any>>({
           <table className={styles.table}>
             <thead>
               <tr>
-                {columns.map((column) => (
-                  <th key={column.key.toString()}>{column.header}</th>
+                {columns.map((column, ind) => (
+                  <th key={column.key.toString()} className={`${ind === 0 ? styles.tabEdgeLeft : ''} ${ind === columns.length - 1 ? styles.tabEdgeRight : ''}`}>
+                    {column.header}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {data.map((row, rowIndex) => (
-                <tr key={rowIndex} className={getRowClassName(row)}>
+                <tr key={rowIndex} className={`${getRowClassName(row)} ${rowIndex === row.length-1 ? styles.lastRow : ''}`}>
                   {columns.map((column) => (
                     <td key={column.key.toString()}>
                       {renderCell(column, row)}

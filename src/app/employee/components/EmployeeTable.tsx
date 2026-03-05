@@ -1,8 +1,7 @@
 'use client';
 import { useState } from 'react';
-import DataTable, { Column, Tab } from '../../../components/tables/DataTable';
+import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import { AddNewButton } from '../../../components/ui/ActionButton';
-import { statusColumn } from '../../../components/tables/TableColumns';
 
 export interface Employee {
   id: number;
@@ -59,7 +58,11 @@ export default function EmployeeTable({
     { key: 'nextOfKinName', header: 'Next Of Kin Name' },
     { key: 'nextOfKinNumber', header: 'Next Of Kin Number' },
     { key: 'role', header: 'Role' },
-    statusColumn,
+    { 
+      key: 'status', 
+      header: 'Status',
+      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
+    },
   ];
 
   return (

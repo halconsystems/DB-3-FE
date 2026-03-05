@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
-import DataTable, { Column, Tab } from '../../../components/tables/DataTable';
+import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
+import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
-import { statusColumn, actionColumn } from '../../../components/tables/TableColumns';
 export interface BankAccount {
   id: number;
   bankName: string;
@@ -58,8 +58,21 @@ export default function BankAccountTable({
     { key: 'iban', header: 'IBAN' },
     { key: 'branchCode', header: 'Branch Code' },
     { key: 'branch', header: 'Branch' },
-    statusColumn,
-    actionColumn(handleEdit, handleDelete),
+    { 
+      key: 'status', 
+      header: 'Status',
+      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
+    },
+    { 
+      key: 'action', 
+      header: 'Action',
+      render: (_, row) => (
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+          <CircularButton imagePath="/icons/Delete Button.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+        </div>
+      )
+    },
   ];
 
   return (

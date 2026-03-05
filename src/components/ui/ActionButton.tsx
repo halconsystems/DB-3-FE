@@ -29,7 +29,8 @@ export const IconButton = ({ icon, alt = 'Icon' }: { icon: string; alt?: string 
     display: 'flex', 
     alignItems: 'center', 
     justifyContent: 'center',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    background: `var(--primary)`
   }}>
     <img src={icon} alt={alt} style={{ width: 18, height: 18, objectFit: 'contain' }} />
   </div>
@@ -52,6 +53,8 @@ export const AddNewButton = ({ onClick, label = 'Add New' }: AddNewButtonProps) 
       fontWeight: 500,
       cursor: 'pointer',
     }}
+    onMouseEnter={(e) => (e.currentTarget.style.background = '#00df1a')}
+    onMouseLeave={(e) => (e.currentTarget.style.background = '#30B33D')}
   >
     {label}
   </button>

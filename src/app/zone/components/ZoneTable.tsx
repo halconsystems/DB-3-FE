@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
-import DataTable, { Column, Tab } from '../../../components/tables/DataTable';
+import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
+import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
-import { statusColumn, actionColumn } from '../../../components/tables/TableColumns';
 export interface Zone {
   id: number;
   zone: string;
@@ -36,7 +36,7 @@ const DeleteIcon = ({ onClick }: { onClick: () => void }) => (
       cursor: 'pointer'
     }}
   >
-    <img src="/icons/delete Button.png" alt="Delete" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+    <img src="/icons/delete Button.svg" alt="Delete" style={{ width: 18, height: 18, objectFit: 'contain' }} />
   </button>
 );
 interface VendorTableProps {
@@ -63,8 +63,21 @@ export default function VendorTable({
   const zoneColumns: Column<Zone>[] = [
     { key: 'zone', header: 'Zone' },
     { key: 'phaseName', header: 'Phase Name' },
-    statusColumn,
-    actionColumn(handleEdit, handleDelete),
+    { 
+      key: 'status', 
+      header: 'Status',
+      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
+    },
+    { 
+      key: 'action', 
+      header: 'Action',
+      render: (_, row) => (
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+          <CircularButton imagePath="/icons/Delete Button.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+        </div>
+      )
+    },
   ];
   return (
     <DataTable<Zone>
