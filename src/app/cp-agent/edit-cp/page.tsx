@@ -1,6 +1,5 @@
-
 'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import ProfileForm, { ProfileField, ProfileFormData } from '../../../components/forms/ProfileForm';
 
@@ -28,23 +27,55 @@ const cpAgentFields: ProfileField[] = [
 ];
 
 
+const mockCpAgentData: ProfileFormData = {
+  cpAgentName: 'Main Gate Agent',
+  idNumber: 'CP-001',
+  serverIp: '192.168.1.10',
+  controller: '',
+  cpType: '',
+  zone: '',
+  tagLimit: '100',
+  tagIdentityFix: 'Fixed',
+  addPrinter: 'HP LaserJet',
+  printType: '',
+  interCommId: 'IC-123',
+  interCommPassword: 'pass123',
+  interCommName: 'Main Intercom',
+  laneType: '',
+  type: '',
+  laneReader: '',
+  readerSno: '123456789',
+  manufacturer: 'XYZ Corp',
+  timeOut: '30',
+};
 
-export default function AddNewCpAgent() {
-  const handleSave = (data: ProfileFormData) => {
+export default function EditCpAgent() {
+  const [initialValues, setInitialValues] = useState<ProfileFormData | null>(null);
+
+  useEffect(() => {
     
-    console.log('Saved:', data);
+    setTimeout(() => {
+      setInitialValues(mockCpAgentData);
+    }, 500);
+  }, []);
+
+  const handleUpdate = (data: ProfileFormData) => {
+    
+    console.log('Updated:', data);
   };
 
   return (
-    <DashboardLayout pageTitle="Add New CP Agent">
+    <DashboardLayout pageTitle="Edit CP Agent">
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-        {}
-        <ProfileForm
-          title="Please provide details below!"
-          onSave={handleSave}
-          onCancel={() => window.history.back()}
-          fields={cpAgentFields}
-        />
+        {initialValues && (
+          <ProfileForm
+            title="Please update details below!"
+            onSave={handleUpdate}
+            onCancel={() => window.history.back()}
+            fields={cpAgentFields}
+            initialValues={initialValues}
+          />
+        )}
       </div>
     </DashboardLayout>
   );

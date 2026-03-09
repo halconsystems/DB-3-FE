@@ -1,10 +1,7 @@
-
 'use client';
-import React from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import ProfileForm, { ProfileField, ProfileFormData } from '../../../components/forms/ProfileForm';
-
 
 const vehicleFields: ProfileField[] = [
   { name: 'vehicleNo', label: 'Vehicle No', type: 'text', required: true, placeholder: 'ABC Only' },
@@ -23,22 +20,49 @@ const vehicleFields: ProfileField[] = [
 ];
 
 
-export default function AddNewVehicle() {
-  const handleSave = (data: ProfileFormData) => {
+const mockVehicleData: ProfileFormData = {
+  vehicleNo: 'ABC123',
+  vehicleNo2: '123456',
+  licensePlate: 'ABC-123',
+  make: 'Toyota',
+  model: 'Corolla',
+  color: 'White',
+  year: '2020',
+  eTagId: '996952346550',
+  eTagType: 'type1',
+  issueDate: '2024-01-01',
+  expiryDate: '2026-01-01',
+  tagStatus: 'active',
+  attachment: null,
+};
+
+export default function EditVehicle() {
+  const [initialValues, setInitialValues] = useState<ProfileFormData | null>(null);
+
+  useEffect(() => {
     
-    console.log('Saved:', data);
+    setTimeout(() => {
+      setInitialValues(mockVehicleData);
+    }, 500);
+  }, []);
+
+  const handleUpdate = (data: ProfileFormData) => {
+    
+    console.log('Updated:', data);
   };
 
   return (
-    <DashboardLayout pageTitle="Add New Vehicle">
+    <DashboardLayout pageTitle="Edit Vehicle">
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-        {}
-        <ProfileForm
-          title="Please provide details below!"
-          onSave={handleSave}
-          onCancel={() => window.history.back()}
-          fields={vehicleFields}
-        />
+        {initialValues && (
+          <ProfileForm
+            title="Please update details below!"
+            onSave={handleUpdate}
+            onCancel={() => window.history.back()}
+            fields={vehicleFields}
+            initialValues={initialValues}
+          />
+        )}
       </div>
     </DashboardLayout>
   );

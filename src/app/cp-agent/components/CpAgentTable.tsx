@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
@@ -44,10 +45,13 @@ export default function CpAgentTable({
   onAddNew,
   addButtonLabel
 }: CpAgentTableProps) {
+
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
 
   const handleEdit = (item: CpAgent) => {
-    console.log('Edit item:', item);
+    
+    router.push('/cp-agent/edit-cp');
   };
 
   const handleDelete = (item: CpAgent) => {

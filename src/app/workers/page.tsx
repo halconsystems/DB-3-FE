@@ -34,22 +34,8 @@ const sampleWorkers: Worker[] = [
   { id: 12, name: 'Arsalan Khan', jobType: 'Peon', phone: '0301-2346520', dob: '21-07-2001', cnicNicopNo: '12345-4528907-1', policeVerification: 'No', workerCardDelivery: 'Owner Address', address: 'Khayaban E Iqbal, Phase VIII', workerStatus: 'Inactive', workerCard: 'UID-927864' },
 ];
 
-const columns: Column<Worker>[] = [
-  { key: 'name', header: 'Name' },
-  { key: 'jobType', header: 'Job Type' },
-  { key: 'phone', header: 'Phone' },
-  { key: 'dob', header: 'DOB' },
-  { key: 'cnicNicopNo', header: 'CNIC/NICOP No.' },
-  { key: 'policeVerification', header: 'Police Verification' },
-  { key: 'workerCardDelivery', header: 'Worker Card Delivery' },
-  { key: 'address', header: 'Address' },
-  { 
-    key: 'workerStatus', 
-    header: 'Worker Status',
-    render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
-  },
-  { key: 'workerCard', header: 'Worker Card' },
-];
+
+import CircularButton from '../../components/ui/CircularButton';
 
 export default function WorkersPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,6 +44,32 @@ export default function WorkersPage() {
   const handleAddNew = () => {
     router.push('/workers/add-worker');
   };
+
+  const handleEdit = (worker: Worker) => {
+    router.push('/workers/edit-worker');
+  };
+
+  const columns: Column<Worker>[] = [
+    { key: 'name', header: 'Name' },
+    { key: 'jobType', header: 'Job Type' },
+    { key: 'phone', header: 'Phone' },
+    { key: 'dob', header: 'DOB' },
+    { key: 'cnicNicopNo', header: 'CNIC/NICOP No.' },
+    { key: 'policeVerification', header: 'Police Verification' },
+    { key: 'workerCardDelivery', header: 'Worker Card Delivery' },
+    { key: 'address', header: 'Address' },
+    { 
+      key: 'workerStatus', 
+      header: 'Worker Status',
+      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
+    },
+    { key: 'workerCard', header: 'Worker Card' },
+    {
+      key: 'action',
+      header: 'Action',
+      render: (_, row) => <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+    },
+  ];
 
   return (
     <DashboardLayout pageTitle="Workers">

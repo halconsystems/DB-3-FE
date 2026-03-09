@@ -1,10 +1,7 @@
-
 'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import ProfileForm, { ProfileField, ProfileFormData } from '../../../components/forms/ProfileForm';
-
-
 
 const employeeFields: ProfileField[] = [
   { name: 'fullName', label: 'Employee Name', type: 'text', required: true, placeholder: 'Employee Name here' },
@@ -20,23 +17,46 @@ const employeeFields: ProfileField[] = [
 ];
 
 
+const mockEmployeeData: ProfileFormData = {
+  fullName: 'John Doe',
+  serviceNo: 'EMP-001',
+  emailAddress: 'john.doe@example.com',
+  cellNumber: '0300-1234567',
+  cnic: '12345-1234567-1',
+  designation: '',
+  nextOfKin: 'Jane Doe',
+  nextOfKinNumber: '0300-7654321',
+  role: 'Manager',
+  tempPassword: 'tempPass123',
+};
 
-export default function AddNewCpAgent() {
-  const handleSave = (data: ProfileFormData) => {
+export default function EditEmployee() {
+  const [initialValues, setInitialValues] = useState<ProfileFormData | null>(null);
+
+  useEffect(() => {
     
-    console.log('Saved:', data);
+    setTimeout(() => {
+      setInitialValues(mockEmployeeData);
+    }, 500);
+  }, []);
+
+  const handleUpdate = (data: ProfileFormData) => {
+    
+    console.log('Updated:', data);
   };
 
   return (
-    <DashboardLayout pageTitle="Add New Employee">
+    <DashboardLayout pageTitle="Edit Employee">
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-        {}
-        <ProfileForm
-          title="Please provide details below!"
-          onSave={handleSave}
-          onCancel={() => window.history.back()}
-          fields={employeeFields}
-        />
+        {initialValues && (
+          <ProfileForm
+            title="Please update details below!"
+            onSave={handleUpdate}
+            onCancel={() => window.history.back()}
+            fields={employeeFields}
+            initialValues={initialValues}
+          />
+        )}
       </div>
     </DashboardLayout>
   );

@@ -42,7 +42,7 @@ export default function LuggagePage() {
   };
 
   const handleEdit = (luggage: LuggagePass) => {
-    console.log('Edit luggage pass:', luggage);
+    router.push('/luggage/edit-luggage');
   };
 
   const columns: Column<LuggagePass>[] = [

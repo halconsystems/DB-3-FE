@@ -41,24 +41,8 @@ const tabs: Tab[] = [
   { key: 'residents', label: 'Residents' },
 ];
 
-const columns: Column<Member>[] = [
-  { key: 'name', header: 'Name' },
-  { key: 'email', header: 'Email' },
-  { key: 'phone', header: 'Phone' },
-  { key: 'subCategory', header: 'Sub Category' },
-  { key: 'phase', header: 'Phase' },
-  { key: 'zone', header: 'Zone' },
-  { key: 'khayaban', header: 'Khayaban' },
-  { key: 'floor', header: 'Floor' },
-  { key: 'laneStreetNumber', header: 'Lane/Street Number' },
-  { key: 'plotNo', header: 'Plot No' },
-  { 
-    key: 'memberStatus', 
-    header: 'Member Status',
-    render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
-  },
-  { key: 'card', header: 'Card' },
-];
+import CircularButton from '../../components/ui/CircularButton';
+
 
 
 export default function ResidentialPage() {
@@ -69,6 +53,34 @@ export default function ResidentialPage() {
   const handleAddNew = () => {
     router.push('/residential/add-new');
   };
+
+  const handleEdit = (member: Member) => {
+    router.push('/residential/edit-residential');
+  };
+
+  const columns: Column<Member>[] = [
+    { key: 'name', header: 'Name' },
+    { key: 'email', header: 'Email' },
+    { key: 'phone', header: 'Phone' },
+    { key: 'subCategory', header: 'Sub Category' },
+    { key: 'phase', header: 'Phase' },
+    { key: 'zone', header: 'Zone' },
+    { key: 'khayaban', header: 'Khayaban' },
+    { key: 'floor', header: 'Floor' },
+    { key: 'laneStreetNumber', header: 'Lane/Street Number' },
+    { key: 'plotNo', header: 'Plot No' },
+    { 
+      key: 'memberStatus', 
+      header: 'Member Status',
+      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
+    },
+    { key: 'card', header: 'Card' },
+    {
+      key: 'action',
+      header: 'Action',
+      render: (_, row) => <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+    },
+  ];
 
   return (
     <DashboardLayout pageTitle="Residential / Commercial">

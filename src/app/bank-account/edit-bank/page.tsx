@@ -1,8 +1,8 @@
 'use client';
-import React from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import ProfileForm, { ProfileField, ProfileFormData } from '../../../components/forms/ProfileForm';
+
 const bankAccountFields: ProfileField[] = [
   { name: 'bankName', label: 'Bank Name', type: 'text', required: true, placeholder: 'Bank Name here' },
   { name: 'bankCode', label: 'Bank Code', type: 'text', required: true, placeholder: 'Enter (HABB, etc.)' },
@@ -11,20 +11,44 @@ const bankAccountFields: ProfileField[] = [
   { name: 'branchCode', label: 'Branch Code', type: 'text', required: true, placeholder: 'Branch Code here' },
   { name: 'branch', label: 'Branch', type: 'text', required: true, placeholder: 'Branch here' },
 ];
-export default function AddNewBank() {
-  const handleSave = (data: ProfileFormData) => {
-    console.log('Saved:', data);
+
+
+const mockBankAccountData: ProfileFormData = {
+  bankName: 'Habib Bank',
+  bankCode: 'HABB',
+  accountNo: '1234567890',
+  iban: 'PK36HABB0000001234567890',
+  branchCode: '001',
+  branch: 'Main Branch',
+};
+
+export default function EditBankAccount() {
+  const [initialValues, setInitialValues] = useState<ProfileFormData | null>(null);
+
+  useEffect(() => {
+    
+    setTimeout(() => {
+      setInitialValues(mockBankAccountData);
+    }, 500);
+  }, []);
+
+  const handleUpdate = (data: ProfileFormData) => {
+    
+    console.log('Updated:', data);
   };
+
   return (
-    <DashboardLayout pageTitle="Add New Bank Account">
+    <DashboardLayout pageTitle="Edit Bank Account">
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-        {}
-        <ProfileForm
-          title="Please provide details below!"
-          onSave={handleSave}
-          onCancel={() => window.history.back()}
-          fields={bankAccountFields}
-        />
+        {initialValues && (
+          <ProfileForm
+            title="Please update details below!"
+            onSave={handleUpdate}
+            onCancel={() => window.history.back()}
+            fields={bankAccountFields}
+            initialValues={initialValues}
+          />
+        )}
       </div>
     </DashboardLayout>
   );

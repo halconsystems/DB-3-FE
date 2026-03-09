@@ -49,7 +49,8 @@ export default function VehiclePage() {
   };
 
   const handleEdit = (vehicle: Vehicle) => {
-    console.log('Edit vehicle:', vehicle);
+    
+    router.push('/vehicle/edit-vehicle');
   };
 
   const columns: Column<Vehicle>[] = [

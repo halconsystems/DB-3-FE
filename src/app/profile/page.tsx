@@ -2,7 +2,7 @@ import DashboardLayout from '../../components/layout/DashboardLayout';
 import ProfileForm, { ProfileField } from '../../components/forms/ProfileForm';
 
 export default function ProfilePage() {
-  // Define the fields for the Profile page in the correct order
+  
   const profileFields: ProfileField[] = [
     { name: 'idNumber', label: 'ID Number', type: 'text', required: true, placeholder: 'Type here' },
     { name: 'role', label: 'Role', type: 'select', required: true, options: [ { value: '', label: 'Select Role here' } ] },

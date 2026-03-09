@@ -1,4 +1,4 @@
-// ...existing code...
+
 'use client';
 export const residentialFields: ProfileField[] = [
   { name: 'fullName', label: 'Full Name', type: 'text', required: true, placeholder: 'Full Name here' },
@@ -37,7 +37,7 @@ export interface ProfileFormData {
   khayaban?: string;
   floor?: string;
   laneStreetNumber?: string;
-  // Zone-specific fields
+  
   zoneName?: string;
   plotNo1?: string;
   plotNo2?: string;
@@ -55,7 +55,7 @@ export interface ProfileFormData {
   cnic?: string;
   vehicleTagId?: string;
   cnicFront?: File | null;
-  // Luggage-specific fields
+  
   vehicleNo?: string;
   vehicleNo2?: string;
   licensePlate?: string;
@@ -65,7 +65,7 @@ export interface ProfileFormData {
   fromDate?: string;
   toDate?: string;
   cnicBack?: File | null;
-  // Worker-specific fields
+  
   search?: string;
   dob?: string;
   cardDelivery?: string;
@@ -75,7 +75,7 @@ export interface ProfileFormData {
   policeVerification?: string;
   address?: string;
   policeVerificationFile?: File | null;
-  // Vehicle-specific fields
+  
   make?: string;
   model?: string;
   color?: string;
@@ -84,7 +84,7 @@ export interface ProfileFormData {
   eTagType?: string;
   tagStatus?: string;
   attachment?: File | null;
-  // CP/Agent-specific fields
+  
   cpAgentName?: string;
   serverIp?: string;
   controller?: string;
@@ -102,32 +102,32 @@ export interface ProfileFormData {
   readerSno?: string;
   manufacturer?: string;
   timeOut?: string;
-  // Bank Account-specific fields
+  
   bankName?: string;
   bankCode?: string;
   accountNo?: string;
   iban?: string;
   branchCode?: string;
   branch?: string;
-  // Employee-specific fields
+  
   serviceNo?: string;
   designation?: string;
   nextOfKin?: string;
   nextOfKinNumber?: string;
   tempPassword?: string;
-  // Vendor-specific fields
+  
   businessName?: string;
   city?: string;
   contactPerson?: string;
   cellNumber1?: string;
   cellNumber2?: string;
   vendorId?: string;
-  // Package Type-specific fields
+  
   packageName?: string;
   packageId?: string;
   minCharges?: string;
   minRenewalCharges?: string;
-  // Phase-specific fields
+  
   phaseName?: string;
   description?: string;
 }

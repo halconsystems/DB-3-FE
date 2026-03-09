@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
@@ -42,9 +43,10 @@ export default function BankAccountTable({
   addButtonLabel 
 }: BankAccountTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
 
   const handleEdit = (item: BankAccount) => {
-    console.log('Edit item:', item);
+    router.push('/bank-account/edit-bank');
   };
 
   const handleDelete = (item: BankAccount) => {

@@ -51,7 +51,7 @@ export default function SignInForm() {
             <img src="/icons/password.svg" alt="" />
           </button>
         </div>
-        <div className="forget"><a href="/auth/forgot-password" className="auth_link">Forgot Password?</a></div>
+        {/* Forgot Password link removed as requested */}
       </div>
 
       <div className="terms">

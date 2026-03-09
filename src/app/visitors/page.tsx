@@ -5,6 +5,7 @@ import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
 import CircularButton from '../../components/ui/CircularButton';
 import { AddNewButton } from '../../components/ui/ActionButton';
+import HostDetailsModal from './components/HostDetailsModal';
 
 interface Visitor {
   id: number;
@@ -36,6 +37,8 @@ const sampleVisitors: Visitor[] = [
 
 export default function VisitorsPage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [hostModalOpen, setHostModalOpen] = useState(false);
+  const [selectedHost, setSelectedHost] = useState<any>(null);
   const router = useRouter();
 
   const handleAddNew = () => {
@@ -43,7 +46,18 @@ export default function VisitorsPage() {
   };
 
   const handleEdit = (visitor: Visitor) => {
-    console.log('Edit visitor:', visitor);
+    router.push('/visitors/edit-visitor');
+  };
+
+  const handleHostClick = (row: Visitor) => {
+    setSelectedHost({
+      id: row.qrReference,
+      name: row.name,
+      phone: '0321-4239813', 
+      address: row.visitDetail,
+      imageUrl: '/images/avatar-placeholder.png',
+    });
+    setHostModalOpen(true);
   };
 
   const columns: Column<Visitor>[] = [
@@ -53,20 +67,22 @@ export default function VisitorsPage() {
     { key: 'validity', header: 'Validity' },
     { key: 'cnicNicopNo', header: 'CNIC/NICOP No.' },
     { key: 'qrReference', header: 'QR Reference' },
-    { 
-      key: 'hostDetails', 
+    {
+      key: 'hostDetails',
       header: 'Host Details',
-      render: () => <CircularButton imagePath="/icons/host.svg" imageAlt="Host" width={32} height={32} />
+      render: (_, row) => (
+        <CircularButton imagePath="/icons/host.svg" imageAlt="Host" width={32} height={32} onClick={() => handleHostClick(row)} />
+      ),
     },
-    { 
-      key: 'status', 
+    {
+      key: 'status',
       header: 'Status',
-      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
+      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />,
     },
-    { 
-      key: 'action', 
+    {
+      key: 'action',
       header: 'Action',
-      render: (_, row) => <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+      render: (_, row) => <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />,
     },
   ];
 
@@ -84,6 +100,7 @@ export default function VisitorsPage() {
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status}
       />
+      <HostDetailsModal open={hostModalOpen} onClose={() => setHostModalOpen(false)} host={selectedHost || { id: '', name: '', phone: '', address: '', imageUrl: '' }} />
     </DashboardLayout>
   );
 }

@@ -1,6 +1,8 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
+import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
 
 export interface Employee {
@@ -47,6 +49,11 @@ export default function EmployeeTable({
   addButtonLabel
 }: EmployeeTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
+
+  const handleEdit = (item: Employee) => {
+    router.push('/employee/edit-employee');
+  };
 
   const employeeColumns: Column<Employee>[] = [
     { key: 'employeeName', header: 'Employee Name' },
@@ -58,6 +65,13 @@ export default function EmployeeTable({
     { key: 'nextOfKinName', header: 'Next Of Kin Name' },
     { key: 'nextOfKinNumber', header: 'Next Of Kin Number' },
     { key: 'role', header: 'Role' },
+    {
+      key: 'action',
+      header: 'Action',
+      render: (_, row) => (
+        <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+      )
+    },
     { 
       key: 'status', 
       header: 'Status',

@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
@@ -54,8 +55,9 @@ export default function VendorTable({
   addButtonLabel
 }: VendorTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
   const handleEdit = (item: Zone) => {
-    
+    router.push('/zone/edit-zone');
   };
   const handleDelete = (item: Zone) => {
     
