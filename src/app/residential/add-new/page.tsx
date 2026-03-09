@@ -2,8 +2,7 @@
 'use client';
 import React from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-import ProfileForm, { ProfileField, ProfileFormData } from '../../profile/components/ProfileForm';
-import { residentialFields } from '../../profile/components/ProfileForm';
+import ProfileForm, { ProfileField, ProfileFormData, residentialFields } from '../../../components/forms/ProfileForm';
 
 
 
