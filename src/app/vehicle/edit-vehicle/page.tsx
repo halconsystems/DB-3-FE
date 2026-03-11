@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-import ProfileForm, { ProfileField, ProfileFormData } from '../../../components/forms/ProfileForm';
+import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
 
 const vehicleFields: ProfileField[] = [
   { name: 'vehicleNo', label: 'Vehicle No', type: 'text', required: true, placeholder: 'ABC Only' },
@@ -55,7 +55,7 @@ export default function EditVehicle() {
     <DashboardLayout pageTitle="Edit Vehicle">
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
         {initialValues && (
-          <ProfileForm
+          <CommonEntityForm
             title="Please update details below!"
             onSave={handleUpdate}
             onCancel={() => window.history.back()}
@@ -67,3 +67,6 @@ export default function EditVehicle() {
     </DashboardLayout>
   );
 }
+
+
+

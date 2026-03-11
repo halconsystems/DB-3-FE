@@ -2,7 +2,7 @@
 'use client';
 import React from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-import ProfileForm, { ProfileField, ProfileFormData } from '../../../components/forms/ProfileForm';
+import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
 const packageFields: ProfileField[] = [
   { name: 'packageName', label: 'Package Name', type: 'text', required: true, placeholder: 'Package Name here' },
   { name: 'packageId', label: 'Package ID', type: 'text', required: true, placeholder: 'Package ID here' },
@@ -18,7 +18,7 @@ export default function AddNewPackageType() {
     <DashboardLayout pageTitle="Add New Package Type">
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
         {}
-        <ProfileForm
+        <CommonEntityForm
           title="Please provide details below!"
           onSave={handleSave}
           onCancel={() => window.history.back()}
@@ -28,3 +28,5 @@ export default function AddNewPackageType() {
     </DashboardLayout>
   );
 }
+
+

@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-import ProfileForm, { ProfileField, ProfileFormData } from '../../../components/forms/ProfileForm';
+import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
 
 const bankAccountFields: ProfileField[] = [
   { name: 'bankName', label: 'Bank Name', type: 'text', required: true, placeholder: 'Bank Name here' },
@@ -41,7 +41,7 @@ export default function EditBankAccount() {
     <DashboardLayout pageTitle="Edit Bank Account">
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
         {initialValues && (
-          <ProfileForm
+          <CommonEntityForm
             title="Please update details below!"
             onSave={handleUpdate}
             onCancel={() => window.history.back()}
@@ -53,3 +53,6 @@ export default function EditBankAccount() {
     </DashboardLayout>
   );
 }
+
+
+

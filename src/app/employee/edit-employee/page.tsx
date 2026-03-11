@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-import ProfileForm, { ProfileField, ProfileFormData } from '../../../components/forms/ProfileForm';
+import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
 
 const employeeFields: ProfileField[] = [
   { name: 'fullName', label: 'Employee Name', type: 'text', required: true, placeholder: 'Employee Name here' },
@@ -49,7 +49,7 @@ export default function EditEmployee() {
     <DashboardLayout pageTitle="Edit Employee">
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
         {initialValues && (
-          <ProfileForm
+          <CommonEntityForm
             title="Please update details below!"
             onSave={handleUpdate}
             onCancel={() => window.history.back()}
@@ -61,3 +61,6 @@ export default function EditEmployee() {
     </DashboardLayout>
   );
 }
+
+
+

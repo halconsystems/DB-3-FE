@@ -2,7 +2,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-import ProfileForm, { ProfileField, ProfileFormData } from '../../../components/forms/ProfileForm';
+import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
 
 
 const visitorFields: ProfileField[] = [
@@ -41,7 +41,7 @@ export default function EditVisitor() {
   return (
     <DashboardLayout pageTitle="Edit Visitor">
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-        <ProfileForm
+        <CommonEntityForm
           title="Please update details below!"
           onSave={handleSave}
           onCancel={() => router.back()}
@@ -52,3 +52,5 @@ export default function EditVisitor() {
     </DashboardLayout>
   );
 }
+
+

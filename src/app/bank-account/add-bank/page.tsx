@@ -2,7 +2,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-import ProfileForm, { ProfileField, ProfileFormData } from '../../../components/forms/ProfileForm';
+import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
 const bankAccountFields: ProfileField[] = [
   { name: 'bankName', label: 'Bank Name', type: 'text', required: true, placeholder: 'Bank Name here' },
   { name: 'bankCode', label: 'Bank Code', type: 'text', required: true, placeholder: 'Enter (HABB, etc.)' },
@@ -19,7 +19,7 @@ export default function AddNewBank() {
     <DashboardLayout pageTitle="Add New Bank Account">
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
         {}
-        <ProfileForm
+        <CommonEntityForm
           title="Please provide details below!"
           onSave={handleSave}
           onCancel={() => window.history.back()}
@@ -29,3 +29,5 @@ export default function AddNewBank() {
     </DashboardLayout>
   );
 }
+
+

@@ -1,5 +1,5 @@
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import ProfileForm, { ProfileField } from '../../components/forms/ProfileForm';
+import CommonEntityForm, { ProfileField } from '../../components/forms/CommonEntityForm';
 
 export default function ProfilePage() {
   
@@ -20,7 +20,8 @@ export default function ProfilePage() {
 
   return (
     <DashboardLayout pageTitle="Profile">
-      <ProfileForm fields={profileFields} />
+      <CommonEntityForm fields={profileFields} />
     </DashboardLayout>
   );
 }
+

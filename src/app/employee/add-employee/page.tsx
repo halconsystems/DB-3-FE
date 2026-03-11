@@ -2,7 +2,7 @@
 'use client';
 import React from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-import ProfileForm, { ProfileField, ProfileFormData } from '../../../components/forms/ProfileForm';
+import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
 
 
 
@@ -31,7 +31,7 @@ export default function AddNewCpAgent() {
     <DashboardLayout pageTitle="Add New Employee">
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
         {}
-        <ProfileForm
+        <CommonEntityForm
           title="Please provide details below!"
           onSave={handleSave}
           onCancel={() => window.history.back()}
@@ -41,3 +41,5 @@ export default function AddNewCpAgent() {
     </DashboardLayout>
   );
 }
+
+

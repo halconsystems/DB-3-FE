@@ -2,7 +2,7 @@
 'use client';
 import React from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-import ProfileForm, { ProfileField, ProfileFormData } from '../../../components/forms/ProfileForm';
+import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
 const phaseFields: ProfileField[] = [
   { name: 'phaseName', label: 'Phase Name', type: 'text', required: true, placeholder: 'Phase Name here' },
   { name: 'description', label: 'Description', type: 'text', required: true, placeholder: 'Description here' },
@@ -15,7 +15,7 @@ export default function AddNewPhase() {
     <DashboardLayout pageTitle="Add New Phase">
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
         {}
-        <ProfileForm
+        <CommonEntityForm
           title="Please provide details below!"
           onSave={handleSave}
           onCancel={() => window.history.back()}
@@ -25,3 +25,5 @@ export default function AddNewPhase() {
     </DashboardLayout>
   );
 }
+
+

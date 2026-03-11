@@ -2,7 +2,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-import ProfileForm, { ProfileField, ProfileFormData } from '../../../components/forms/ProfileForm';
+import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
 
 
 const luggageFields: ProfileField[] = [
@@ -43,7 +43,7 @@ export default function EditLuggage() {
   return (
     <DashboardLayout pageTitle="Edit Luggage">
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-        <ProfileForm
+        <CommonEntityForm
           title="Please update details below!"
           onSave={handleSave}
           onCancel={() => router.back()}
@@ -56,3 +56,5 @@ export default function EditLuggage() {
     </DashboardLayout>
   );
 }
+
+

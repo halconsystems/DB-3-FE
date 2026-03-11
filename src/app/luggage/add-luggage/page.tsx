@@ -4,7 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 
-import ProfileForm, { ProfileField, ProfileFormData } from '../../../components/forms/ProfileForm';
+import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
 
 
 
@@ -30,7 +30,7 @@ export default function AddNewLuggage() {
   return (
     <DashboardLayout pageTitle="Add New Luggage">
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-        <ProfileForm
+        <CommonEntityForm
           title="Please provide details below!"
           onSave={handleSave}
           onCancel={() => window.history.back()}
@@ -42,3 +42,5 @@ export default function AddNewLuggage() {
     </DashboardLayout>
   );
 }
+
+
