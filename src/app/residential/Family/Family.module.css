@@ -1,0 +1,49 @@
+.container {
+  border-radius: 12px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 16px;
+  padding-bottom: 16px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.sectionTitle {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.seeMore {
+  color: #30B33D;
+  font-weight: 600;
+  font-size: 14px;
+  float: right;
+  margin-top: 2px;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+.sectionCard {
+  border-radius: 8px;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 8px rgba(227, 234, 252, 0.25);
+}
+
+.titleSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e3eafd;
+  background: #f9fafb;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}

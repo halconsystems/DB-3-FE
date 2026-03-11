@@ -25,6 +25,7 @@ export const residentialFields: ProfileField[] = [
 
 import React, { useState } from 'react';
 import styles from '../forms/ProfileForm.module.css';
+
 export interface ProfileFormData {
   fullName?: string;
   emailAddress?: string;
@@ -194,13 +195,23 @@ export default function ProfileForm({
           <div className={styles.statusWrapper}>
             <span className={styles.statusLabel}>Member Status</span>
             <label className={styles.statusToggle}>
-              <input
-                type="checkbox"
-                checked={isActive}
-                onChange={() => setIsActive(!isActive)}
-              />
-              <span className={styles.statusSlider}></span>
-              <span className={styles.statusText}>{isActive ? 'Active' : 'Inactive'}</span>
+              <button
+                type="button"
+                onClick={() => setIsActive(prev => !prev)}
+                className={`${styles.toggleButton} ${isActive ? styles.toggleActive : styles.toggleInactive}`}
+                aria-pressed={isActive}
+              >
+                <span
+                  className={`${styles.toggleText} ${isActive ? styles.textActive : styles.textInactive}`}
+                >
+                  {isActive ? "Active" : "Inactive"}
+                </span>
+
+                <span
+                  className={`${styles.toggleCircle} ${isActive ? styles.circleActive : styles.circleInactive}`}
+                />
+              </button>
+     
             </label>
           </div>
         )}

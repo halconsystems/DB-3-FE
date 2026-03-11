@@ -2,6 +2,7 @@
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../../components/tables/DataTable';
 import { familyDetails, vehicles, workers, visitors } from './familyData';
+import styles from './Family.module.css';
 
 const familyColumns: Column<any>[] = [
   { key: 'name', header: 'Name' },
@@ -59,47 +60,39 @@ export default function FamilyDetailsPage() {
   const getVehicleRowStatus = (row: any) => row.status;
   const getWorkerRowStatus = (row: any) => row.workerStatus;
   const getVisitorRowStatus = (row: any) => row.status;
-  const seeMoreStyle = {
-    color: '#1DBF73',
-    fontWeight: 500,
-    fontSize: 13,
-    float: 'right' as const,
-    marginTop: 2,
-    textDecoration: 'none',
-    cursor: 'pointer',
-  };
+
   return (
     <DashboardLayout pageTitle="Family Details">
-      <div style={{ background: '#F9FAFB', borderRadius: 12, padding: 24, margin: 16 }}>
+      <div className={styles.container}>
         {}
-         <span>Family Details</span>
-         <a style={seeMoreStyle}>See More</a>
-        <div style={{ border: '1.5px solid #B6D0F6', borderRadius: 8, marginBottom: 32, background: '#fff', boxShadow: '0 2px 8px #e3eafc40' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: 600, fontSize: 16, padding: '16px 24px', borderBottom: '1px solid #E3EAFD', background: '#F9FAFB', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
+        <div className={styles.sectionCard}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionTitle}>Family Details</span>
+            <a className={styles.seeMore}>See More</a>
           </div>
           <DataTable columns={familyColumns} data={familyDetails} showAddButton={false} getRowStatus={getFamilyRowStatus} />
         </div>
         {}
-        <div style={{ border: '1.5px solid #B6D0F6', borderRadius: 8, marginBottom: 32, background: '#fff', boxShadow: '0 2px 8px #e3eafc40' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: 600, fontSize: 16, padding: '16px 24px', borderBottom: '1px solid #E3EAFD', background: '#F9FAFB', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
+        <div className={styles.sectionCard}>
+          <div className={styles.sectionHeader}>
             <span>Vehicles</span>
-            <a style={seeMoreStyle}>See More</a>
+            <a className={styles.seeMore}>See More</a>
           </div>
           <DataTable columns={vehicleColumns} data={vehicles} showAddButton={false} getRowStatus={getVehicleRowStatus} />
         </div>
         {}
-        <div style={{ border: '1.5px solid #B6D0F6', borderRadius: 8, marginBottom: 32, background: '#fff', boxShadow: '0 2px 8px #e3eafc40' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: 600, fontSize: 16, padding: '16px 24px', borderBottom: '1px solid #E3EAFD', background: '#F9FAFB', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
+        <div className={styles.sectionCard}>
+          <div className={styles.sectionHeader}>
             <span>Workers</span>
-            <a style={seeMoreStyle}>See More</a>
+            <a className={styles.seeMore}>See More</a>
           </div>
           <DataTable columns={workerColumns} data={workers} showAddButton={false} getRowStatus={getWorkerRowStatus} />
         </div>
         {}
-        <div style={{ border: '1.5px solid #B6D0F6', borderRadius: 8, marginBottom: 0, background: '#fff', boxShadow: '0 2px 8px #e3eafc40' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: 600, fontSize: 16, padding: '16px 24px', borderBottom: '1px solid #E3EAFD', background: '#F9FAFB', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
+        <div className={styles.sectionCard}>
+          <div className={styles.sectionHeader}>
             <span>Visitor</span>
-            <a style={seeMoreStyle}>See More</a>
+            <a className={styles.seeMore}>See More</a>
           </div>
           <DataTable columns={visitorColumns} data={visitors} showAddButton={false} getRowStatus={getVisitorRowStatus} />
         </div>

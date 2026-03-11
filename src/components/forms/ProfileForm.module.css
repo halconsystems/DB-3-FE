@@ -385,3 +385,63 @@
 .saveButton:hover {
   background: #219a52;
 }
+
+.toggleButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  width: 68px;
+  border-radius: 999px;
+  padding: 0 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  outline: none;
+}
+
+.toggleActive {
+  background-color: #30B33D;
+}
+
+.toggleInactive {
+  background-color: #d1d5db;
+}
+
+.toggleText {
+  font-size: 10px;
+  font-weight: 600;
+  width: 100%;
+  transition: color 0.3s;
+}
+
+.textActive {
+  color: white;
+  text-align: left;
+}
+
+.textInactive {
+  color: #374151;
+  text-align: right;
+}
+
+.toggleCircle {
+  position: absolute;
+  top: 50%;
+  left: 4px;
+  height: 16px;
+  width: 16px;
+  background: white;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: transform 0.3s;
+}
+
+.circleActive {
+  transform: translate(45px, -50%);
+}
+
+.circleInactive {
+  transform: translate(0, -50%);
+}
