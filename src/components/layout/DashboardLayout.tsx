@@ -119,12 +119,12 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
       <main className={styles.mainContent}>
         <header className={styles.header}>
           <div className={styles.headerTitleWrapper}>
-            <img 
+            {(activeMenuItem.match(/\//g)?.length ?? 0) >= 2 && (<img 
               src="/icons/arrow-back.png" 
               alt="Back" 
               className={styles.backArrowImg} 
               onClick={() => router.back()}
-            />
+            />)}
             <div className={styles.headerTitle}>{pageTitle}</div>
           </div>
           <div className={styles.headerRight}>

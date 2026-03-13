@@ -45,6 +45,7 @@ export default function EditBankAccount() {
             title="Please update details below!"
             onSave={handleUpdate}
             onCancel={() => window.history.back()}
+            saveButtonText='Edit'
             fields={bankAccountFields}
             initialValues={initialValues}
           />

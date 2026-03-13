@@ -2,6 +2,7 @@
 
 import React from 'react';
 import type { ProfileField, ProfileFormData } from './FormTypes';
+import CircularButton from '../ui/CircularButton';
 
 type CssModule = Record<string, string>;
 
@@ -49,6 +50,7 @@ interface FileFieldProps extends SharedFieldProps {
 const getWrapperStyle = (field: ProfileField): React.CSSProperties => ({
   width: toCssSize(field.fieldWidth),
   minHeight: toCssSize(field.fieldHeight),
+  gridColumn: field.colSpan ? `span ${field.colSpan}` : undefined,  
 });
 
 const getInputStyle = (field: ProfileField): React.CSSProperties => ({
@@ -56,9 +58,9 @@ const getInputStyle = (field: ProfileField): React.CSSProperties => ({
   height: toCssSize(field.inputHeight),
 });
 
-export function TextInputField({ field, value, onChange, styles }: InputFieldProps) {
+export function TextInputField({ field, value, onChange, styles, wrapperClassName }: InputFieldProps) {
   return (
-    <div className={styles.capsule} key={field.name} style={getWrapperStyle(field)}>
+    <div className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()} style={getWrapperStyle(field)}>
       <label className={field.required ? styles.labelRed : styles.labelGreen}>{field.label}</label>
       <input
         type={field.type}
@@ -73,50 +75,100 @@ export function TextInputField({ field, value, onChange, styles }: InputFieldPro
   );
 }
 
-export function SelectInputField({ field, value, onChange, styles }: SelectFieldProps) {
+export function SelectInputField({ field, value, onChange, styles, wrapperClassName }: SelectFieldProps) {
+  const selectRef = React.useRef<HTMLSelectElement>(null);
+
+  const openSelectDropdown = () => {
+    const selectElement = selectRef.current;
+
+    if (!selectElement) {
+      return;
+    }
+
+    const pickerSelect = selectElement as HTMLSelectElement & { showPicker?: () => void };
+
+    if (typeof pickerSelect.showPicker === 'function') {
+      pickerSelect.showPicker();
+      return;
+    }
+
+    selectElement.focus();
+    selectElement.click();
+  };
+
   return (
-    <div className={styles.capsule} key={field.name} style={getWrapperStyle(field)}>
+    <div className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()} style={getWrapperStyle(field)}>
       <label className={field.required ? styles.labelRed : styles.labelGreen}>{field.label}</label>
       <div className={styles.selectWrapper}>
         <select
+          ref={selectRef}
+          id={field.name}
           name={field.name}
           className={styles.select}
           style={getInputStyle(field)}
           value={value}
           onChange={onChange}
         >
-          <option value="">Select {field.label}</option>
           {field.options?.map((option) => (
-            <option key={option.value} value={option.value}>
+            <option key={option.value} value={option.value} >
               {option.label}
             </option>
           ))}
         </select>
-        <img src="/icons/Arrow.png" alt="" className={styles.selectArrow} />
+        <div style={{ position: 'absolute', right: '0', top: '-150%' }}>
+          <CircularButton imagePath='/icons/DownArrow.svg' width="24px" height="24px" onClick={openSelectDropdown} />
+        </div>
       </div>
     </div>
   );
 }
 
-export function DateInputField({ field, value, onChange, styles }: DateFieldProps) {
+export function DateInputField({ field, value, onChange, styles, wrapperClassName }: DateFieldProps) {
+  const dateInputRef = React.useRef<HTMLInputElement>(null);
+
+  const openDatePicker = () => {
+    const dateInput = dateInputRef.current;
+
+    if (!dateInput) {
+      return;
+    }
+
+    const pickerInput = dateInput as HTMLInputElement & { showPicker?: () => void };
+
+    if (typeof pickerInput.showPicker === 'function') {
+      pickerInput.showPicker();
+      return;
+    }
+
+    dateInput.focus();
+    dateInput.click();
+  };
+
   return (
-    <div className={styles.capsule} key={field.name} style={getWrapperStyle(field)}>
+    <div
+      className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()}
+      style={{ ...getWrapperStyle(field), position: 'relative' }}
+    >
       <label className={field.required ? styles.labelRed : styles.labelGreen}>{field.label}</label>
       <input
+        ref={dateInputRef}
         type="date"
         name={field.name}
-        className={styles.input}
+        className={styles.input + " " + styles.dateInput}
         style={getInputStyle(field)}
         value={value}
         onChange={onChange}
       />
+      <div style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)' }}>
+        <CircularButton imagePath='/icons/Calendar.svg' width="24px" height="24px" onClick={openDatePicker} />
+      </div> 
     </div>
   );
 }
 
-export function ToggleInputField({ field, checked, onChange, styles }: ToggleFieldProps) {
+export function ToggleInputField({ field, checked, onChange, styles, wrapperClassName }: ToggleFieldProps) {
   return (
-    <div className={styles.capsule} key={field.name} style={getWrapperStyle(field)}>
+    <div className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()} style={getWrapperStyle(field)}>
       <label className={field.required ? styles.labelRed : styles.labelGreen}>{field.label}</label>
       <input
         type="checkbox"
@@ -128,9 +180,9 @@ export function ToggleInputField({ field, checked, onChange, styles }: ToggleFie
   );
 }
 
-export function FileInputField({ field, formData, onFileChange, styles }: FileFieldProps) {
+export function FileInputField({ field, formData, onFileChange, styles, wrapperClassName }: FileFieldProps) {
   return (
-    <div className={styles.capsuleFileWithPreview} key={field.name} style={getWrapperStyle(field)}>
+    <div className={`${styles.capsuleFileWithPreview} ${wrapperClassName ?? ''}`.trim()} style={getWrapperStyle(field)}>
       <div className={styles.fileLabelRow}>
         <label className={field.required ? styles.labelRed : styles.labelGreen}>{field.label}</label>
         <label className={styles.plusButton}>

@@ -49,7 +49,7 @@ export default function EditLuggage() {
           onCancel={() => router.back()}
           fields={luggageFields}
           initialValues={mockLuggageData}
-          saveButtonText="Save"
+          saveButtonText='Edit'
           cancelButtonText="Cancel"
         />
       </div>

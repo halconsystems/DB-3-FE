@@ -1,0 +1,489 @@
+.dashboardRoot {
+  display: flex;
+  background: #f3f4f6;
+  min-height: 100vh;
+}
+
+.dashboardMain {
+  flex: 1;
+  padding-top: 0.5rem;
+}
+
+.spacedSection > * + * {
+  margin-top: 1.5rem;
+}
+
+.chartGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  background: #f9fafb;
+  border-radius: 1rem;
+  border: 1px solid #f0f2f8;
+  padding: 0.75rem;
+  box-shadow: -10px -10px 20px 0 rgba(255, 255, 255, 0.6), 3px 3px 20px 0 rgba(170, 170, 204, 0.5);
+}
+
+.analysisCard {
+  background: #fff;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.vehicleCard {
+  background: #fff;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  max-height: 350px;
+  overflow: hidden;
+}
+
+.alertsWrapper {
+  background: #fff;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  max-height: 350px;
+}
+
+.alertsCard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.alertsTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.alertsList {
+  margin-top: 0.5rem;
+  overflow-y: auto;
+}
+
+.alertItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0;
+}
+
+.alertItemBorder {
+  border-bottom: 1px solid #eceff5;
+}
+
+.alertCheckbox {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.35rem;
+  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f6 100%);
+  flex-shrink: 0;
+  appearance: none;
+  cursor: pointer;
+  box-shadow: -12.45px -12.45px 24.91px 0px #FFFFFF , 2px 2px 5.91px 0px #AAAACC80 inset;
+}
+
+.alertCheckbox:checked {
+  background: #30b33d;
+  border-color: #30b33d;
+}
+
+.alertCheckbox:focus-visible {
+  outline: 2px solid rgba(48, 179, 61, 0.25);
+  outline-offset: 2px;
+}
+
+.alertText {
+  font-size: 0.9rem;
+  color: #1f2937;
+}
+
+.statsContainer {
+  background: #f9fafb;
+  border-radius: 1rem;
+  border: 1px solid #f0f2f8;
+  padding: 0.75rem;
+  box-shadow: -10px -10px 20px 0 rgba(255, 255, 255, 0.6), 3px 3px 20px 0 rgba(170, 170, 204, 0.5);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.statsCard {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 72px;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 24px 0 #e9eef7;
+}
+
+.statsIconBox {
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  flex-shrink: 0;
+  border: 1px solid rgba(48, 179, 61, 0.2);
+}
+
+.statsIconImg {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+}
+
+.statsTitle {
+  font-weight: 600;
+  color: #000;
+  font-size: 1rem;
+  margin-bottom: 0.125rem;
+}
+
+.statsValue {
+  color: #16a34a;
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+@media (max-width: 1200px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .chartGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.analysisRoot{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.analysisHeader {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.analysisTitle {
+  align-self: flex-start;
+  font-size: 1.25rem;
+  font-weight: 700;
+
+}
+
+.analysisTooltip {
+  background: #171a22;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.45rem 0.5rem;
+  border-radius: 0.35rem;
+  box-shadow: 0 10px 18px rgba(23, 26, 34, 0.18);
+  position: absolute;
+}
+
+.analysisFilterGroup {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  justify-content: center;
+}
+
+.analysisFilterBtn {
+  padding: 0.5rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.analysisFilterActive {
+  background: #30b33d;
+  color: #fff;
+}
+
+.analysisFilterInactive {
+  background: rgba(48, 179, 61, 0.2);
+  color: #30b33d;
+}
+
+.analysisLegendRow {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+  justify-content: center;
+}
+
+.analysisLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.analysisLegendDot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 9999px;
+}
+
+.analysisLegendText {
+  color: #374151;
+}
+
+.vehiclesRoot {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 0 0.25rem;
+  display: flex;
+  /* flex-direction: column; */
+  justify-content: space-between;
+  min-height: 260px;
+  height: 100%;
+}
+
+.vehiclesTitle {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  font-size: 1.25rem;
+  text-align: left;
+  text-wrap: nowrap;
+  word-wrap:nowrap;
+}
+
+.vehiclesTotal {
+  color: #16a34a;
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+.vehiclesChartRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  position: relative;
+  flex-direction: column;
+  width: 30%;
+}
+
+.vehiclesChartContainer{
+    display:flex;
+    align-items: center;
+}
+
+.vehiclesLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.vehiclesLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.vehiclesLegendDot {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+  display: inline-block;
+}
+
+.vehiclesLegendText {
+  color: #374151;
+}
+
+.propertyRoot {
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.recentActivitiesSection {
+  width: 100%;
+}
+
+.recentActivitiesHeader {
+  padding: 0.75rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.recentActivitiesTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: #111827;
+}
+
+.propertyContainer {
+  background: transparent;
+  border-bottom-left-radius: 0.75rem;
+  border-bottom-right-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.propertyHeader {
+  padding: 0.75rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.propertyTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.rowSelectGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rowLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.rowSelect {
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.propertyTable {
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+.propertyHead {
+  background: #f9fafb;
+  font-size: 0.75rem;
+}
+
+.propertyHeadCell {
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+.propertyCell {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+}
+
+.rowEven {
+  background: #fff;
+}
+
+.rowOdd {
+  background: #f4fff1;
+}
+
+.rowHover:hover {
+  background: #f9fafb;
+}
+
+.emptyCell {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.propertyFooter {
+  padding: 0.75rem 0;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.recordCount {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.paginationButton {
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid #30b33d;
+  color: #30b33d;
+  background: #fff;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.paginationButton:hover {
+  background: #30b33d;
+}
+
+.paginationButton:hover .arrowIcon {
+  filter: brightness(0) invert(1);
+}
+
+.paginationButtonDisabled {
+  border-color: #d1d5db;
+  color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.paginationButtonDisabled:hover {
+  background: #fff;
+}
+
+.paginationBadge {
+  padding: 0.375rem 1rem;
+  border-radius: 0.25rem;
+  background: #30b33d;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.arrowIcon {
+  width: 1rem;
+  height: 1rem;
+}

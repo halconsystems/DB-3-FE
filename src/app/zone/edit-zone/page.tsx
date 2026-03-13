@@ -37,6 +37,7 @@ export default function EditZone() {
             title="Please update details below!"
             onSave={handleUpdate}
             onCancel={() => window.history.back()}
+            saveButtonText='Edit'
             fields={zoneFields}
             initialValues={initialValues}
           />

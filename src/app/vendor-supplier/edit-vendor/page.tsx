@@ -49,6 +49,7 @@ export default function EditVendor() {
             title="Please update details below!"
             onSave={handleUpdate}
             onCancel={() => window.history.back()}
+            saveButtonText='Edit'
             fields={vendorFields}
             initialValues={initialValues}
           />

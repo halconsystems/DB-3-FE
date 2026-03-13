@@ -63,6 +63,7 @@ export default function EditWorker() {
           title="Please update details below!"
           onSave={handleSave}
           onCancel={() => router.back()}
+          saveButtonText='Edit'
           fields={workerFields}
           initialValues={mockWorkerData}
         />

@@ -27,6 +27,7 @@ export default function CircularButton({
 
   return (
     <button
+      type="button"
       className={`${styles.circularButton} ${className} ${pos === "abs" ? styles.posAbsolute : ''}`}
       onClick={onClick}
       style={buttonStyle}

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import styles from './ProfileForm.module.css';
 import type { ProfileField, ProfileFormData } from './FormTypes';
 import {
@@ -29,12 +30,22 @@ export default function CommonEntityForm({
   onSave,
   initialValues = {},
   title = 'Please provide details below!',
-  saveButtonText = 'Save',
+  saveButtonText = 'Add',
   cancelButtonText = 'Cancel',
   loading = false,
   showStatusToggle = true,
   fields = [],
 }: CommonEntityFormProps) {
+  
+  const pathname = usePathname();
+  let pageName = pathname.split('/')[1] ?? '';
+  pageName = pageName.charAt(0).toUpperCase() + pageName.slice(1);
+
+  if (pageName.includes('Residential')) {
+    pageName = 'Member';
+  }
+  else pageName = ''
+
   const [formData, setFormData] = useState<ProfileFormData>({ ...initialValues });
   const [isActive, setIsActive] = useState(initialValues.isActive ?? true);
 
@@ -60,13 +71,124 @@ export default function CommonEntityForm({
     }
   };
 
+  const renderField = (field: ProfileField, wrapperClassName?: string) => {
+    if (field.type === 'file') {
+      return (
+        <FileInputField
+          key={field.name}
+          field={field}
+          formData={formData}
+          onFileChange={handleFileChange}
+          styles={styles}
+          wrapperClassName={wrapperClassName}
+        />
+      );
+    }
+
+    if (field.type === 'select') {
+      return (
+        <SelectInputField
+          key={field.name}
+          field={field}
+          value={typeof formData[field.name] === 'string' ? (formData[field.name] as string) : ''}
+          onChange={handleInputChange}
+          styles={styles}
+          wrapperClassName={wrapperClassName}
+        />
+      );
+    }
+
+    if (field.type === 'date') {
+      return (
+        <DateInputField
+          key={field.name}
+          field={field}
+          value={typeof formData[field.name] === 'string' ? (formData[field.name] as string) : ''}
+          onChange={handleInputChange}
+          styles={styles}
+          wrapperClassName={wrapperClassName}
+        />
+      );
+    }
+
+    if (field.type === 'toggle') {
+      return (
+        <ToggleInputField
+          key={field.name}
+          field={field}
+          checked={!!formData[field.name]}
+          onChange={handleInputChange}
+          styles={styles}
+          wrapperClassName={wrapperClassName}
+        />
+      );
+    }
+
+    return (
+      <TextInputField
+        key={field.name}
+        field={field}
+        value={typeof formData[field.name] === 'string' ? (formData[field.name] as string) : ''}
+        onChange={handleInputChange}
+        styles={styles}
+        wrapperClassName={wrapperClassName}
+      />
+    );
+  };
+
+  const renderedFields: React.ReactNode[] = [];
+
+  const getFieldClassName = (baseClassName?: string, isHidden?: boolean) => {
+    if (!isHidden) {
+      return baseClassName;
+    }
+
+    return [baseClassName, styles.hiddenCapsule].filter(Boolean).join(' ');
+  };
+
+  for (let index = 0; index < fields.length; index += 1) {
+    const field = fields[index];
+
+    if (!field.sameCellKey) {
+      renderedFields.push(renderField(field, getFieldClassName(undefined, field.isHidden)));
+      continue;
+    }
+
+    const groupedFields: ProfileField[] = [field];
+    let nextIndex = index + 1;
+
+    while (nextIndex < fields.length && fields[nextIndex].sameCellKey === field.sameCellKey) {
+      groupedFields.push(fields[nextIndex]);
+      nextIndex += 1;
+    }
+
+    index = nextIndex - 1;
+
+    renderedFields.push(
+      <div
+        key={`same-cell-${field.sameCellKey}-${field.name}`}
+        className={styles.groupedCell}
+        style={{ gridColumn: field.colSpan ? `span ${field.colSpan}` : undefined }}
+      >
+        <div
+          className={styles.groupedCellGrid}
+          style={{
+            gridTemplateColumns: `repeat(${field.sameCellColumns ?? groupedFields.length}, minmax(0, 1fr))`,
+          }}
+        >
+          {groupedFields.map((groupField) => renderField(groupField, getFieldClassName(styles.groupedCellItem, groupField.isHidden)))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.formContainer}>
       <div className={styles.formHeader}>
         <h2 className={styles.formTitle}>{title}</h2>
         {showStatusToggle && (
           <div className={styles.statusWrapper}>
-            <span className={styles.statusLabel}>Member Status</span>
+            <span className={styles.statusLabel}>{pageName} Status</span>
             <label className={styles.statusToggle}>
               <button
                 type="button"
@@ -85,65 +207,7 @@ export default function CommonEntityForm({
       </div>
 
       <div className={styles.formGrid}>
-        {fields.map((field) => {
-          if (field.type === 'file') {
-            return (
-              <FileInputField
-                key={field.name}
-                field={field}
-                formData={formData}
-                onFileChange={handleFileChange}
-                styles={styles}
-              />
-            );
-          }
-
-          if (field.type === 'select') {
-            return (
-              <SelectInputField
-                key={field.name}
-                field={field}
-                value={typeof formData[field.name] === 'string' ? (formData[field.name] as string) : ''}
-                onChange={handleInputChange}
-                styles={styles}
-              />
-            );
-          }
-
-          if (field.type === 'date') {
-            return (
-              <DateInputField
-                key={field.name}
-                field={field}
-                value={typeof formData[field.name] === 'string' ? (formData[field.name] as string) : ''}
-                onChange={handleInputChange}
-                styles={styles}
-              />
-            );
-          }
-
-          if (field.type === 'toggle') {
-            return (
-              <ToggleInputField
-                key={field.name}
-                field={field}
-                checked={!!formData[field.name]}
-                onChange={handleInputChange}
-                styles={styles}
-              />
-            );
-          }
-
-          return (
-            <TextInputField
-              key={field.name}
-              field={field}
-              value={typeof formData[field.name] === 'string' ? (formData[field.name] as string) : ''}
-              onChange={handleInputChange}
-              styles={styles}
-            />
-          );
-        })}
+        {renderedFields}
       </div>
 
       <div className={styles.formActions}>

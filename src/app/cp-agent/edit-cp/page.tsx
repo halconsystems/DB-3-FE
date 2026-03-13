@@ -72,6 +72,7 @@ export default function EditCpAgent() {
             title="Please update details below!"
             onSave={handleUpdate}
             onCancel={() => window.history.back()}
+            saveButtonText='Edit'
             fields={cpAgentFields}
             initialValues={initialValues}
           />

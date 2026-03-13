@@ -123,6 +123,26 @@
   outline: none;
 }
 
+.groupedCell {
+  /* background: #11f; */
+  border: none !important;
+}
+
+.groupedCellGrid {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.groupedCellItem {
+  border: none !important;
+  min-height: auto;
+  box-shadow: -10px -10px 20px 0px rgba(255, 255, 255, 1), 3px 3px 20px 0px rgba(170, 170, 204, 0.5);
+  border-radius: 8px;
+  padding: 8px 14px;
+  background: white;
+}
+
 .capsuleEmpty {
   background: transparent;
   border: none;
@@ -171,6 +191,10 @@
   margin-bottom: 0.4rem;
 }
 
+.hiddenCapsule {
+  visibility: hidden;
+}
+
 .labelRed {
   font-size: 13px;
   color: var(--primary);
@@ -186,7 +210,7 @@
 }
 
 
-.input {
+.input{
   border: none;
   background: transparent;
   font-size: 11px;
@@ -201,7 +225,6 @@
   color: rgba(0, 0, 0, 0.8);
 }
 
-
 .selectWrapper {
   position: relative;
   display: flex;
@@ -211,26 +234,15 @@
 .select {
   border: none;
   background: transparent;
-  font-size: 0.8125rem;
+  font-size: 11px;
   font-weight: 500;
-  color: rgba(0, 0, 0, 0.8);
+  color: rgba(0, 0, 0, 0.6) !important;
   outline: none;
   padding: 0;
   width: 100%;
   appearance: none;
   cursor: pointer;
 }
-
-.selectArrow {
-  position: absolute;
-  right: 0;
-  width: 16px;
-  height: 16px;
-  pointer-events: none;
-  transform: rotate(90deg);
-  opacity: 0.6;
-}
-
 
 .inputWithAvatar {
   display: flex;
@@ -249,6 +261,28 @@
   height: 32px;
   border-radius: 50%;
   overflow: hidden;
+}
+
+.dateInput {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+}
+
+.dateInput::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  display: none;
+  -webkit-appearance: none;
+}
+
+.dateInput::-webkit-inner-spin-button,
+.dateInput::-webkit-clear-button {
+  display: none;
+}
+
+.dateInput::-ms-clear,
+.dateInput::-ms-expand {
+  display: none;
 }
 
 .fieldAvatar img {
@@ -320,12 +354,12 @@
   justify-content: flex-start;
   padding-left: 40px;
   position: absolute;
-  right: 0;
+  right: 2;
 }
 
 .profilePreview {
-  width: 72px;
-  height: 72px;
+  width: 84px;
+  height: 84px;
   border-radius: 50%;
   overflow: hidden;
   border: 2px solid #e0e0e0;

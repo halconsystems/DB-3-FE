@@ -53,6 +53,7 @@ export default function EditEmployee() {
             title="Please update details below!"
             onSave={handleUpdate}
             onCancel={() => window.history.back()}
+            saveButtonText='Edit'
             fields={employeeFields}
             initialValues={initialValues}
           />

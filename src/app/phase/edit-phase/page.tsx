@@ -37,6 +37,7 @@ export default function EditPhase() {
             title="Please update details below!"
             onSave={handleUpdate}
             onCancel={() => window.history.back()}
+            saveButtonText='Edit'
             fields={phaseFields}
             initialValues={initialValues}
           />

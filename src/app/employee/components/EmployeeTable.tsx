@@ -55,6 +55,10 @@ export default function EmployeeTable({
     router.push('/employee/edit-employee');
   };
 
+  const handleDelete = (item: Employee) => {
+    console.log('Delete item:', item);
+  }
+
   const employeeColumns: Column<Employee>[] = [
     { key: 'employeeName', header: 'Employee Name' },
     { key: 'serviceNo', header: 'Service No.' },
@@ -65,18 +69,21 @@ export default function EmployeeTable({
     { key: 'nextOfKinName', header: 'Next Of Kin Name' },
     { key: 'nextOfKinNumber', header: 'Next Of Kin Number' },
     { key: 'role', header: 'Role' },
-    {
-      key: 'action',
-      header: 'Action',
-      render: (_, row) => (
-        <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
-      )
-    },
     { 
       key: 'status', 
       header: 'Status',
       render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
     },
+    {
+      key: 'action',
+      header: 'Action',
+      render: (_, row) => (
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+          <CircularButton imagePath="/icons/Delete Button.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+        </div>
+      )
+    }
   ];
 
   return (

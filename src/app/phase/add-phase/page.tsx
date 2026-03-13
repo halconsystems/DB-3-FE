@@ -2,11 +2,9 @@
 'use client';
 import React from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
-const phaseFields: ProfileField[] = [
-  { name: 'phaseName', label: 'Phase Name', type: 'text', required: true, placeholder: 'Phase Name here' },
-  { name: 'description', label: 'Description', type: 'text', required: true, placeholder: 'Description here' },
-];
+import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
+import { phaseFields } from '../fields';
+
 export default function AddNewPhase() {
   const handleSave = (data: ProfileFormData) => { 
     console.log('Saved:', data);

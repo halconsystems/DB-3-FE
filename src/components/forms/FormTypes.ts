@@ -93,6 +93,7 @@ export interface ProfileFormData {
   minRenewalCharges?: string;
   phaseName?: string;
   description?: string;
+  empty?: string | null;
 }
 
 export interface ProfileField {
@@ -106,4 +107,8 @@ export interface ProfileField {
   inputHeight?: string | number;
   fieldWidth?: string | number;
   fieldHeight?: string | number;
+  colSpan?: number;
+  sameCellKey?: string;
+  sameCellColumns?: number;
+  isHidden?: boolean;
 }

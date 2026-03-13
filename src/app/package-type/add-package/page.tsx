@@ -2,16 +2,11 @@
 'use client';
 import React from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
-const packageFields: ProfileField[] = [
-  { name: 'packageName', label: 'Package Name', type: 'text', required: true, placeholder: 'Package Name here' },
-  { name: 'packageId', label: 'Package ID', type: 'text', required: true, placeholder: 'Package ID here' },
-  { name: 'minCharges', label: 'Set Minimum Charges', type: 'text', required: true, placeholder: 'Type here' },
-  { name: 'minRenewalCharges', label: 'Set Minimum Renewal Charges', type: 'text', required: true, placeholder: '001' },
-];
+import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
+import { packageFields } from '../fields';
+
 export default function AddNewPackageType() {
   const handleSave = (data: ProfileFormData) => {
-    
     console.log('Saved:', data);
   };
   return (
