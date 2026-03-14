@@ -1,28 +1,11 @@
 'use client';
 import { useState } from 'react';
+import { useZones } from '../../../hooks/useZones';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
-export interface Zone {
-  id: number;
-  zone: string;
-  phaseName: string;
-  status: 'Active' | 'Inactive';
-}
-export const sampleZones: Zone[] = [
-  { id: 1, zone: 'Zone 01', phaseName: 'Phase VI', status: 'Active' },
-  { id: 2, zone: 'Zone 02', phaseName: 'Phase V', status: 'Inactive' },
-  { id: 3, zone: 'Zone 03', phaseName: 'Phase VII', status: 'Active' },
-  { id: 4, zone: 'Zone 04', phaseName: 'Phase VII', status: 'Inactive' },
-  { id: 5, zone: 'Zone 01', phaseName: 'Phase VI', status: 'Active' },
-  { id: 6, zone: 'Zone 02', phaseName: 'Phase V', status: 'Inactive' },
-  { id: 7, zone: 'Zone 03', phaseName: 'Phase VII', status: 'Active' },
-  { id: 8, zone: 'Zone 04', phaseName: 'Phase VII', status: 'Inactive' },
-  { id: 9, zone: 'Zone 01', phaseName: 'Phase VI', status: 'Active' },
-  { id: 10, zone: 'Zone 02', phaseName: 'Phase V', status: 'Inactive' },
-  { id: 11, zone: 'Zone 03', phaseName: 'Phase VII', status: 'Active' },
-];
+import type { Zone } from '../../../services/zone.service';
 const DeleteIcon = ({ onClick }: { onClick: () => void }) => (
   <button 
     onClick={onClick}
@@ -56,22 +39,24 @@ export default function VendorTable({
 }: VendorTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
+  const { data, isLoading, error } = useZones();
+
   const handleEdit = (item: Zone) => {
     router.push('/zone/edit-zone');
   };
   const handleDelete = (item: Zone) => {
-    
+  
   };
-  const zoneColumns: Column<Zone>[] = [
-    { key: 'zone', header: 'Zone' },
-    { key: 'phaseName', header: 'Phase Name' },
-    { 
-      key: 'status', 
+  const zoneColumns: Column<Zone & { phaseName?: string; status: 'Active' | 'Inactive' }>[]= [
+    { key: 'name', header: 'Zone' },
+    { key: 'phaseId', header: 'Phase ID' },
+    {
+      key: 'status',
       header: 'Status',
-      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
+      render: (_: any, row) => <StatusBadge status={row.isActive ? 'Active' : 'Inactive'} />
     },
-    { 
-      key: 'action', 
+    {
+      key: 'action',
       header: 'Action',
       render: (_, row) => (
         <div style={{ display: 'flex', gap: '4px' }}>
@@ -81,13 +66,21 @@ export default function VendorTable({
       )
     },
   ];
+  let zones: (Zone & { phaseName?: string; status: 'Active' | 'Inactive' })[] = [];
+  if (data?.data) {
+    zones = data.data.map((z) => ({
+      ...z,
+      phaseName: z.phaseId, 
+      status: z.isActive ? 'Active' : 'Inactive',
+    }));
+  }
   return (
-    <DataTable<Zone>
+    <DataTable<Zone & { phaseName?: string; status: 'Active' | 'Inactive' }>
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={onTabChange}
       columns={zoneColumns}
-      data={sampleZones}
+      data={zones}
       showAddButton={false}
       currentPage={currentPage}
       totalPages={3}
@@ -98,6 +91,7 @@ export default function VendorTable({
           <AddNewButton onClick={onAddNew} label={addButtonLabel} />
         </div>
       }
+      loading={isLoading}
     />
   );
 }
