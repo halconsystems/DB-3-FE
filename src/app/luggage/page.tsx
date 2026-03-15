@@ -5,6 +5,8 @@ import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
 import CircularButton from '../../components/ui/CircularButton';
 import { AddNewButton } from '../../components/ui/ActionButton';
+import WarningModal from '../../components/popup/WarningModal';
+import { saveTableRow } from '../../lib/tableRowStorage';
 
 interface LuggagePass {
   id: number;
@@ -35,6 +37,9 @@ const sampleLuggagePasses: LuggagePass[] = [
 
 export default function LuggagePage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [luggagePasses, setLuggagePasses] = useState(sampleLuggagePasses);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedLuggage, setSelectedLuggage] = useState<LuggagePass | null>(null);
   const router = useRouter();
 
   const handleAddNew = () => {
@@ -42,7 +47,23 @@ export default function LuggagePage() {
   };
 
   const handleEdit = (luggage: LuggagePass) => {
+    saveTableRow('luggage', luggage);
     router.push('/luggage/edit-luggage');
+  };
+
+  const handleDelete = (luggage: LuggagePass) => {
+    setSelectedLuggage(luggage);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedLuggage) {
+      return;
+    }
+
+    setLuggagePasses((prev) => prev.filter((item) => item.id !== selectedLuggage.id));
+    setDeleteModalOpen(false);
+    setSelectedLuggage(null);
   };
 
   const columns: Column<LuggagePass>[] = [
@@ -60,7 +81,12 @@ export default function LuggagePage() {
     { 
       key: 'action', 
       header: 'Action',
-      render: (_, row) => <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+      render: (_, row) => (
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+          <CircularButton imagePath="/icons/Delete Button.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+        </div>
+      )
     },
   ];
 
@@ -71,12 +97,19 @@ export default function LuggagePage() {
       </div>
       <DataTable<LuggagePass>
         columns={columns}
-        data={sampleLuggagePasses}
+        data={luggagePasses}
         showAddButton={false}
         currentPage={currentPage}
         totalPages={3}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status}
+      />
+      <WarningModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Luggage Record"
+        message="Are you sure you want to delete this luggage record? This action cannot be undone."
       />
     </DashboardLayout>
   );

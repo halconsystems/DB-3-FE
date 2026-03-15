@@ -1,10 +1,12 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useZones } from '../../../hooks/useZones';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
+import WarningModal from '../../../components/popup/WarningModal';
+import { saveTableRow } from '../../../lib/tableRowStorage';
 import type { Zone } from '../../../services/zone.service';
 const DeleteIcon = ({ onClick }: { onClick: () => void }) => (
   <button 
@@ -40,12 +42,42 @@ export default function VendorTable({
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
   const { data, isLoading, error } = useZones();
+  const [zones, setZones] = useState<(Zone & { phaseName?: string; status: 'Active' | 'Inactive' })[]>([]);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedZone, setSelectedZone] = useState<(Zone & { phaseName?: string; status: 'Active' | 'Inactive' }) | null>(null);
+
+  useEffect(() => {
+    if (!data?.data) {
+      return;
+    }
+
+    setZones(
+      data.data.map((z) => ({
+        ...z,
+        phaseName: z.phaseId,
+        status: z.isActive ? 'Active' : 'Inactive',
+      })),
+    );
+  }, [data]);
 
   const handleEdit = (item: Zone) => {
+    saveTableRow('zone', item);
     router.push('/zone/edit-zone');
   };
   const handleDelete = (item: Zone) => {
-  
+    const zoneItem = item as Zone & { phaseName?: string; status: 'Active' | 'Inactive' };
+    setSelectedZone(zoneItem);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedZone) {
+      return;
+    }
+
+    setZones((prev) => prev.filter((zone) => zone.id !== selectedZone.id));
+    setDeleteModalOpen(false);
+    setSelectedZone(null);
   };
   const zoneColumns: Column<Zone & { phaseName?: string; status: 'Active' | 'Inactive' }>[]= [
     { key: 'name', header: 'Zone' },
@@ -66,15 +98,8 @@ export default function VendorTable({
       )
     },
   ];
-  let zones: (Zone & { phaseName?: string; status: 'Active' | 'Inactive' })[] = [];
-  if (data?.data) {
-    zones = data.data.map((z) => ({
-      ...z,
-      phaseName: z.phaseId, 
-      status: z.isActive ? 'Active' : 'Inactive',
-    }));
-  }
   return (
+    <>
     <DataTable<Zone & { phaseName?: string; status: 'Active' | 'Inactive' }>
       tabs={tabs}
       activeTab={activeTab}
@@ -93,5 +118,13 @@ export default function VendorTable({
       }
       loading={isLoading}
     />
+    <WarningModal
+      isOpen={deleteModalOpen}
+      onClose={() => setDeleteModalOpen(false)}
+      onConfirm={handleConfirmDelete}
+      title="Delete Zone"
+      message="Are you sure you want to delete this zone? This action cannot be undone."
+    />
+    </>
   );
 }

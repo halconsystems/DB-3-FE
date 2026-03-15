@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
 import { AddNewButton } from '../../components/ui/ActionButton';
+import WarningModal from '../../components/popup/WarningModal';
+import { saveTableRow } from '../../lib/tableRowStorage';
 
 interface Worker {
   id: number;
@@ -42,6 +44,9 @@ import CircularButton from '../../components/ui/CircularButton';
 
 export default function WorkersPage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [workers, setWorkers] = useState(sampleWorkers);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
   const router = useRouter();
 
   const handleAddNew = () => {
@@ -49,7 +54,23 @@ export default function WorkersPage() {
   };
 
   const handleEdit = (worker: Worker) => {
+    saveTableRow('workers', worker);
     router.push('/workers/edit-worker');
+  };
+
+  const handleDelete = (worker: Worker) => {
+    setSelectedWorker(worker);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedWorker) {
+      return;
+    }
+
+    setWorkers((prev) => prev.filter((worker) => worker.id !== selectedWorker.id));
+    setDeleteModalOpen(false);
+    setSelectedWorker(null);
   };
 
   const columns: Column<Worker>[] = [
@@ -77,7 +98,12 @@ export default function WorkersPage() {
     {
       key: 'action',
       header: 'Action',
-      render: (_, row) => <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+      render: (_, row) => (
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+          <CircularButton imagePath="/icons/Delete Button.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+        </div>
+      )
     },
   ];
 
@@ -88,12 +114,19 @@ export default function WorkersPage() {
       </div>
       <DataTable<Worker>
         columns={columns}
-        data={sampleWorkers}
+        data={workers}
         showAddButton={false}
         currentPage={currentPage}
         totalPages={3}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.workerStatus}
+      />
+      <WarningModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Worker"
+        message="Are you sure you want to delete this worker? This action cannot be undone."
       />
     </DashboardLayout>
   );

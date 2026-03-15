@@ -6,6 +6,8 @@ import DataTable, { StatusBadge, Column, Tab } from '../../components/tables/Dat
 import { AddNewButton } from '../../components/ui/ActionButton';
 import HostDetailsModal from '../../components/ui/components/HostDetailsModal';
 import CircularButton from '../../components/ui/CircularButton';
+import WarningModal from '../../components/popup/WarningModal';
+import { saveTableRow } from '../../lib/tableRowStorage';
 
 interface Member {
   id: number;
@@ -50,8 +52,11 @@ const tabs: Tab[] = [
 export default function ResidentialPage() {
   const [activeTab, setActiveTab] = useState('commercial');
   const [currentPage, setCurrentPage] = useState(1);
+  const [members, setMembers] = useState(sampleData);
   const [hostModalOpen, setHostModalOpen] = useState(false);
   const [selectedHost, setSelectedHost] = useState<any>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
   const router = useRouter();
 
@@ -60,7 +65,23 @@ export default function ResidentialPage() {
   };
 
   const handleEdit = (member: Member) => {
+    saveTableRow('residential', member);
     router.push('/residential/edit-residential');
+  };
+
+  const handleDelete = (member: Member) => {
+    setSelectedMember(member);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedMember) {
+      return;
+    }
+
+    setMembers((prev) => prev.filter((member) => member.id !== selectedMember.id));
+    setDeleteModalOpen(false);
+    setSelectedMember(null);
   };
 
 
@@ -103,6 +124,7 @@ export default function ResidentialPage() {
       header: 'Action',
       render: (_, row) => { return (<div style={{ display: 'flex', gap: '8px' }}>
           <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+          <CircularButton imagePath="/icons/Delete Button.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
           <CircularButton imagePath="/icons/host.svg" imageAlt="Host" width={32} height={32} onClick={() => handleHostClick(row)} />
       </div>); 
       }
@@ -119,7 +141,7 @@ export default function ResidentialPage() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         columns={columns}
-        data={sampleData}
+        data={members}
         showAddButton={false}
         currentPage={currentPage}
         totalPages={3}
@@ -127,6 +149,13 @@ export default function ResidentialPage() {
         getRowStatus={(row) => row.memberStatus}
       />
       <HostDetailsModal open={hostModalOpen} onClose={() => setHostModalOpen(false)} host={selectedHost || { id: '', name: '', phone: '', address: '', imageUrl: '' }} />
+      <WarningModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Member"
+        message="Are you sure you want to delete this member? This action cannot be undone."
+      />
     </DashboardLayout>
   );
 }

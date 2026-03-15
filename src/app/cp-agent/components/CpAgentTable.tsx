@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
+import WarningModal from '../../../components/popup/WarningModal';
+import { saveTableRow } from '../../../lib/tableRowStorage';
 
 export interface CpAgent {
   id: number;
@@ -47,15 +49,29 @@ export default function CpAgentTable({
 }: CpAgentTableProps) {
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [cpAgents, setCpAgents] = useState(sampleCpAgents);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<CpAgent | null>(null);
   const router = useRouter();
 
   const handleEdit = (item: CpAgent) => {
-    
+    saveTableRow('cp-agent', item);
     router.push('/cp-agent/edit-cp');
   };
 
   const handleDelete = (item: CpAgent) => {
-    console.log('Delete item:', item);
+    setSelectedAgent(item);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedAgent) {
+      return;
+    }
+
+    setCpAgents((prev) => prev.filter((agent) => agent.id !== selectedAgent.id));
+    setDeleteModalOpen(false);
+    setSelectedAgent(null);
   };
 
   const cpAgentColumns: Column<CpAgent>[] = [
@@ -83,12 +99,13 @@ export default function CpAgentTable({
   ];
 
   return (
+    <>
     <DataTable<CpAgent>
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={onTabChange}
       columns={cpAgentColumns}
-      data={sampleCpAgents}
+      data={cpAgents}
       showAddButton={false}
       currentPage={currentPage}
       totalPages={3}
@@ -100,5 +117,13 @@ export default function CpAgentTable({
         </div>
       }
     />
+    <WarningModal
+      isOpen={deleteModalOpen}
+      onClose={() => setDeleteModalOpen(false)}
+      onConfirm={handleConfirmDelete}
+      title="Delete CP Agent"
+      message="Are you sure you want to delete this CP agent? This action cannot be undone."
+    />
+    </>
   );
 }

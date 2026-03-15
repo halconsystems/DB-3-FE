@@ -5,6 +5,8 @@ import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
 import CircularButton from '../../components/ui/CircularButton';
 import { AddNewButton } from '../../components/ui/ActionButton';
+import WarningModal from '../../components/popup/WarningModal';
+import { saveTableRow } from '../../lib/tableRowStorage';
 
 interface Vehicle {
   id: number;
@@ -41,6 +43,9 @@ const sampleVehicles: Vehicle[] = [
 
 export default function VehiclePage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [vehicles, setVehicles] = useState(sampleVehicles);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const router = useRouter();
 
   const handleAddNew = () => {
@@ -49,8 +54,23 @@ export default function VehiclePage() {
   };
 
   const handleEdit = (vehicle: Vehicle) => {
-    
+    saveTableRow('vehicle', vehicle);
     router.push('/vehicle/edit-vehicle');
+  };
+
+  const handleDelete = (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedVehicle) {
+      return;
+    }
+
+    setVehicles((prev) => prev.filter((vehicle) => vehicle.id !== selectedVehicle.id));
+    setDeleteModalOpen(false);
+    setSelectedVehicle(null);
   };
 
   const columns: Column<Vehicle>[] = [
@@ -77,7 +97,12 @@ export default function VehiclePage() {
     { 
       key: 'action', 
       header: 'Action',
-      render: (_, row) => <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+      render: (_, row) => (
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+          <CircularButton imagePath="/icons/Delete Button.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+        </div>
+      )
     },
   ];
 
@@ -88,12 +113,19 @@ export default function VehiclePage() {
       </div>
       <DataTable<Vehicle>
         columns={columns}
-        data={sampleVehicles}
+        data={vehicles}
         showAddButton={false}
         currentPage={currentPage}
         totalPages={3}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status}
+      />
+      <WarningModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Vehicle"
+        message="Are you sure you want to delete this vehicle? This action cannot be undone."
       />
     </DashboardLayout>
   );

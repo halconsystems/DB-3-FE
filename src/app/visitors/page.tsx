@@ -6,6 +6,8 @@ import DataTable, { StatusBadge, Column } from '../../components/tables/DataTabl
 import CircularButton from '../../components/ui/CircularButton';
 import { AddNewButton } from '../../components/ui/ActionButton';
 import HostDetailsModal from '../../components/ui/components/HostDetailsModal';
+import WarningModal from '../../components/popup/WarningModal';
+import { saveTableRow } from '../../lib/tableRowStorage';
 
 interface Visitor {
   id: number;
@@ -86,8 +88,11 @@ const sampleVisitors: Visitor[] = [
 
 export default function VisitorsPage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [visitors, setVisitors] = useState(sampleVisitors);
   const [hostModalOpen, setHostModalOpen] = useState(false);
   const [selectedHost, setSelectedHost] = useState<any>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null);
   const router = useRouter();
 
   const handleAddNew = () => {
@@ -95,7 +100,23 @@ export default function VisitorsPage() {
   };
 
   const handleEdit = (visitor: Visitor) => {
+    saveTableRow('visitors', visitor);
     router.push('/visitors/edit-visitor');
+  };
+
+  const handleDelete = (visitor: Visitor) => {
+    setSelectedVisitor(visitor);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedVisitor) {
+      return;
+    }
+
+    setVisitors((prev) => prev.filter((visitor) => visitor.id !== selectedVisitor.id));
+    setDeleteModalOpen(false);
+    setSelectedVisitor(null);
   };
 
   const handleHostClick = (row: Visitor) => {
@@ -131,7 +152,12 @@ export default function VisitorsPage() {
     {
       key: 'action',
       header: 'Action',
-      render: (_, row) => <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />,
+      render: (_, row) => (
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+          <CircularButton imagePath="/icons/Delete Button.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+        </div>
+      ),
     },
   ];
 
@@ -142,7 +168,7 @@ export default function VisitorsPage() {
       </div>
       <DataTable<Visitor>
         columns={columns}
-        data={sampleVisitors}
+        data={visitors}
         showAddButton={false}
         currentPage={currentPage}
         totalPages={3}
@@ -150,6 +176,13 @@ export default function VisitorsPage() {
         getRowStatus={(row) => row.status}
       />
       <HostDetailsModal open={hostModalOpen} onClose={() => setHostModalOpen(false)} host={selectedHost || { id: '', name: '', phone: '', address: '', imageUrl: '' }} />
+      <WarningModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Visitor"
+        message="Are you sure you want to delete this visitor? This action cannot be undone."
+      />
     </DashboardLayout>
   );
 }

@@ -1,8 +1,9 @@
 'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
+import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
 
 
 const luggageFields: ProfileField[] = [
@@ -34,6 +35,13 @@ const mockLuggageData: ProfileFormData = {
 
 export default function EditLuggage() {
   const router = useRouter();
+  const [initialValues, setInitialValues] = useState<ProfileFormData>(mockLuggageData);
+
+  useEffect(() => {
+    const selected = getTableRow<ProfileFormData>('luggage');
+    setInitialValues({ ...mockLuggageData, ...(selected ?? {}) });
+    clearTableRow('luggage');
+  }, []);
 
   const handleSave = (data: ProfileFormData) => {
     
@@ -48,7 +56,7 @@ export default function EditLuggage() {
           onSave={handleSave}
           onCancel={() => router.back()}
           fields={luggageFields}
-          initialValues={mockLuggageData}
+          initialValues={initialValues}
           saveButtonText='Edit'
           cancelButtonText="Cancel"
         />

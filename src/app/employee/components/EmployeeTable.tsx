@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
+import WarningModal from '../../../components/popup/WarningModal';
+import { saveTableRow } from '../../../lib/tableRowStorage';
 
 export interface Employee {
   id: number;
@@ -49,15 +51,30 @@ export default function EmployeeTable({
   addButtonLabel
 }: EmployeeTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [employees, setEmployees] = useState(sampleEmployees);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const router = useRouter();
 
   const handleEdit = (item: Employee) => {
+    saveTableRow('employee', item);
     router.push('/employee/edit-employee');
   };
 
   const handleDelete = (item: Employee) => {
-    console.log('Delete item:', item);
-  }
+    setSelectedEmployee(item);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedEmployee) {
+      return;
+    }
+
+    setEmployees((prev) => prev.filter((employee) => employee.id !== selectedEmployee.id));
+    setDeleteModalOpen(false);
+    setSelectedEmployee(null);
+  };
 
   const employeeColumns: Column<Employee>[] = [
     { key: 'employeeName', header: 'Employee Name' },
@@ -87,12 +104,13 @@ export default function EmployeeTable({
   ];
 
   return (
+    <>
     <DataTable<Employee>
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={onTabChange}
       columns={employeeColumns}
-      data={sampleEmployees}
+      data={employees}
       showAddButton={false}
       currentPage={currentPage}
       totalPages={3}
@@ -104,5 +122,13 @@ export default function EmployeeTable({
         </div>
       }
     />
+    <WarningModal
+      isOpen={deleteModalOpen}
+      onClose={() => setDeleteModalOpen(false)}
+      onConfirm={handleConfirmDelete}
+      title="Delete Employee"
+      message="Are you sure you want to delete this employee? This action cannot be undone."
+    />
+    </>
   );
 }

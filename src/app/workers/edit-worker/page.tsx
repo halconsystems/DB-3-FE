@@ -1,8 +1,9 @@
 'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
+import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
 
 // Fields for Edit Worker (same as Add Worker)
 const workerFields: ProfileField[] = [
@@ -50,6 +51,13 @@ const mockWorkerData: ProfileFormData = {
 
 export default function EditWorker() {
   const router = useRouter();
+  const [initialValues, setInitialValues] = useState<ProfileFormData>(mockWorkerData);
+
+  useEffect(() => {
+    const selected = getTableRow<ProfileFormData>('workers');
+    setInitialValues({ ...mockWorkerData, ...(selected ?? {}) });
+    clearTableRow('workers');
+  }, []);
 
   const handleSave = (data: ProfileFormData) => {
     // Save logic here
@@ -65,7 +73,7 @@ export default function EditWorker() {
           onCancel={() => router.back()}
           saveButtonText='Edit'
           fields={workerFields}
-          initialValues={mockWorkerData}
+          initialValues={initialValues}
         />
       </div>
     </DashboardLayout>

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
+import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
 
 const vendorFields: ProfileField[] = [
   { name: 'businessName', label: 'Business Name', type: 'text', required: true, placeholder: 'Business Name here' },
@@ -30,10 +31,9 @@ export default function EditVendor() {
   const [initialValues, setInitialValues] = useState<ProfileFormData | null>(null);
 
   useEffect(() => {
-    
-    setTimeout(() => {
-      setInitialValues(mockVendorData);
-    }, 500);
+    const selected = getTableRow<ProfileFormData>('vendor-supplier');
+    setInitialValues({ ...mockVendorData, ...(selected ?? {}) });
+    clearTableRow('vendor-supplier');
   }, []);
 
   const handleUpdate = (data: ProfileFormData) => {

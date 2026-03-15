@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useState, ReactNode } from 'react';
 import styles from './DataTable.module.css';
+import Loader from '../ui/loader';
 
 export interface Column<T> {
   key: keyof T | string;
@@ -196,7 +197,7 @@ export default function DataTable<T extends Record<string, any>>({
 
       <div className={styles.tableWrapper}>
         {loading ? (
-          <div className={styles.loading}>Loading...</div>
+          <div className={styles.loading}><Loader variant="inline" /></div>
         ) : paginatedData.length === 0 ? (
           <div className={styles.emptyState}>{emptyMessage}</div>
         ) : (

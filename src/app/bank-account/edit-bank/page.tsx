@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
+import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
 
 const bankAccountFields: ProfileField[] = [
   { name: 'bankName', label: 'Bank Name', type: 'text', required: true, placeholder: 'Bank Name here' },
@@ -26,10 +27,9 @@ export default function EditBankAccount() {
   const [initialValues, setInitialValues] = useState<ProfileFormData | null>(null);
 
   useEffect(() => {
-    
-    setTimeout(() => {
-      setInitialValues(mockBankAccountData);
-    }, 500);
+    const selected = getTableRow<ProfileFormData>('bank-account');
+    setInitialValues({ ...mockBankAccountData, ...(selected ?? {}) });
+    clearTableRow('bank-account');
   }, []);
 
   const handleUpdate = (data: ProfileFormData) => {

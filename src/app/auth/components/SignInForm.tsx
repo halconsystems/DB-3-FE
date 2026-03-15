@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLogin } from "../../../hooks/useLogin";
+import Loader from "../../../components/ui/loader";
 
 export default function SignInForm() {
   const router = useRouter();
@@ -15,6 +16,10 @@ export default function SignInForm() {
 
   const [formError, setFormError] = useState("");
   const { mutate: login, isPending } = useLogin();
+
+  if (isPending) {
+    return <Loader />;
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

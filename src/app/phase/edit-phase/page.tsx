@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
+import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
 
 const phaseFields: ProfileField[] = [
   { name: 'phaseName', label: 'Phase Name', type: 'text', required: true, placeholder: 'Phase Name here' },
@@ -18,10 +19,9 @@ export default function EditPhase() {
   const [initialValues, setInitialValues] = useState<ProfileFormData | null>(null);
 
   useEffect(() => {
-    
-    setTimeout(() => {
-      setInitialValues(mockPhaseData);
-    }, 500);
+    const selected = getTableRow<ProfileFormData>('phase');
+    setInitialValues({ ...mockPhaseData, ...(selected ?? {}) });
+    clearTableRow('phase');
   }, []);
 
   const handleUpdate = (data: ProfileFormData) => {

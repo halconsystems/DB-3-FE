@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
+import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
 
 const employeeFields: ProfileField[] = [
   { name: 'fullName', label: 'Employee Name', type: 'text', required: true, placeholder: 'Employee Name here' },
@@ -34,10 +35,9 @@ export default function EditEmployee() {
   const [initialValues, setInitialValues] = useState<ProfileFormData | null>(null);
 
   useEffect(() => {
-    
-    setTimeout(() => {
-      setInitialValues(mockEmployeeData);
-    }, 500);
+    const selected = getTableRow<ProfileFormData>('employee');
+    setInitialValues({ ...mockEmployeeData, ...(selected ?? {}) });
+    clearTableRow('employee');
   }, []);
 
   const handleUpdate = (data: ProfileFormData) => {

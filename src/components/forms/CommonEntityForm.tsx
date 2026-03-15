@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import styles from './ProfileForm.module.css';
+import SuccessModal from '../popup/SuccessModal';
+import Loader from '../ui/loader';
 import type { ProfileField, ProfileFormData } from './FormTypes';
 import {
   DateInputField,
@@ -15,7 +17,7 @@ export type { ProfileField, ProfileFormData } from './FormTypes';
 
 interface CommonEntityFormProps {
   onCancel?: () => void;
-  onSave?: (data: ProfileFormData) => void;
+  onSave?: (data: ProfileFormData) => void | Promise<void>;
   initialValues?: Partial<ProfileFormData>;
   title?: string;
   saveButtonText?: string;
@@ -38,6 +40,7 @@ export default function CommonEntityForm({
 }: CommonEntityFormProps) {
   
   const pathname = usePathname();
+  const router = useRouter();
   let pageName = pathname.split('/')[1] ?? '';
   pageName = pageName.charAt(0).toUpperCase() + pageName.slice(1);
 
@@ -48,6 +51,8 @@ export default function CommonEntityForm({
 
   const [formData, setFormData] = useState<ProfileFormData>({ ...initialValues });
   const [isActive, setIsActive] = useState(initialValues.isActive ?? true);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = event.target;
@@ -65,9 +70,17 @@ export default function CommonEntityForm({
     setFormData((prev) => ({ ...prev, [field]: file }));
   };
 
-  const handleSubmit = () => {
-    if (onSave) {
-      onSave({ ...formData, isActive });
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+
+    try {
+      if (onSave) {
+        await onSave({ ...formData, isActive });
+      }
+
+      setShowSuccess(true);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -182,7 +195,16 @@ export default function CommonEntityForm({
     );
   }
 
-  return (
+  const isEditMode = saveButtonText.toLowerCase().includes('edit');
+
+  if (loading || isSubmitting) {
+    return <Loader />;
+  }
+
+
+
+    return (
+    <>
     <div className={styles.formContainer}>
       <div className={styles.formHeader}>
         <h2 className={styles.formTitle}>{title}</h2>
@@ -219,6 +241,16 @@ export default function CommonEntityForm({
         </button>
       </div>
     </div>
+    <SuccessModal
+      isOpen={showSuccess}
+      onClose={() => {
+        setShowSuccess(false);
+        router.back();
+      }}
+      title={isEditMode ? 'Record Updated' : 'Record Added'}
+      message={isEditMode ? 'The record has been updated successfully.' : 'The record has been added successfully.'}
+    />
+    </>
   );
 }
 

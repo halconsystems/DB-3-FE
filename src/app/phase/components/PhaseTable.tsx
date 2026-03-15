@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
+import WarningModal from '../../../components/popup/WarningModal';
+import { saveTableRow } from '../../../lib/tableRowStorage';
 
 export interface Phase {
   id: number;
@@ -60,13 +62,28 @@ export default function VendorTable({
   addButtonLabel
 }: VendorTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [phases, setPhases] = useState(samplePhases);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedPhase, setSelectedPhase] = useState<Phase | null>(null);
   const router = useRouter();
 
   const handleEdit = (item: Phase) => {
+    saveTableRow('phase', item);
     router.push('/phase/edit-phase');
   };
   const handleDelete = (item: Phase) => {
-    
+    setSelectedPhase(item);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedPhase) {
+      return;
+    }
+
+    setPhases((prev) => prev.filter((phase) => phase.id !== selectedPhase.id));
+    setDeleteModalOpen(false);
+    setSelectedPhase(null);
   };
   const phaseColumns: Column<Phase>[] = [
     { key: 'phaseName', header: 'Phase Name' },
@@ -89,12 +106,13 @@ export default function VendorTable({
   ];
 
   return (
+    <>
     <DataTable<Phase>
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={onTabChange}
       columns={phaseColumns}
-      data={samplePhases}
+      data={phases}
       showAddButton={false}
       currentPage={currentPage}
       totalPages={3}
@@ -106,5 +124,13 @@ export default function VendorTable({
         </div>
       }
     />
+    <WarningModal
+      isOpen={deleteModalOpen}
+      onClose={() => setDeleteModalOpen(false)}
+      onConfirm={handleConfirmDelete}
+      title="Delete Phase"
+      message="Are you sure you want to delete this phase? This action cannot be undone."
+    />
+    </>
   );
 }

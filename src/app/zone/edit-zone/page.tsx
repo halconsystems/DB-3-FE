@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
+import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
 
 const zoneFields: ProfileField[] = [
   { name: 'zoneName', label: 'Zone Name', type: 'text', required: true, placeholder: 'Zone Name here' },
@@ -18,10 +19,9 @@ export default function EditZone() {
   const [initialValues, setInitialValues] = useState<ProfileFormData | null>(null);
 
   useEffect(() => {
-    // Replace this with real API call to fetch Zone data by ID
-    setTimeout(() => {
-      setInitialValues(mockZoneData);
-    }, 500);
+    const selected = getTableRow<ProfileFormData>('zone');
+    setInitialValues({ ...mockZoneData, ...(selected ?? {}) });
+    clearTableRow('zone');
   }, []);
 
   const handleUpdate = (data: ProfileFormData) => {

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRegister } from "../../../hooks/useRegister";
 import { ToastContainer } from "../../../components/ui/toast";
+import Loader from "../../../components/ui/loader";
 
 interface SignUpFormProps {
   onDocumentUpload?: () => void;
@@ -26,6 +27,10 @@ export default function SignUpForm({ onDocumentUpload }: SignUpFormProps) {
   };
 
   const { mutate: register, isPending } = useRegister();
+
+  if (isPending) {
+    return <Loader />;
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

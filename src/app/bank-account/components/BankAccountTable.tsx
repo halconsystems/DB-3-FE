@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
+import WarningModal from '../../../components/popup/WarningModal';
+import { saveTableRow } from '../../../lib/tableRowStorage';
 export interface BankAccount {
   id: number;
   bankName: string;
@@ -43,14 +45,29 @@ export default function BankAccountTable({
   addButtonLabel 
 }: BankAccountTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [bankAccounts, setBankAccounts] = useState(sampleBankAccounts);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
   const router = useRouter();
 
   const handleEdit = (item: BankAccount) => {
+    saveTableRow('bank-account', item);
     router.push('/bank-account/edit-bank');
   };
 
   const handleDelete = (item: BankAccount) => {
-    console.log('Delete item:', item);
+    setSelectedAccount(item);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedAccount) {
+      return;
+    }
+
+    setBankAccounts((prev) => prev.filter((account) => account.id !== selectedAccount.id));
+    setDeleteModalOpen(false);
+    setSelectedAccount(null);
   };
 
   const bankAccountColumns: Column<BankAccount>[] = [
@@ -78,12 +95,13 @@ export default function BankAccountTable({
   ];
 
   return (
+    <>
     <DataTable<BankAccount>
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={onTabChange}
       columns={bankAccountColumns}
-      data={sampleBankAccounts}
+      data={bankAccounts}
       showAddButton={false}
       currentPage={currentPage}
       totalPages={3}
@@ -95,5 +113,13 @@ export default function BankAccountTable({
         </div>
       }
     />
+    <WarningModal
+      isOpen={deleteModalOpen}
+      onClose={() => setDeleteModalOpen(false)}
+      onConfirm={handleConfirmDelete}
+      title="Delete Bank Account"
+      message="Are you sure you want to delete this bank account? This action cannot be undone."
+    />
+    </>
   );
 }

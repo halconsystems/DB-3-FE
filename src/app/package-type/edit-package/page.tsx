@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
+import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
 
 const packageFields: ProfileField[] = [
   { name: 'packageName', label: 'Package Name', type: 'text', required: true, placeholder: 'Package Name here' },
@@ -22,10 +23,9 @@ export default function EditPackageType() {
   const [initialValues, setInitialValues] = useState<ProfileFormData | null>(null);
 
   useEffect(() => {
-    
-    setTimeout(() => {
-      setInitialValues(mockPackageData);
-    }, 500);
+    const selected = getTableRow<ProfileFormData>('package-type');
+    setInitialValues({ ...mockPackageData, ...(selected ?? {}) });
+    clearTableRow('package-type');
   }, []);
 
   const handleUpdate = (data: ProfileFormData) => {

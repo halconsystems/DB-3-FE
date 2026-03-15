@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
+import WarningModal from '../../../components/popup/WarningModal';
+import { saveTableRow } from '../../../lib/tableRowStorage';
 
 export interface Vendor {
   id: number;
@@ -66,13 +68,28 @@ export default function VendorTable({
   addButtonLabel
 }: VendorTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [vendors, setVendors] = useState(sampleVendors);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const router = useRouter();
 
   const handleEdit = (item: Vendor) => {
+    saveTableRow('vendor-supplier', item);
     router.push('/vendor-supplier/edit-vendor');
   };
   const handleDelete = (item: Vendor) => {
-    
+    setSelectedVendor(item);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedVendor) {
+      return;
+    }
+
+    setVendors((prev) => prev.filter((vendor) => vendor.id !== selectedVendor.id));
+    setDeleteModalOpen(false);
+    setSelectedVendor(null);
   };
   const vendorColumns: Column<Vendor>[] = [
     { key: 'businessName', header: 'Business Name' },
@@ -101,12 +118,13 @@ export default function VendorTable({
   ];
 
   return (
+    <>
     <DataTable<Vendor>
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={onTabChange}
       columns={vendorColumns}
-      data={sampleVendors}
+      data={vendors}
       showAddButton={false}
       currentPage={currentPage}
       totalPages={3}
@@ -118,5 +136,13 @@ export default function VendorTable({
         </div>
       }
     />
+    <WarningModal
+      isOpen={deleteModalOpen}
+      onClose={() => setDeleteModalOpen(false)}
+      onConfirm={handleConfirmDelete}
+      title="Delete Vendor"
+      message="Are you sure you want to delete this vendor? This action cannot be undone."
+    />
+    </>
   );
 }

@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
+import WarningModal from '../../../components/popup/WarningModal';
+import { saveTableRow } from '../../../lib/tableRowStorage';
 
 export interface PackageType {
   id: number;
@@ -62,13 +64,28 @@ export default function VendorTable({
   addButtonLabel
 }: VendorTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [packages, setPackages] = useState(samplePackages);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<PackageType | null>(null);
   const router = useRouter();
 
   const handleEdit = (item: PackageType) => {
+    saveTableRow('package-type', item);
     router.push('/package-type/edit-package');
   };
   const handleDelete = (item: PackageType) => {
-    
+    setSelectedPackage(item);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedPackage) {
+      return;
+    }
+
+    setPackages((prev) => prev.filter((pkg) => pkg.id !== selectedPackage.id));
+    setDeleteModalOpen(false);
+    setSelectedPackage(null);
   };
   const packageColumns: Column<PackageType>[] = [
     { key: 'packageName', header: 'Package Name' },
@@ -93,12 +110,13 @@ export default function VendorTable({
   ];
 
   return (
+    <>
     <DataTable<PackageType>
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={onTabChange}
       columns={packageColumns}
-      data={samplePackages}
+      data={packages}
       showAddButton={false}
       currentPage={currentPage}
       totalPages={3}
@@ -110,5 +128,13 @@ export default function VendorTable({
         </div>
       }
     />
+    <WarningModal
+      isOpen={deleteModalOpen}
+      onClose={() => setDeleteModalOpen(false)}
+      onConfirm={handleConfirmDelete}
+      title="Delete Package"
+      message="Are you sure you want to delete this package? This action cannot be undone."
+    />
+    </>
   );
 }

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
+import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
 
 
 const cpAgentFields: ProfileField[] = [
@@ -53,10 +54,9 @@ export default function EditCpAgent() {
   const [initialValues, setInitialValues] = useState<ProfileFormData | null>(null);
 
   useEffect(() => {
-    
-    setTimeout(() => {
-      setInitialValues(mockCpAgentData);
-    }, 500);
+    const selected = getTableRow<ProfileFormData>('cp-agent');
+    setInitialValues({ ...mockCpAgentData, ...(selected ?? {}) });
+    clearTableRow('cp-agent');
   }, []);
 
   const handleUpdate = (data: ProfileFormData) => {

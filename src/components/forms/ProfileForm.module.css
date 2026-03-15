@@ -404,7 +404,6 @@
   width: 269px;
   height: 44px;
   padding: 0;
-  background: var(--primary);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -413,7 +412,7 @@
   cursor: pointer;
   transition: background 0.2s;
   box-shadow: 4.98px 4.98px 14.94px 0px rgba(187, 195, 206, 0.6), -4.98px -4.98px 14.94px 0px rgba(253, 255, 255, 0.8);
-
+  background: var(--primary);
 }
 
 .saveButton:hover {
