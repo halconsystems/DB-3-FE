@@ -1,22 +1,26 @@
 
 import styles from "./DashboardComponents.module.css";
+import { useSyncSummary } from "../../../hooks/useSyncSummary";
 
 export default function StatsCards() {
-  const stats = [
-    { title: "Total CP/Agents", value: "05", iconPath: "/icons/Stats/Stats.CPAgents.svg", iconAlt: "Total CP Agents" },
-    { title: "Members Register", value: "3200", iconPath: "/icons/Stats/Stats.Member.svg", iconAlt: "Members Register" },
-    { title: "Active Package", value: "2800", iconPath: "/icons/Stats/Stats.Active.svg", iconAlt: "Active Package" },
-    { title: "Total Employees", value: "890", iconPath: "/icons/Stats/Stats.Employees.svg", iconAlt: "Total Employees" },
-    { title: "Total Vendors/Suppliers", value: "321", iconPath: "/icons/Stats/Stats.Vendor.svg", iconAlt: "Total Vendors Suppliers" },
-    { title: "Total Bank Accounts", value: "2901", iconPath: "/icons/Stats/Stats.Bank.svg", iconAlt: "Total Bank Accounts" },
-    { title: "Total Phases", value: "08", iconPath: "/icons/Stats/Stats.Phases.svg", iconAlt: "Total Phases" },
-    { title: "Total Zones", value: "16", iconPath: "/icons/Stats/Stats.Zones.svg", iconAlt: "Total Zones" },
+  const { data, isLoading, isError } = useSyncSummary();
+
+  const syncStats = [
+    { title: "Total Records", value: data?.data.totalRecords ?? "-", iconPath: "/icons/Stats/Stats.CPAgents.svg", iconAlt: "Total Records" },
+    { title: "Total Success", value: data?.data.totalSuccess ?? "-", iconPath: "/icons/Stats/Stats.Member.svg", iconAlt: "Total Success" },
+    { title: "Total Failed", value: data?.data.totalFailed ?? "-", iconPath: "/icons/Stats/Stats.Active.svg", iconAlt: "Total Failed" },
+    { title: "Total Pending Retry", value: data?.data.totalPendingRetry ?? "-", iconPath: "/icons/Stats/Stats.Employees.svg", iconAlt: "Total Pending Retry" },
   ];
+
+  // You can combine with your existing stats if needed
+
+  if (isLoading) return <div>Loading sync summary...</div>;
+  if (isError) return <div>Failed to load sync summary.</div>;
 
   return (
     <div className={styles.statsContainer}>
       <div className={styles.statsGrid}>
-        {stats.map((item, i) => (
+        {syncStats.map((item, i) => (
           <div key={i} className={styles.statsCard}>
             <div className={styles.statsIconBox}>
               <img src={item.iconPath} alt={item.iconAlt} className={styles.statsIconImg} />

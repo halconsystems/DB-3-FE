@@ -1,11 +1,11 @@
 'use client';
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useLogin } from "../../../hooks/useLogin";
-import Loader from "../../../components/ui/loader";
-
-export default function SignInForm() {
+interface SignInFormProps {
+  login: (data: { email: string; password: string }, options: any) => void;
+  isPending: boolean;
+}
+export default function SignInForm({ login, isPending }: SignInFormProps) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -13,13 +13,9 @@ export default function SignInForm() {
     password: '',
     remember: false
   });
-
   const [formError, setFormError] = useState("");
-  const { mutate: login, isPending } = useLogin();
 
-  if (isPending) {
-    return <Loader />;
-  }
+  if (isPending) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,9 +90,8 @@ export default function SignInForm() {
       </div>
 
       <button type="submit" className="auth_button" disabled={isPending || !formData.remember}>
-        {isPending ? "Signing In..." : "Sign In"}
+        Sign In
       </button>
-
 
       <p className="auth_text">Don't have an account? <a href="/auth/sign-up" className="auth_link">Sign Up</a></p>
       </form>
