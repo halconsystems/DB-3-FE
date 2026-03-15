@@ -52,6 +52,7 @@ export default function CpAgentTable({
   const [cpAgents, setCpAgents] = useState(sampleCpAgents);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<CpAgent | null>(null);
+
   const router = useRouter();
 
   const handleEdit = (item: CpAgent) => {

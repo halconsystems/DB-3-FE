@@ -99,7 +99,7 @@ export interface ProfileFormData {
 export interface ProfileField {
   name: keyof ProfileFormData;
   label: string;
-  type: 'text' | 'email' | 'password' | 'select' | 'date' | 'file' | 'toggle';
+  type: 'text' | 'email' | 'password' | 'select' | 'date' | 'file' | 'toggle' | 'radio';
   required?: boolean;
   placeholder?: string;
   options?: { value: string; label: string }[];

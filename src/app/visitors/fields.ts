@@ -6,8 +6,8 @@ export const visitorFields: ProfileField[] = [
   { name: 'vehicleNo', label: 'Vehicle No', type: 'text', required: false, placeholder: 'ABC Only' , sameCellColumns: 2, sameCellKey: 'vehicleNoGroup', fieldWidth: '100%' },
   { name: 'vehicleNo2', label: 'Vehicle No', type: 'text', required: false, placeholder: 'Number Only' , sameCellKey: 'vehicleNoGroup', fieldWidth: '100%' },
   { name: 'licensePlate', label: 'License Plate', type: 'text', required: false, placeholder: 'ABC-123' },
-  { name: 'qrReference', label: 'QR Reference', type: 'text', required: false, placeholder: 'Type here' },
-  { name: 'quickPick', label: 'Quick Pick', type: 'select', required: true, options: [ { value: 'day', label: 'Day Pass' }, { value: 'long', label: 'Long Stay' } ] },
+  { name: 'qrReference', label: 'QR Reference', type: 'text', required: false, placeholder: 'Type here'},
+  { name: 'quickPick', label: 'Quick Pick', type: 'radio', required: true, colSpan: 2, options: [ { value: 'day', label: 'Day Pass' }, { value: 'long', label: 'Long Stay' } ] },
   { name: 'fromDate', label: 'From Date', type: 'date', required: false, placeholder: 'Select Date' },
   { name: 'toDate', label: 'To Date', type: 'date', required: false, placeholder: 'Select Date' },
 ];

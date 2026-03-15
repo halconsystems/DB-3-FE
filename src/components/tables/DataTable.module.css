@@ -1,9 +1,7 @@
 .container {
-  /* background: var(--background_first); */
-  /* border-radius: 12px; */
+  max-width: 75vw;
   padding: 0;
   width: 100%;
-  max-width: 75vw;
   overflow-x: auto;
 }
 

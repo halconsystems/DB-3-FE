@@ -14,7 +14,7 @@ const luggageFields: ProfileField[] = [
   { name: 'licensePlate', label: 'License Plate', type: 'text', required: false, placeholder: 'ABC-123' },
   { name: 'qrReference', label: 'QR Reference', type: 'text', required: false, placeholder: 'Type here' },
   { name: 'status', label: 'Status', type: 'select', required: false, options: [ { value: '', label: 'Select here' }, { value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' } ] },
-  { name: 'quickPick', label: 'Quick Pick', type: 'select', required: true, options: [ { value: 'dayPass', label: 'Day Pass' }, { value: 'longStay', label: 'Long Stay' } ] },
+  { name: 'quickPick', label: 'Quick Pick', type: 'radio', required: true, colSpan: 2, options: [ { value: 'dayPass', label: 'Day Pass' }, { value: 'longStay', label: 'Long Stay' } ] },
   { name: 'fromDate', label: 'From Date', type: 'date', required: false, placeholder: 'Select Date' },
   { name: 'toDate', label: 'To Date', type: 'date', required: false, placeholder: 'Select Date' },
 ];
@@ -50,7 +50,7 @@ export default function EditLuggage() {
 
   return (
     <DashboardLayout pageTitle="Edit Luggage">
-      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+      <div style={{ margin: '0 auto' }}>
         <CommonEntityForm
           title="Please update details below!"
           onSave={handleSave}

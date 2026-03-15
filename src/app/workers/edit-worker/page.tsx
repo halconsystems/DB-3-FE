@@ -66,7 +66,7 @@ export default function EditWorker() {
 
   return (
     <DashboardLayout pageTitle="Edit Worker">
-      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+      <div style={{ margin: '0 auto' }}>
         <CommonEntityForm
           title="Please update details below!"
           onSave={handleSave}

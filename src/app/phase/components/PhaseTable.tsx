@@ -65,6 +65,7 @@ export default function VendorTable({
   const [phases, setPhases] = useState(samplePhases);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedPhase, setSelectedPhase] = useState<Phase | null>(null);
+
   const router = useRouter();
 
   const handleEdit = (item: Phase) => {

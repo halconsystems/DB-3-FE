@@ -71,6 +71,7 @@ export default function VendorTable({
   const [vendors, setVendors] = useState(sampleVendors);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
+
   const router = useRouter();
 
   const handleEdit = (item: Vendor) => {

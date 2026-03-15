@@ -42,6 +42,11 @@ interface ToggleFieldProps extends SharedFieldProps {
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
+interface RadioFieldProps extends SharedFieldProps {
+  value: string;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
 interface FileFieldProps extends SharedFieldProps {
   formData: Partial<ProfileFormData>;
   onFileChange: (event: React.ChangeEvent<HTMLInputElement>, field: keyof ProfileFormData) => void;
@@ -176,6 +181,38 @@ export function ToggleInputField({ field, checked, onChange, styles, wrapperClas
         checked={checked}
         onChange={onChange}
       />
+    </div>
+  );
+}
+
+export function RadioCardInputField({ field, value, onChange, styles, wrapperClassName }: RadioFieldProps) {
+  const options = field.options ?? [];
+
+  return (
+    <div className={`${styles.capsule} ${styles.radioCapsule} ${wrapperClassName ?? ''}`.trim()} style={getWrapperStyle(field)}>
+      <label className={styles.formTitle + " " + (field.required ? styles.radioRed : '')}>{field.label}</label>
+      <div className={styles.radioCards}>
+        {options.map((option) => {
+          const radioId = `${field.name}-${option.value}`;
+          const isChecked = value === option.value;
+
+          return (
+            <label key={option.value} style={{flexDirection: "row", justifyContent:"flex-start", gap: "16px", alignItems: "center"}} htmlFor={radioId} className={`${styles.capsule} ${isChecked ? styles.radioCardActive : ''}`.trim()}>
+              <input
+                id={radioId}
+                type="radio"
+                name={field.name}
+                value={option.value}
+                checked={isChecked}
+                onChange={onChange}
+                className={styles.radioInput}
+              />
+              <span className={styles.radioIndicator} aria-hidden="true" />
+              <span className={styles.radioLabel}>{option.label}</span>
+            </label>
+          );
+        })}
+      </div>
     </div>
   );
 }

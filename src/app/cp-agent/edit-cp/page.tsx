@@ -66,7 +66,7 @@ export default function EditCpAgent() {
 
   return (
     <DashboardLayout pageTitle="Edit CP Agent">
-      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+      <div style={{ margin: '0 auto' }}>
         {initialValues && (
           <CommonEntityForm
             title="Please update details below!"

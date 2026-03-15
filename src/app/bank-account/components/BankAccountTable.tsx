@@ -48,6 +48,7 @@ export default function BankAccountTable({
   const [bankAccounts, setBankAccounts] = useState(sampleBankAccounts);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
+
   const router = useRouter();
 
   const handleEdit = (item: BankAccount) => {

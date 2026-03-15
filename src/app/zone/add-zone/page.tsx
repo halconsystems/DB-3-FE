@@ -30,7 +30,7 @@ export default function AddNewZone() {
 
   return (
     <DashboardLayout pageTitle="Add New Zone">
-      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+      <div style={{ margin: '0 auto' }}>
         {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {successMsg && <div style={{ color: 'green', marginBottom: 12 }}>{successMsg}</div>}
         <CommonEntityForm

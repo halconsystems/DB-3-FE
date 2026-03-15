@@ -54,6 +54,7 @@ export default function EmployeeTable({
   const [employees, setEmployees] = useState(sampleEmployees);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+
   const router = useRouter();
 
   const handleEdit = (item: Employee) => {

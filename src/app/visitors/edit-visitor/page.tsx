@@ -23,7 +23,7 @@ export default function EditVisitor() {
 
   return (
     <DashboardLayout pageTitle="Edit Visitor">
-      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+      <div style={{ margin: '0 auto' }}>
         <CommonEntityForm
           title="Please update details below!"
           onSave={handleSave}

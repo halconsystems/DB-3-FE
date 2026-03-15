@@ -57,7 +57,6 @@ export default function ResidentialPage() {
   const [selectedHost, setSelectedHost] = useState<any>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
-
   const router = useRouter();
 
   const handleAddNew = () => {
@@ -96,6 +95,11 @@ export default function ResidentialPage() {
     setHostModalOpen(true);
   };
 
+  const handleFamilyClick = (member: Member) => {
+    saveTableRow('residential', member);
+    router.push('/residential/Family');
+  };
+
   const columns: Column<Member>[] = [
     { key: 'name', header: 'Name' },
     { key: 'email', header: 'Email' },
@@ -118,6 +122,13 @@ export default function ResidentialPage() {
     {
       key: 'cardStatus', header: 'Card Status',
       render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
+    },
+    {
+      key: 'family',
+      header: 'Family',
+      render: (_, row) => (
+        <CircularButton imagePath="/icons/host.svg" imageAlt="Family" width={32} height={32} onClick={() => handleFamilyClick(row)} />
+      )
     },
     {
       key: 'action',

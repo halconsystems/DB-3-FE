@@ -31,7 +31,7 @@ export default function EditZone() {
 
   return (
     <DashboardLayout pageTitle="Edit Zone">
-      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+      <div style={{ margin: '0 auto' }}>
         {initialValues && (
           <CommonEntityForm
             title="Please update details below!"

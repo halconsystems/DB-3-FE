@@ -11,7 +11,7 @@ export default function AddNewWorker() {
 
   return (
     <DashboardLayout pageTitle="Add New Worker">
-      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+      <div style={{ margin: '0 auto' }}>
         <CommonEntityForm
           title="Please provide details below!"
           onSave={handleSave}

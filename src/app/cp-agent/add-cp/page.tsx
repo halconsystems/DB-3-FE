@@ -12,7 +12,7 @@ export default function AddNewCpAgent() {
 
   return (
     <DashboardLayout pageTitle="Add New CP Agent">
-      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+      <div style={{ margin: '0 auto' }}>
         {}
         <CommonEntityForm
           title="Please provide details below!"

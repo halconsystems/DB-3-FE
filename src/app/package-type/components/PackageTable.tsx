@@ -67,6 +67,7 @@ export default function VendorTable({
   const [packages, setPackages] = useState(samplePackages);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<PackageType | null>(null);
+
   const router = useRouter();
 
   const handleEdit = (item: PackageType) => {

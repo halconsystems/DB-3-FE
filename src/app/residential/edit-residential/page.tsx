@@ -22,7 +22,7 @@ export default function EditResidential() {
 
   return (
     <DashboardLayout pageTitle="Edit Residential/Commercial">
-      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+      <div style={{ margin: '0 auto' }}>
         <CommonEntityForm
           title="Please update details below!"
           onSave={handleSave}

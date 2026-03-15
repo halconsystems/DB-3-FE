@@ -9,6 +9,7 @@ import type { ProfileField, ProfileFormData } from './FormTypes';
 import {
   DateInputField,
   FileInputField,
+  RadioCardInputField,
   SelectInputField,
   TextInputField,
   ToggleInputField,
@@ -114,6 +115,19 @@ export default function CommonEntityForm({
     if (field.type === 'date') {
       return (
         <DateInputField
+          key={field.name}
+          field={field}
+          value={typeof formData[field.name] === 'string' ? (formData[field.name] as string) : ''}
+          onChange={handleInputChange}
+          styles={styles}
+          wrapperClassName={wrapperClassName}
+        />
+      );
+    }
+
+    if (field.type === 'radio') {
+      return (
+        <RadioCardInputField
           key={field.name}
           field={field}
           value={typeof formData[field.name] === 'string' ? (formData[field.name] as string) : ''}
