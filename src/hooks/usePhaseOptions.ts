@@ -1,5 +1,4 @@
 import { usePhases } from './usePhases';
-
 export function usePhaseOptions() {
   const { data: phases, isLoading, isError } = usePhases();
   const options = phases
