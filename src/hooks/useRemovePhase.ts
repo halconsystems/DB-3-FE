@@ -8,7 +8,7 @@ export function useRemovePhase() {
     Error,
     { id: string; token: string }
   >({
-    mutationFn: async ({ id, token }) => removePhase(id, token),
+    mutationFn: async ({ id, token }) => removePhase(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['phases'] });
     },
