@@ -23,7 +23,7 @@ export default function SignInPage() {
         </div>
       )}
       <div className="auth_left">
-        <img src="/images/signIn.jpg" alt="" />
+        <img src="/images/SignIn.jpg" alt="" />
       </div>
       <div className="auth_right">
         <div className="auth_header">
