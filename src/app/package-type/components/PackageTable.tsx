@@ -44,7 +44,7 @@ const DeleteIcon = ({ onClick }: { onClick: () => void }) => (
       cursor: 'pointer'
     }}
   >
-    <img src="/icons/delete-button.svg" alt="Delete" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+    <img src="/icons/delete Button.svg" alt="Delete" style={{ width: 18, height: 18, objectFit: 'contain' }} />
   </button>
 );
 
@@ -104,7 +104,7 @@ export default function VendorTable({
       render: (_, row) => (
         <div style={{ display: 'flex', gap: '4px' }}>
           <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
-          <CircularButton imagePath="/icons/delete-button.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+          <CircularButton imagePath="/icons/Delete Button.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
         </div>
       )
     },
