@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useZones } from '../../../hooks/useZones';
+import { useDeleteZone } from '../../../hooks/useDeleteZone';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
@@ -47,6 +48,8 @@ export default function VendorTable({
   const [zones, setZones] = useState<(Zone & { phaseName?: string; status: 'Active' | 'Inactive' })[]>([]);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedZone, setSelectedZone] = useState<(Zone & { phaseName?: string; status: 'Active' | 'Inactive' }) | null>(null);
+  const { mutateAsync: deleteZone, status: deleteStatus } = useDeleteZone();
+  const isDeleting = deleteStatus === 'pending';
 
   useEffect(() => {
     if (!data?.data) {
@@ -72,12 +75,15 @@ export default function VendorTable({
     setDeleteModalOpen(true);
   };
 
-  const handleConfirmDelete = () => {
-    if (!selectedZone) {
-      return;
+  const handleConfirmDelete = async () => {
+    if (!selectedZone) return;
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
+      await deleteZone({ id: selectedZone.id, token });
+      setZones((prev) => prev.filter((zone) => zone.id !== selectedZone.id));
+    } catch (err) {
+      // Optionally handle error (toast, etc)
     }
-
-    setZones((prev) => prev.filter((zone) => zone.id !== selectedZone.id));
     setDeleteModalOpen(false);
     setSelectedZone(null);
   };
@@ -125,7 +131,7 @@ export default function VendorTable({
       onClose={() => setDeleteModalOpen(false)}
       onConfirm={handleConfirmDelete}
       title="Delete Zone"
-      message="Are you sure you want to delete this zone? This action cannot be undone."
+      message={isDeleting ? 'Deleting...' : 'Are you sure you want to delete this zone? This action cannot be undone.'}
     />
     </>
   );

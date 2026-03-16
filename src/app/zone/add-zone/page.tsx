@@ -4,13 +4,22 @@ import React, { useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { zoneFields } from '../fields';
-import { useAddZone } from '../hooks/useAddZone';
+import { usePhaseOptions } from '../../../hooks/usePhaseOptions';
+import { useAddZone } from '../../../hooks/useAddZone';
 
 
 export default function AddNewZone() {
   const { addZone, isPending, isSuccess, isError, error, data } = useAddZone();
   const [formError, setFormError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const { options: phaseOptions, isLoading: phasesLoading } = usePhaseOptions();
+
+  // Clone and inject dynamic options into zoneFields
+  const dynamicZoneFields = zoneFields.map((field) =>
+    field.name === 'phase'
+      ? { ...field, options: phaseOptions }
+      : field
+  );
 
   const handleSave = async (formData: ProfileFormData) => {
     setFormError("");
@@ -37,8 +46,8 @@ export default function AddNewZone() {
           title="Please provide details below!"
           onSave={handleSave}
           onCancel={() => window.history.back()}
-          fields={zoneFields}
-          loading={isPending}
+          fields={dynamicZoneFields}
+          loading={isPending || phasesLoading}
           saveButtonText={isPending ? 'Saving...' : 'Add'}
         />
       </div>

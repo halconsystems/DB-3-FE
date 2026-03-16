@@ -1,5 +1,5 @@
-import { useCreateZone } from '../../../hooks/useCreateZone';
-import { CreateZoneRequest } from '../../../services/zone.service';
+import { useCreateZone } from './useCreateZone';
+import { CreateZoneRequest } from '../services/zone.service';
 
 export const useAddZone = () => {
   const createZoneMutation = useCreateZone();

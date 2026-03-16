@@ -1,3 +1,28 @@
+export interface DeleteZoneRequest {
+  id: string;
+}
+
+export interface DeleteZoneResponse {
+  statusCode: number;
+  successMessage: string;
+  errorMessage: string | null;
+}
+
+export const deleteZone = async (
+  id: string,
+  token: string
+): Promise<DeleteZoneResponse> => {
+  const response = await apiClient.post<DeleteZoneResponse>(
+    '/zone/delete-zone',
+    { id },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
 
 export interface CreateZoneRequest {
   name: string;

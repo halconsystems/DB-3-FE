@@ -53,9 +53,21 @@ export default function CommonEntityForm({
   const [formData, setFormData] = useState<ProfileFormData>({ ...initialValues });
   const [isActive, setIsActive] = useState(initialValues.isActive ?? true);
   React.useEffect(() => {
-    setFormData({ ...initialValues });
+    // Only update if initialValues actually changed (shallow compare)
+    setFormData((prev) => {
+      const prevKeys = Object.keys(prev);
+      const initKeys = Object.keys(initialValues);
+      if (
+        prevKeys.length !== initKeys.length ||
+        prevKeys.some((k) => prev[k as keyof ProfileFormData] !== initialValues[k as keyof ProfileFormData])
+      ) {
+        return { ...initialValues };
+      }
+      return prev;
+    });
     setIsActive(initialValues.isActive ?? true);
-  }, [initialValues]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(initialValues)]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
