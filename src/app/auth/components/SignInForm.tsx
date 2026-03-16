@@ -25,6 +25,9 @@ export default function SignInForm({ login, isPending }: SignInFormProps) {
       {
         onSuccess: (data: any) => {
           localStorage.setItem("token", data.data.token);
+          if (data.data.fullName) {
+            localStorage.setItem("fullName", data.data.fullName);
+          }
           router.push('/dashboard');
         },
         onError: (error: any) => {

@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
+import { usePhaseById } from '../../../hooks/usePhaseById';
+import { useUpdatePhase } from '../../../hooks/useUpdatePhase';
 
 const phaseFields: ProfileField[] = [
   { name: 'phaseName', label: 'Phase Name', type: 'text', required: true, placeholder: 'Phase Name here' },
@@ -16,22 +18,41 @@ const mockPhaseData: ProfileFormData = {
 };
 
 export default function EditPhase() {
-  const [initialValues, setInitialValues] = useState<ProfileFormData | null>(null);
+    const updatePhaseMutation = useUpdatePhase();
+  const [phaseId, setPhaseId] = useState<string | null>(null);
 
   useEffect(() => {
-    const selected = getTableRow<ProfileFormData>('phase');
-    setInitialValues({ ...mockPhaseData, ...(selected ?? {}) });
+    const selected = getTableRow<any>('phase');
+    if (selected && selected.id) {
+      setPhaseId(selected.id);
+    }
     clearTableRow('phase');
   }, []);
 
-  const handleUpdate = (data: ProfileFormData) => {
-    
-    console.log('Updated:', data);
+  const { data, isLoading, error } = usePhaseById(phaseId || undefined);
+
+  let initialValues: ProfileFormData | undefined = undefined;
+  if (data && data.data) {
+    initialValues = {
+      phaseName: data.data.name,
+      description: data.data.description,
+    };
+  }
+
+  const handleUpdate = async (formData: ProfileFormData) => {
+    if (!phaseId) return;
+    await updatePhaseMutation.mutateAsync({
+      id: phaseId,
+      name: formData.phaseName || '',
+      description: formData.description || '',
+    });
   };
 
   return (
     <DashboardLayout pageTitle="Edit Phase">
       <div style={{ margin: '0 auto' }}>
+        {isLoading && <div>Loading...</div>}
+        {error && <div style={{ color: 'red' }}>Failed to load phase data.</div>}
         {initialValues && (
           <CommonEntityForm
             title="Please update details below!"

@@ -78,8 +78,7 @@ export default function VendorTable({
   const handleConfirmDelete = async () => {
     if (!selectedZone) return;
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
-      await deleteZone({ id: selectedZone.id, token });
+      await deleteZone({ id: selectedZone.id });
       setZones((prev) => prev.filter((zone) => zone.id !== selectedZone.id));
     } catch (err) {
       // Optionally handle error (toast, etc)

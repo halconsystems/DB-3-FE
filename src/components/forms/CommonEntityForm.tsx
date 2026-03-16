@@ -66,7 +66,6 @@ export default function CommonEntityForm({
       return prev;
     });
     setIsActive(initialValues.isActive ?? true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(initialValues)]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,7 +77,6 @@ export default function CommonEntityForm({
       setFormData((prev) => ({ ...prev, [name]: (event.target as HTMLInputElement).checked }));
       return;
     }
-
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 

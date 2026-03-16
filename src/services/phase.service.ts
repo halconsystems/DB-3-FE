@@ -1,28 +1,27 @@
-export interface RemovePhaseRequest {
+import apiClient from '../lib/apiClient';
+export interface Phase {
   id: string;
+  name: string;
+  description: string;
+  createdBy: string;
+  modifiedBy: string | null;
+  isActive: boolean;
+  modified: string | null;
+  created: string;
 }
-
-export interface RemovePhaseResponse {
+export interface GetAllPhaseResponse {
   statusCode: number;
-  successMessage: string;
+  successMessage: string | null;
   errorMessage: string | null;
+  data: Phase[];
+}
+export interface GetPhaseByIdResponse {
+  statusCode: number;
+  successMessage: string | null;
+  errorMessage: string | null;
+  data: Phase | null;
 }
 
-export async function removePhase(
-  id: string,
-  token: string
-): Promise<RemovePhaseResponse> {
-  const response = await apiClient.post<RemovePhaseResponse>(
-    '/phases/remove-phase',
-    { id },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-  return response.data;
-}
 export interface CreatePhaseRequest {
   name: string;
   description: string;
@@ -35,42 +34,69 @@ export interface CreatePhaseResponse {
   data: Phase;
 }
 
-export async function createPhase(
-  data: CreatePhaseRequest,
-  token: string
-): Promise<CreatePhaseResponse> {
-  const response = await apiClient.post<CreatePhaseResponse>(
-    '/phases/create-phase',
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-  return response.data;
-}
-import apiClient from './apiClient';
-
-export interface Phase {
+export interface UpdatePhaseRequest {
   id: string;
   name: string;
   description: string;
-  createdBy: string;
-  modifiedBy: string | null;
-  isActive: boolean;
-  modified: string | null;
-  created: string;
 }
 
-export interface GetAllPhaseResponse {
+export interface UpdatePhaseResponse {
   statusCode: number;
-  successMessage: string | null;
-  errorMessage: string | null;
-  data: Phase[];
+  successMessage: string;
+  errorMessage?: string | null;
+  data: Phase;
 }
 
-export async function getAllPhase(): Promise<GetAllPhaseResponse> {
-  const response = await apiClient.get<GetAllPhaseResponse>('/phases/get-all-phase');
-  return response.data;
+export interface RemovePhaseResponse {
+  statusCode: number;
+  successMessage: string;
+  errorMessage: string | null;
 }
+
+
+export const getAllPhase = async (): Promise<GetAllPhaseResponse> => {
+  const { data } = await apiClient.get<GetAllPhaseResponse>(
+    '/phases/get-all-phase'
+  );
+  return data;
+};
+
+export const getPhaseById = async (
+  id: string
+): Promise<GetPhaseByIdResponse> => {
+  const { data } = await apiClient.get<GetPhaseByIdResponse>(
+    '/phases/get-phase-by-id',
+    { params: { id } }
+  );
+  return data;
+};
+
+export const createPhase = async (
+  payload: CreatePhaseRequest
+): Promise<CreatePhaseResponse> => {
+  const { data } = await apiClient.post<CreatePhaseResponse>(
+    '/phases/create-phase',
+    payload
+  );
+  return data;
+};
+
+export const updatePhase = async (
+  payload: UpdatePhaseRequest
+): Promise<UpdatePhaseResponse> => {
+  const { data } = await apiClient.post<UpdatePhaseResponse>(
+    '/phases/update-phase',
+    payload
+  );
+  return data;
+};
+
+export const removePhase = async (
+  id: string
+): Promise<RemovePhaseResponse> => {
+  const { data } = await apiClient.post<RemovePhaseResponse>(
+    '/phases/remove-phase',
+    { id }
+  );
+  return data;
+};

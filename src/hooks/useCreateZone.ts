@@ -1,8 +1,12 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createZone, CreateZoneRequest, CreateZoneResponse } from "../services/zone.service";
 
 export const useCreateZone = () => {
-  return useMutation<CreateZoneResponse, any, { data: CreateZoneRequest; token: string }>({
-    mutationFn: async ({ data, token }) => createZone(data, token),
+  const queryClient = useQueryClient();
+  return useMutation<CreateZoneResponse, any, CreateZoneRequest>({
+    mutationFn: async (data) => createZone(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["zones"] });
+    },
   });
 };

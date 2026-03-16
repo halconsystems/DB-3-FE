@@ -1,7 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { register } from "../services/auth.service";
 import { RegisterRequest, RegisterResponse } from "../types/auth.types";
-import { toast, toastOptions } from "../components/ui/toast";
 export const useRegister = () => {
   return useMutation<RegisterResponse, any, RegisterRequest>({
     mutationFn: register,

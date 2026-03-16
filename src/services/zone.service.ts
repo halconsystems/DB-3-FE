@@ -1,61 +1,5 @@
-export interface DeleteZoneRequest {
-  id: string;
-}
+import apiClient from "../lib/apiClient";
 
-export interface DeleteZoneResponse {
-  statusCode: number;
-  successMessage: string;
-  errorMessage: string | null;
-}
-
-export const deleteZone = async (
-  id: string,
-  token: string
-): Promise<DeleteZoneResponse> => {
-  const response = await apiClient.post<DeleteZoneResponse>(
-    '/zone/delete-zone',
-    { id },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-  return response.data;
-};
-
-export interface CreateZoneRequest {
-  name: string;
-  createdBy: string;
-  phaseId: string;
-  created: string;
-  isDeleted: boolean;
-  isActive: boolean;
-}
-
-export interface CreateZoneResponse {
-  statusCode: number;
-  successMessage: string;
-  errorMessage: string | null;
-  data: Zone;
-}
-
-export const createZone = async (
-  zone: CreateZoneRequest,
-  token: string
-): Promise<CreateZoneResponse> => {
-  const response = await apiClient.post<CreateZoneResponse>(
-    "/zone/create-zone",
-    zone,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-  return response.data;
-};
-import apiClient from "./apiClient";
 export interface Device {
   id: string;
   name: string;
@@ -72,6 +16,7 @@ export interface Device {
   isActive: boolean;
   isDeleted: boolean;
 }
+
 export interface Zone {
   id: string;
   name: string;
@@ -87,22 +32,96 @@ export interface Zone {
   tagZoneAccesses: any[];
 }
 
+export interface UpdateZoneRequest {
+  id: string;
+  name: string;
+  phaseId: string;
+  isActive: boolean;
+  isDeleted: boolean;
+  lastModified: string;
+  lastModifiedBy: string;
+}
+
+export interface UpdateZoneResponse {
+  statusCode: number;
+  successMessage: string;
+  errorMessage?: string | null;
+  data: Zone;
+}
+
+export interface GetZoneByIdResponse {
+  statusCode: number;
+  successMessage: string;
+  errorMessage?: string | null;
+  data: Zone | null;
+}
+
+export interface DeleteZoneResponse {
+  statusCode: number;
+  successMessage: string;
+  errorMessage?: string | null;
+}
+
+export interface CreateZoneRequest {
+  name: string;
+  createdBy: string;
+  phaseId: string;
+  created: string;
+  isDeleted: boolean;
+  isActive: boolean;
+}
+
+export interface CreateZoneResponse {
+  statusCode: number;
+  successMessage: string;
+  errorMessage?: string | null;
+  data: Zone;
+}
+
 export interface GetAllZoneResponse {
   statusCode: number;
   successMessage: string;
-  errorMessage: string | null;
+  errorMessage?: string | null;
   data: Zone[];
 }
 
 export const getAllZones = async (): Promise<GetAllZoneResponse> => {
-  let token = "";
-  if (typeof window !== "undefined") {
-    token = localStorage.getItem("token") || "";
-  }
-  const response = await apiClient.get<GetAllZoneResponse>("/zone/get-all-zone", {
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
-  return response.data;
+  const { data } = await apiClient.get<GetAllZoneResponse>("/zone/get-all-zone");
+  return data;
+};
+
+export const getZoneById = async (id: string): Promise<GetZoneByIdResponse> => {
+  const { data } = await apiClient.get<GetZoneByIdResponse>(
+    "/zone/get-zone-by-id",
+    { params: { id } }
+  );
+  return data;
+};
+
+export const createZone = async (
+  zone: CreateZoneRequest
+): Promise<CreateZoneResponse> => {
+  const { data } = await apiClient.post<CreateZoneResponse>(
+    "/zone/create-zone",
+    zone
+  );
+  return data;
+};
+
+export const updateZone = async (
+  zone: UpdateZoneRequest
+): Promise<UpdateZoneResponse> => {
+  const { data } = await apiClient.post<UpdateZoneResponse>(
+    "/zone/update-zone",
+    zone
+  );
+  return data;
+};
+
+export const deleteZone = async (id: string): Promise<DeleteZoneResponse> => {
+  const { data } = await apiClient.post<DeleteZoneResponse>(
+    "/zone/delete-zone",
+    { id }
+  );
+  return data;
 };

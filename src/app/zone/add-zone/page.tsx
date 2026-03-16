@@ -14,6 +14,11 @@ export default function AddNewZone() {
   const [successMsg, setSuccessMsg] = useState("");
   const { options: phaseOptions, isLoading: phasesLoading } = usePhaseOptions();
 
+  // Set initial phase to first phase id if available
+  const initialPhase = phaseOptions && phaseOptions.length > 0 && phaseOptions[0].value !== ''
+    ? phaseOptions[0].value
+    : '';
+
   // Clone and inject dynamic options into zoneFields
   const dynamicZoneFields = zoneFields.map((field) =>
     field.name === 'phase'
@@ -21,6 +26,7 @@ export default function AddNewZone() {
       : field
   );
 
+  // Pass initialValues to CommonEntityForm
   const handleSave = async (formData: ProfileFormData) => {
     setFormError("");
     setSuccessMsg("");
@@ -49,6 +55,7 @@ export default function AddNewZone() {
           fields={dynamicZoneFields}
           loading={isPending || phasesLoading}
           saveButtonText={isPending ? 'Saving...' : 'Add'}
+          initialValues={{ phase: initialPhase }}
         />
       </div>
     </DashboardLayout>
