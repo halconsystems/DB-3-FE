@@ -1,5 +1,4 @@
 import apiClient from "./apiClient";
-
 export interface SyncSummaryResponse {
   statusCode: number;
   successMessage: string;
@@ -11,7 +10,6 @@ export interface SyncSummaryResponse {
     totalPendingRetry: number;
   };
 }
-
 export const getSyncSummary = async (): Promise<SyncSummaryResponse> => {
   const response = await apiClient.get<SyncSummaryResponse>(
     "/dashboard/sync-summary"

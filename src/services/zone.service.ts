@@ -57,6 +57,7 @@ export interface Zone {
   isDeleted: boolean;
   isActive: boolean;
   phaseId: string;
+  phaseName?: string;
   devices: Device[];
   tagZoneAccesses: any[];
 }

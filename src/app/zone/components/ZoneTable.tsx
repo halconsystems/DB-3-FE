@@ -7,7 +7,9 @@ import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
 import WarningModal from '../../../components/popup/WarningModal';
 import { saveTableRow } from '../../../lib/tableRowStorage';
-import type { Zone } from '../../../services/zone.service';
+import type { Zone as BaseZone } from '../../../services/zone.service';
+
+type Zone = BaseZone & { phaseName?: string; status: 'Active' | 'Inactive' };
 const DeleteIcon = ({ onClick }: { onClick: () => void }) => (
   <button 
     onClick={onClick}
@@ -54,7 +56,7 @@ export default function VendorTable({
     setZones(
       data.data.map((z) => ({
         ...z,
-        phaseName: z.phaseId,
+        phaseName: z.phaseName,
         status: z.isActive ? 'Active' : 'Inactive',
       })),
     );
@@ -81,7 +83,7 @@ export default function VendorTable({
   };
   const zoneColumns: Column<Zone & { phaseName?: string; status: 'Active' | 'Inactive' }>[]= [
     { key: 'name', header: 'Zone' },
-    { key: 'phaseId', header: 'Phase ID' },
+    { key: 'phaseName', header: 'Phase Name' },
     {
       key: 'status',
       header: 'Status',

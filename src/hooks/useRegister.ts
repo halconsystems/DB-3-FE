@@ -6,11 +6,15 @@ export const useRegister = () => {
   return useMutation<RegisterResponse, any, RegisterRequest>({
     mutationFn: register,
     onSuccess: (data) => {
-      toast.success(data.successMessage || "Registration successful!", toastOptions);
+      console.log('Register API response:', data);
+  
     },
     onError: (error: any) => {
-      const apiMsg = error?.response?.data?.errorMessage || error?.response?.data?.message || error?.message || "Registration failed. Please try again.";
-      toast.error(apiMsg, toastOptions);
+      console.error('Register API error:', error);
+      if (error?.response) {
+        console.error('API error response:', error.response);
+      }
+  
     },
   });
 };

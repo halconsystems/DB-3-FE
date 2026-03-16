@@ -52,6 +52,10 @@ export default function CommonEntityForm({
 
   const [formData, setFormData] = useState<ProfileFormData>({ ...initialValues });
   const [isActive, setIsActive] = useState(initialValues.isActive ?? true);
+  React.useEffect(() => {
+    setFormData({ ...initialValues });
+    setIsActive(initialValues.isActive ?? true);
+  }, [initialValues]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 

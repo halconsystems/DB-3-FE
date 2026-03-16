@@ -1,3 +1,29 @@
+export interface User {
+  id: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string | null;
+  vehicleId: string | null;
+  cnic: string;
+  profilePicture: string;
+  cnicFrontImageUrl: string;
+  cnicBackImageUrl: string;
+  userRole: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface GetAllUsersResponse {
+  statusCode: number;
+  successMessage: string | null;
+  errorMessage: string | null;
+  data: {
+    items: User[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+  };
+}
 export interface LoginRequest {
   email: string;
   password: string;
@@ -19,7 +45,7 @@ export interface RegisterRequest {
   Email: string;
   Password: string;
   PhoneNumber: string;
-  VehicleId: string;
+  VehicleId?: string;
   CNIC: string;
   RoleId: string;
   ProfilePicture?: File;
