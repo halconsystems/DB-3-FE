@@ -1,24 +1,60 @@
 import apiClient from "../lib/apiClient";
-
 export interface CpAgent {
-  id: number;
-  cpAgentName: string;
-  controller: string;
-  zone: string;
+  id: string;
+  name: string;
+  agentNumber: string;
+  zoneId: string;
+  cpAgentType: number;
+  controllerId: string;
+  syncAgentId: string;
+  serverIp: string;
+  tagLimit: number;
+  isFixedTagIdentity: boolean;
+  isTempTagIdentity: boolean;
+  interCommId: string;
+  interCommPassword: string;
   interCommName: string;
-  laneType: string;
-  manufacturer: string;
-  status: 'Active' | 'Inactive';
+  isActive: boolean;
+  isDeleted: boolean;
+  lastModified: string;
+  lastModifiedBy: string;
+  created: string;
+  createdBy: string;
 }
 
-export interface GetAllCpAgentResponse {
-  statusCode: number;
-  successMessage?: string;
-  errorMessage?: string;
-  data: CpAgent[];
+export const getAllCpAgent = async (): Promise<CpAgent[]> => {
+  const response = await apiClient.get<CpAgent[]>("/cp-agent/get-all-CpAgent");
+  return response.data;
+};
+
+export interface CreateCpAgentDto {
+  name: string;
+  agentNumber: string;
+  zoneId: string;
+  cpAgentType: number;
+  controllerId: string;
+  syncAgentId: string;
+  serverIp: string;
+  tagLimit: number;
+  isFixedTagIdentity: boolean;
+  isTempTagIdentity: boolean;
+  interCommId: string;
+  interCommPassword: string;
+  interCommName: string;
+  isActive: boolean;
+  isDeleted: boolean;
+  createdBy: string;
+  created: string;
 }
 
-export const getAllCpAgents = async (): Promise<GetAllCpAgentResponse> => {
-  const { data } = await apiClient.get<GetAllCpAgentResponse>("/cpagent/get-all-CpAgent");
-  return data;
+export const createCpAgent = async (data: Omit<CreateCpAgentDto, "created" | "createdBy" | "isDeleted"> & { isActive: boolean }): Promise<void> => {
+  const now = new Date().toISOString();
+  const createdBy = "system"; 
+  const payload: CreateCpAgentDto = {
+    ...data,
+    isDeleted: !data.isActive,
+    created: now,
+    createdBy,
+  };
+  await apiClient.post("/cp-agent/create-CpAgent", payload);
 };

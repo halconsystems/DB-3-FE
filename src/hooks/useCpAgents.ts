@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAllCpAgents } from "../services/cp-agent.service";
+import { getAllCpAgent, CpAgent } from "../services/cp-agent.service";
 
 export const useCpAgents = () => {
-  return useQuery({
+  return useQuery<CpAgent[]>({
     queryKey: ["cp-agents"],
-    queryFn: getAllCpAgents,
+    queryFn: getAllCpAgent,
   });
 };
