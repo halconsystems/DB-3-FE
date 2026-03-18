@@ -94,7 +94,7 @@ export default function CpAgentTable({
       render: (_, row) => (
         <div style={{ display: 'flex', gap: '4px' }}>
           <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
-          <CircularButton imagePath="/icons/Delete Button.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+          <CircularButton imagePath="/icons/DeleteButton.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
         </div>
       )
     },

@@ -135,7 +135,7 @@ export default function ResidentialPage() {
       header: 'Action',
       render: (_, row) => { return (<div style={{ display: 'flex', gap: '8px' }}>
           <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
-          <CircularButton imagePath="/icons/Delete Button.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+          <CircularButton imagePath="/icons/DeleteButton.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
           <CircularButton imagePath="/icons/host.svg" imageAlt="Host" width={32} height={32} onClick={() => handleHostClick(row)} />
       </div>); 
       }
