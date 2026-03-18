@@ -54,6 +54,7 @@ export interface ProfileFormData {
   tagStatus?: string;
   attachment?: File | null;
   cpAgentName?: string;
+  syncAgentId?: string;
   serverIp?: string;
   controller?: string;
   cpType?: string;

@@ -67,7 +67,7 @@ interface GetAllCpAgentApiResponse {
   statusCode: number;
   successMessage: string | null;
   errorMessage: string | null;
-  data: CpAgent[];
+  data: CpAgent[] | { items?: CpAgent[] } | null;
 }
 
 export const getAllCpAgent = async (): Promise<CpAgent[]> => {
@@ -80,8 +80,20 @@ export const getAllCpAgent = async (): Promise<CpAgent[]> => {
     return payload;
   }
 
-  if (payload && Array.isArray(payload.data)) {
-    return payload.data;
+  if (!payload || typeof payload !== 'object') {
+    return [];
+  }
+
+  const payloadData = payload.data;
+
+  // Supports direct array payload: { data: [...] }
+  if (Array.isArray(payloadData)) {
+    return payloadData;
+  }
+
+  // Supports paged payload: { data: { items: [...] } }
+  if (payloadData && typeof payloadData === 'object' && Array.isArray(payloadData.items)) {
+    return payloadData.items;
   }
 
   return [];
@@ -107,7 +119,9 @@ export interface CreateCpAgentDto {
   created: string;
 }
 
-export const createCpAgent = async (data: Omit<CreateCpAgentDto, "created" | "createdBy" | "isDeleted"> & { isActive: boolean }): Promise<void> => {
+export type CreateCpAgentPayload = Omit<CreateCpAgentDto, "created" | "createdBy" | "isDeleted"> & { isActive: boolean };
+
+export const createCpAgent = async (data: CreateCpAgentPayload): Promise<void> => {
   const now = new Date().toISOString();
   const createdBy = "system"; 
   const payload: CreateCpAgentDto = {

@@ -41,10 +41,9 @@ export default function CpAgentTable({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<CpAgentTableRow | null>(null);
 
-  // Fetch CP Agents from API
-  const { data, isLoading } = useCpAgents();
+  const { data, isLoading, isError, error } = useCpAgents();
 
-  // Map API data to table row format
+
   const cpAgents: CpAgentTableRow[] = useMemo(() => {
     if (!data) return [];
     return data.map((item) => ({
@@ -103,6 +102,11 @@ export default function CpAgentTable({
 
   return (
     <>
+    {isError && (
+      <div style={{ color: 'red', marginBottom: 12 }}>
+        Failed to load CP Agents: {error instanceof Error ? error.message : 'Unknown error'}
+      </div>
+    )}
     <DataTable<CpAgentTableRow>
       tabs={tabs}
       activeTab={activeTab}

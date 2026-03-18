@@ -9,11 +9,8 @@ export const cpAgentFields: ProfileField[] = [
     { value: '1', label: 'Type 1' },
     { value: '2', label: 'Type 2' },
   ] },
-  { name: 'controller', label: 'Controller', type: 'select', required: true, options: [
-    { value: 'controller-1', label: 'Controller 1' },
-    { value: 'controller-2', label: 'Controller 2' },
-    { value: 'controller-3', label: 'Controller 3' },
-  ] },
+  { name: 'controller', label: 'Controller ID', type: 'text', required: true, placeholder: 'Enter controller GUID' },
+  { name: 'syncAgentId', label: 'Sync Agent ID', type: 'text', required: true, placeholder: 'Enter sync agent GUID' },
   { name: 'serverIp', label: 'Server IP', type: 'text', required: true, placeholder: 'Enter server IP' },
   { name: 'tagLimit', label: 'Tag Limit', type: 'text', required: true, placeholder: 'Enter tag limit' },
   // Group tag identity checkboxes visually by using colSpan and larger input size
