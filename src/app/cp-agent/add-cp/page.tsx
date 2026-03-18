@@ -4,7 +4,7 @@ import React from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { cpAgentFields } from '../fields';
-import { useZones } from '../../../hooks/useZones';
+import { useZones } from '../../../hooks/zone/useZones';
 
 export default function AddNewCpAgent() {
   const { data, isLoading } = useZones();

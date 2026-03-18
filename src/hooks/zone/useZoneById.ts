@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getZoneById } from "../services/zone.service";
+import { getZoneById } from "../../services/zone.service";
 
 export const useZoneById = (id: string | undefined) => {
   return useQuery({

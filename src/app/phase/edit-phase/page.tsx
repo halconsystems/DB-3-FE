@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
-import { usePhaseById } from '../../../hooks/usePhaseById';
-import { useUpdatePhase } from '../../../hooks/useUpdatePhase';
+import { usePhaseById } from '../../../hooks/phase/usePhaseById';
+import { useUpdatePhase } from '../../../hooks/phase/useUpdatePhase';
 
 const phaseFields: ProfileField[] = [
   { name: 'phaseName', label: 'Phase Name', type: 'text', required: true, placeholder: 'Phase Name here' },

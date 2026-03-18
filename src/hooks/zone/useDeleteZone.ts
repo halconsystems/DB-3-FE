@@ -1,5 +1,5 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteZone } from '../services/zone.service';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteZone } from "../../services/zone.service";
 
 export function useDeleteZone() {
   const queryClient = useQueryClient();
@@ -8,7 +8,7 @@ export function useDeleteZone() {
       return deleteZone(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['zones'] });
+      queryClient.invalidateQueries({ queryKey: ["zones"] });
     },
   });
 }

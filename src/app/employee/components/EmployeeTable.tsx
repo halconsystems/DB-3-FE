@@ -1,12 +1,13 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
 import WarningModal from '../../../components/popup/WarningModal';
 import { saveTableRow } from '../../../lib/tableRowStorage';
-import { getAllUsers, removeUser } from '../../../services/auth.service';
+import { useEmployees } from '../../../hooks/employee/useEmployees';
+import { useRemoveEmployee } from '../../../hooks/employee/useRemoveEmployee';
 import Loader from '../../../components/ui/loader';
 
 export interface Employee {
@@ -35,25 +36,35 @@ export default function EmployeeTable({
   onAddNew,
   addButtonLabel
 }: EmployeeTableProps) {
+  const pageSize = 10;
   const [currentPage, setCurrentPage] = useState(1);
+  const { data, isLoading } = useEmployees();
+  const { mutateAsync: removeEmployee, isPending: isDeleting } = useRemoveEmployee();
   const [employees, setEmployees] = useState<Employee[]>([]);
+
   useEffect(() => {
-    getAllUsers().then(res => {
-      if (res.statusCode === 200 && res.data && Array.isArray(res.data.items)) {
-        setEmployees(res.data.items.map(user => ({
-          id: user.id,
-          employeeName: user.fullName,
-          email: user.email,
-          phone: user.phoneNumber ?? '',
-          cnic: user.cnic,
-          role: user.userRole ?? '',
-          status: user.isActive ? 'Active' : 'Inactive',
-        })));
-      }
-    });
-  }, []);
+    const items = data?.data?.items;
+    if (!Array.isArray(items)) {
+      setEmployees([]);
+      return;
+    }
+
+    setEmployees(
+      items.map((user) => ({
+      id: user.id,
+      employeeName: user.fullName,
+      email: user.email,
+      phone: user.phoneNumber ?? '',
+      cnic: user.cnic,
+      role: user.userRole ?? '',
+      status: user.isActive ? 'Active' : 'Inactive',
+      }))
+    );
+  }, [data]);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const totalCount = data?.data?.totalCount ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const router = useRouter();
   const handleEdit = (item: Employee) => {
     saveTableRow('employee', item);
@@ -64,22 +75,24 @@ export default function EmployeeTable({
     setDeleteModalOpen(true);
   };
 
-  const [isDeleting, setIsDeleting] = useState(false);
-
   const handleConfirmDelete = async () => {
     if (!selectedEmployee) {
       return;
     }
-    setIsDeleting(true);
+
     try {
-      const res = await removeUser(selectedEmployee.id);
-      if (res.statusCode === 200) {
-        setEmployees((prev) => prev.filter((employee) => employee.id !== selectedEmployee.id));
+      const response = await removeEmployee({ id: selectedEmployee.id });
+      const isSuccess = response?.statusCode === 0 || response?.statusCode === 200;
+
+      if (isSuccess) {
+        setEmployees((prev) =>
+          prev.filter((employee) => employee.id !== selectedEmployee.id)
+        );
       }
-    } catch (err) {
-      // Optionally handle error
+    } catch {
+      // Keep modal flow stable even when API fails.
     }
-    setIsDeleting(false);
+
     setDeleteModalOpen(false);
     setSelectedEmployee(null);
   };
@@ -109,16 +122,16 @@ export default function EmployeeTable({
 
   return (
     <>
-    {isDeleting && <Loader variant="full" />}
     <DataTable<Employee>
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={onTabChange}
       columns={employeeColumns}
       data={employees}
+      loading={isLoading}
       showAddButton={false}
       currentPage={currentPage}
-      totalPages={3}
+      totalPages={totalPages}
       onPageChange={setCurrentPage}
       getRowStatus={(row) => row.status}
       headerContent={

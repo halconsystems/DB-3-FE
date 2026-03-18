@@ -1,6 +1,6 @@
 'use client';
 import SignInForm from "../components/SignInForm";
-import { useLogin } from "../../../hooks/useLogin";
+import { useLogin } from "../../../hooks/auth/useLogin";
 import Loader from "../../../components/ui/loader";
 export default function SignInPage() {
   const { mutate: login, isPending } = useLogin();

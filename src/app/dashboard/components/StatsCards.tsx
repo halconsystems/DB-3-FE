@@ -1,6 +1,6 @@
 
 import styles from "./DashboardComponents.module.css";
-import { useSyncSummary } from "../../../hooks/useSyncSummary";
+import { useSyncSummary } from "../../../hooks/dashboard/useSyncSummary";
 
 export default function StatsCards() {
   const { data, isLoading, isError } = useSyncSummary();

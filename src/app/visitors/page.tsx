@@ -171,7 +171,6 @@ export default function VisitorsPage() {
         data={visitors}
         showAddButton={false}
         currentPage={currentPage}
-        totalPages={3}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status}
       />

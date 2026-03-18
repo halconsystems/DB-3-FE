@@ -116,7 +116,6 @@ export default function VehiclePage() {
         data={vehicles}
         showAddButton={false}
         currentPage={currentPage}
-        totalPages={3}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status}
       />

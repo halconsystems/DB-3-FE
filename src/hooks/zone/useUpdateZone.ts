@@ -1,5 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateZone, UpdateZoneRequest, UpdateZoneResponse } from "../services/zone.service";
+import {
+  updateZone,
+  UpdateZoneRequest,
+  UpdateZoneResponse,
+} from "../../services/zone.service";
 
 export const useUpdateZone = () => {
   const queryClient = useQueryClient();

@@ -1,5 +1,5 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { removePhase, RemovePhaseResponse } from '../services/phase.service';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { removePhase, RemovePhaseResponse } from "../../services/phase.service";
 
 export function useRemovePhase() {
   const queryClient = useQueryClient();
@@ -10,7 +10,7 @@ export function useRemovePhase() {
   >({
     mutationFn: async ({ id, token }) => removePhase(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['phases'] });
+      queryClient.invalidateQueries({ queryKey: ["phases"] });
     },
   });
 }

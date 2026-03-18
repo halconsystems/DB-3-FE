@@ -1,6 +1,6 @@
 'use client';
 import { useState } from "react";
-import { useRegister } from "../../../hooks/useRegister";
+import { useRegister } from "../../../hooks/auth/useRegister";
 import { ToastContainer } from "../../../components/ui/toast";
 import Loader from "../../../components/ui/loader";
 

@@ -112,7 +112,7 @@ export default function DataTable<T extends Record<string, any>>({
   };
 
   const renderPagination = () => {
-    if (resolvedTotalPages <= 1) return null;
+    if (resolvedTotalPages < 1) return null;
 
     const pages: (number | string)[] = [];
     const maxVisiblePages = 5;

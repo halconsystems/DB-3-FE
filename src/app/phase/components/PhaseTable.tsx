@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
-import { usePhases } from '../../../hooks/usePhases';
-import { useRemovePhase } from '../../../hooks/useRemovePhase';
+import { usePhases } from '../../../hooks/phase/usePhases';
+import { useRemovePhase } from '../../../hooks/phase/useRemovePhase';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
@@ -110,7 +110,6 @@ export default function VendorTable({
         data={phases}
         showAddButton={false}
         currentPage={currentPage}
-        totalPages={3}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => {
           if (row.status === 'Active' || row.status === 'Inactive' || row.status === 'Pending') {

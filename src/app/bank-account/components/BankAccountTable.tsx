@@ -105,7 +105,6 @@ export default function BankAccountTable({
       data={bankAccounts}
       showAddButton={false}
       currentPage={currentPage}
-      totalPages={3}
       onPageChange={setCurrentPage}
       getRowStatus={(row) => row.status}
       headerContent={

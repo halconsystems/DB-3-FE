@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getSyncSummary } from "../services/dashboard.service";
+import { getSyncSummary } from "../../services/dashboard.service";
 
 export const useSyncSummary = () => {
   return useQuery({

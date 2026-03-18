@@ -6,7 +6,7 @@ import { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { employeeFields } from '../fields';
 import { getRoles } from '../../../services/role.service';
 import React from 'react';
-import { useRegister } from '../../../hooks/useRegister';
+import { useRegister } from '../../../hooks/auth/useRegister';
 export default function AddNewEmployee() {
   const { mutate: registerEmployee, status } = useRegister();
   const [roleOptions, setRoleOptions] = React.useState<{ value: string; label: string }[]>([]);

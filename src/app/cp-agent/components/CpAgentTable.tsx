@@ -1,6 +1,6 @@
 'use client';
 import { useState, useMemo } from 'react';
-import { useCpAgents } from '../../../hooks/useCpAgents';
+import { useCpAgents } from '../../../hooks/cp-agent/useCpAgents';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
@@ -111,7 +111,6 @@ export default function CpAgentTable({
       data={cpAgents}
       showAddButton={false}
       currentPage={currentPage}
-      totalPages={3}
       onPageChange={setCurrentPage}
       getRowStatus={(row) => row.status}
       loading={isLoading}

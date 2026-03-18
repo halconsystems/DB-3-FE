@@ -155,7 +155,6 @@ export default function ResidentialPage() {
         data={members}
         showAddButton={false}
         currentPage={currentPage}
-        totalPages={3}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.memberStatus}
       />

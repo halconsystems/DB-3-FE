@@ -1,5 +1,9 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createPhase, CreatePhaseRequest, CreatePhaseResponse } from '../services/phase.service';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  createPhase,
+  CreatePhaseRequest,
+  CreatePhaseResponse,
+} from "../../services/phase.service";
 
 export function useCreatePhase() {
   const queryClient = useQueryClient();
@@ -10,7 +14,7 @@ export function useCreatePhase() {
   >({
     mutationFn: async ({ data }) => createPhase(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['phases'] });
+      queryClient.invalidateQueries({ queryKey: ["phases"] });
     },
   });
 }

@@ -4,9 +4,9 @@ import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
-import { useZoneById } from '../../../hooks/useZoneById';
-import { usePhaseOptions } from '../../../hooks/usePhaseOptions';
-import { useUpdateZone } from '../../../hooks/useUpdateZone';
+import { useZoneById } from '../../../hooks/zone/useZoneById';
+import { usePhaseOptions } from '../../../hooks/phase/usePhaseOptions';
+import { useUpdateZone } from '../../../hooks/zone/useUpdateZone';
 
 export default function EditZone() {
     const { options: phaseOptions, isLoading: phasesLoading } = usePhaseOptions();

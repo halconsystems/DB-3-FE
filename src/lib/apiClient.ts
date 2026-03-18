@@ -18,8 +18,18 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 apiClient.interceptors.response.use(
 	(response: AxiosResponse) => response,
 	(error: AxiosError) => {
-		const apiMsg = (error.response?.data as any)?.errorMessage || (error.response?.data as any)?.message || error.message || "Unknown error";
-		console.error(apiMsg);
+		const apiMsg =
+			(error.response?.data as any)?.errorMessage ||
+			(error.response?.data as any)?.message ||
+			error.message ||
+			"Unknown error";
+
+		if (process.env.NODE_ENV === "development") {
+			const status = error.response?.status;
+			const url = error.config?.url ?? "unknown-url";
+			console.warn(`[API${status ? ` ${status}` : ""}] ${url}: ${apiMsg}`);
+		}
+
 		return Promise.reject(error);
 	}
 );

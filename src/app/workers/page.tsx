@@ -117,7 +117,6 @@ export default function WorkersPage() {
         data={workers}
         showAddButton={false}
         currentPage={currentPage}
-        totalPages={3}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.workerStatus}
       />

@@ -1,5 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updatePhase, UpdatePhaseRequest, UpdatePhaseResponse } from "../services/phase.service";
+import {
+  updatePhase,
+  UpdatePhaseRequest,
+  UpdatePhaseResponse,
+} from "../../services/phase.service";
 
 export const useUpdatePhase = () => {
   const queryClient = useQueryClient();

@@ -100,7 +100,6 @@ export default function LuggagePage() {
         data={luggagePasses}
         showAddButton={false}
         currentPage={currentPage}
-        totalPages={3}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status}
       />

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useZones } from '../../../hooks/useZones';
-import { useDeleteZone } from '../../../hooks/useDeleteZone';
+import { useZones } from '../../../hooks/zone/useZones';
+import { useDeleteZone } from '../../../hooks/zone/useDeleteZone';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
@@ -115,7 +115,6 @@ export default function VendorTable({
       data={zones}
       showAddButton={false}
       currentPage={currentPage}
-      totalPages={3}
       onPageChange={setCurrentPage}
       getRowStatus={(row) => row.status}
       headerContent={

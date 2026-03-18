@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { zoneFields } from '../fields';
-import { usePhaseOptions } from '../../../hooks/usePhaseOptions';
-import { useAddZone } from '../../../hooks/useAddZone';
+import { usePhaseOptions } from '../../../hooks/phase/usePhaseOptions';
+import { useAddZone } from '../../../hooks/zone/useAddZone';
 
 
 export default function AddNewZone() {

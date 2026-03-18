@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { getAllPhase, Phase } from '../services/phase.service';
+import { useQuery } from "@tanstack/react-query";
+import { getAllPhase } from "../../services/phase.service";
 
 export function usePhases() {
   return useQuery({
-    queryKey: ['phases'],
+    queryKey: ["phases"],
     queryFn: async () => {
       const res = await getAllPhase();
 
@@ -11,7 +11,7 @@ export function usePhases() {
         id: item.id,
         phaseName: item.name,
         description: item.description,
-        status: item.isActive ? 'Active' : 'Inactive',
+        status: item.isActive ? "Active" : "Inactive",
       }));
     },
   });

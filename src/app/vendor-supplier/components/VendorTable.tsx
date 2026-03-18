@@ -128,7 +128,6 @@ export default function VendorTable({
       data={vendors}
       showAddButton={false}
       currentPage={currentPage}
-      totalPages={3}
       onPageChange={setCurrentPage}
       getRowStatus={(row) => row.status}
       headerContent={

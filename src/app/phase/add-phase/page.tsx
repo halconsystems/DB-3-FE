@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { phaseFields } from '../fields';
-import { useCreatePhase } from '../../../hooks/useCreatePhase';
+import { useCreatePhase } from '../../../hooks/phase/useCreatePhase';
 
 export default function AddNewPhase() {
   const { mutateAsync: createPhase, isPending, isSuccess, isError, error } = useCreatePhase();
