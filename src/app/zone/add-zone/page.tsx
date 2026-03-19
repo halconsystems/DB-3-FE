@@ -5,11 +5,11 @@ import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { zoneFields } from '../fields';
 import { usePhaseOptions } from '../../../hooks/phase/usePhaseOptions';
-import { useAddZone } from '../../../hooks/zone/useAddZone';
+import { useCreateZone } from '../../../hooks/zone/useCreateZone';
 
 
 export default function AddNewZone() {
-  const { addZone, isPending, isSuccess, isError, error, data } = useAddZone();
+  const { mutateAsync: createZone, isPending } = useCreateZone();
   const [formError, setFormError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const { options: phaseOptions, isLoading: phasesLoading } = usePhaseOptions();
@@ -30,13 +30,53 @@ export default function AddNewZone() {
   const handleSave = async (formData: ProfileFormData) => {
     setFormError("");
     setSuccessMsg("");
+
+    let fullName = '';
+    if (typeof window !== 'undefined') {
+      try {
+        const userData = localStorage.getItem('user');
+        const storedFullName = localStorage.getItem('fullName');
+        if (userData) {
+          const user = JSON.parse(userData);
+          fullName = user?.fullName || user?.name || '';
+        } else if (storedFullName) {
+          fullName = storedFullName;
+        }
+      } catch {
+        const storedFullName = localStorage.getItem('fullName');
+        if (storedFullName) {
+          fullName = storedFullName;
+        }
+      }
+    }
+
+    if (!fullName) {
+      setFormError('User fullName not found. Please sign in again.');
+      return;
+    }
+
+    const isActive = formData.isActive !== undefined ? formData.isActive : true;
+    const phaseId =
+      formData.phase && typeof formData.phase === 'object' && 'value' in formData.phase
+        ? String((formData.phase as any).value || '')
+        : typeof formData.phase === 'string'
+          ? formData.phase
+          : '';
+
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
       if (!token) {
         setFormError("No auth token found. Please sign in.");
         return;
       }
-      const res = await addZone(formData, token);
+      await createZone({
+        name: formData.zoneName || '',
+        createdBy: fullName,
+        phaseId,
+        created: new Date().toISOString(),
+        isDeleted: !isActive,
+        isActive,
+      });
       setSuccessMsg("Zone created successfully!");
     } catch (err: any) {
       setFormError(err?.response?.data?.errorMessage || err?.message || "Failed to create zone");

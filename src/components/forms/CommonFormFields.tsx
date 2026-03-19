@@ -75,6 +75,7 @@ export function TextInputField({ field, value, onChange, styles, wrapperClassNam
         style={getInputStyle(field)}
         value={value}
         onChange={onChange}
+        readOnly={field.readOnly}
       />
     </div>
   );

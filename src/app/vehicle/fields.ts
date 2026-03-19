@@ -3,7 +3,7 @@ import { ProfileField, ProfileFormData } from '../../components/forms/CommonEnti
 export const vehicleFields: ProfileField[] = [
   { name: 'vehicleNo', label: 'Vehicle No', type: 'text', required: true, placeholder: 'ABC Only' , sameCellKey: 'vehicleNo', sameCellColumns: 2 , fieldWidth: "100%"},
   { name: 'vehicleNo2', label: 'Vehicle No', type: 'text', required: true, placeholder: 'Number Only' , sameCellKey: 'vehicleNo', fieldWidth: "100%"},
-  { name: 'licensePlate', label: 'License Plate', type: 'text', required: true, placeholder: 'ABC-123' },
+  { name: 'licensePlate', label: 'License Plate', type: 'text', required: true, placeholder: 'ABC-123', readOnly: true },
   { name: 'make', label: 'Make', type: 'text', required: true, placeholder: 'Manufacturer' },
   { name: 'model', label: 'Model', type: 'text', required: true, placeholder: 'Model Name' },
   { name: 'color', label: 'Color', type: 'text', required: true, placeholder: 'White' },

@@ -2,64 +2,161 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
+import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
+import { luggageFields } from '../fields';
+import { useLuggageById } from '../../../hooks/luggage/useLuggageById';
+import { useUpdateLuggage } from '../../../hooks/luggage/useUpdateLuggage';
 
+const toDateInputValue = (value?: string) => {
+  if (!value) {
+    return '';
+  }
 
-const luggageFields: ProfileField[] = [
-  { name: 'fullName', label: 'Full Name', type: 'text', required: true, placeholder: 'Full Name here' },
-  { name: 'cnic', label: 'CNIC No.', type: 'text', required: false, placeholder: '(12345-1234567-1)' },
-  { name: 'vehicleNo', label: 'Vehicle No', type: 'text', required: true, placeholder: 'ABC Only' },
-  { name: 'vehicleNo2', label: 'Vehicle No', type: 'text', required: true, placeholder: 'Number Only' },
-  { name: 'licensePlate', label: 'License Plate', type: 'text', required: false, placeholder: 'ABC-123' },
-  { name: 'qrReference', label: 'QR Reference', type: 'text', required: false, placeholder: 'Type here' },
-  { name: 'status', label: 'Status', type: 'select', required: false, options: [ { value: '', label: 'Select here' }, { value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' } ] },
-  { name: 'quickPick', label: 'Quick Pick', type: 'radio', required: true, colSpan: 2, options: [ { value: 'dayPass', label: 'Day Pass' }, { value: 'longStay', label: 'Long Stay' } ] },
-  { name: 'fromDate', label: 'From Date', type: 'date', required: false, placeholder: 'Select Date' },
-  { name: 'toDate', label: 'To Date', type: 'date', required: false, placeholder: 'Select Date' },
-];
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
 
+  return date.toISOString().split('T')[0];
+};
 
-const mockLuggageData: ProfileFormData = {
-  fullName: 'John Doe',
-  cnic: '12345-1234567-1',
-  vehicleNo: 'ABC',
-  vehicleNo2: '123',
-  licensePlate: 'ABC-123',
-  qrReference: 'QR-REF-001',
-  status: 'active',
-  quickPick: 'dayPass',
-  fromDate: '2026-03-09',
-  toDate: '2026-03-10',
+const toIsoDate = (value?: string) => {
+  if (!value) {
+    return new Date().toISOString();
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return new Date().toISOString();
+  }
+
+  return date.toISOString();
+};
+
+const toVehicleLicensePlate = (vehicleNo?: string, vehicleNo2?: string) => {
+  const firstPart = (vehicleNo ?? '').trim();
+  const secondPart = (vehicleNo2 ?? '').trim();
+
+  if (!firstPart && !secondPart) {
+    return '';
+  }
+  return `${firstPart}-${secondPart}`;
+};
+
+const toLuggagePassType = (quickPick?: string): number | null => {
+  if (quickPick === 'longStay') {
+    return 1;
+  }
+
+  if (quickPick === 'dayPass') {
+    return 0;
+  }
+
+  return null;
 };
 
 export default function EditLuggage() {
   const router = useRouter();
-  const [initialValues, setInitialValues] = useState<ProfileFormData>(mockLuggageData);
+  const [luggageId, setLuggageId] = useState<string | undefined>();
+  const [formError, setFormError] = useState('');
+  const updateLuggageMutation = useUpdateLuggage();
+
+  const { data, isLoading, isError } = useLuggageById(luggageId);
+
+  const initialValues: ProfileFormData | null = data?.data
+    ? {
+        fullName: data.data.name,
+        cnic: data.data.cnic,
+        vehicleNo: data.data.vehicleLicensePlate,
+        vehicleNo2: String(data.data.vehicleLicenseNo || ''),
+        licensePlate: data.data.vehicleLicensePlate,
+        qrReference: data.data.qrCode,
+        status: data.data.isActive ? 'active' : 'inactive',
+        quickPick: data.data.luggagePassType === 1 ? 'longStay' : 'dayPass',
+        fromDate: toDateInputValue(data.data.validFrom),
+        toDate: toDateInputValue(data.data.validTo),
+        description: data.data.description,
+        isActive: data.data.isActive,
+      }
+    : null;
 
   useEffect(() => {
-    const selected = getTableRow<ProfileFormData>('luggage');
-    setInitialValues({ ...mockLuggageData, ...(selected ?? {}) });
+    const selected = getTableRow<{ id?: string }>('luggage');
+    if (selected?.id) {
+      setLuggageId(selected.id);
+    }
     clearTableRow('luggage');
   }, []);
 
-  const handleSave = (data: ProfileFormData) => {
-    
-    console.log('Updated:', data);
+  const handleSave = async (formData: ProfileFormData) => {
+    if (!luggageId || !data?.data) {
+      return;
+    }
+
+    setFormError('');
+    const luggagePassType = toLuggagePassType(formData.quickPick);
+
+    if (luggagePassType === null) {
+      const message = 'Please select a Quick Pick option.';
+      setFormError(message);
+      throw new Error(message);
+    }
+
+    const userRaw = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    let lastModifiedBy = 'system';
+    if (userRaw) {
+      try {
+        const user = JSON.parse(userRaw);
+        lastModifiedBy = user?.fullName || user?.name || user?.email || 'system';
+      } catch {
+        lastModifiedBy = 'system';
+      }
+    }
+
+    const isActive = formData.isActive ?? data.data.isActive;
+
+    try {
+      await updateLuggageMutation.mutateAsync({
+        id: luggageId,
+        name: formData.fullName || '',
+        cnic: formData.cnic || '',
+        vehicleLicensePlate: toVehicleLicensePlate(formData.vehicleNo, formData.vehicleNo2),
+        vehicleLicenseNo: Number(formData.vehicleNo2 || 0),
+        description: formData.description || data.data.description || '',
+        luggagePassType,
+        validFrom: toIsoDate(formData.fromDate),
+        validTo: toIsoDate(formData.toDate),
+        lastModifiedBy,
+        isActive,
+        isDeleted: !isActive,
+      });
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update luggage';
+      setFormError(message);
+      throw new Error(message);
+    }
   };
 
   return (
     <DashboardLayout pageTitle="Edit Luggage">
       <div style={{ margin: '0 auto' }}>
-        <CommonEntityForm
-          title="Please update details below!"
-          onSave={handleSave}
-          onCancel={() => router.back()}
-          fields={luggageFields}
-          initialValues={initialValues}
-          saveButtonText='Edit'
-          cancelButtonText="Cancel"
-        />
+        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
+        {!luggageId && <div style={{ color: 'red', marginBottom: 12 }}>No luggage id found for editing.</div>}
+        {isError && <div style={{ color: 'red', marginBottom: 12 }}>Failed to load luggage details.</div>}
+        {(isLoading || initialValues) && (
+          <CommonEntityForm
+            title="Please update details below!"
+            onSave={handleSave}
+            onCancel={() => router.back()}
+            fields={luggageFields}
+            initialValues={initialValues || undefined}
+            loading={isLoading || updateLuggageMutation.isPending}
+            showStatusToggle
+            saveButtonText='Edit'
+            cancelButtonText="Cancel"
+          />
+        )}
       </div>
     </DashboardLayout>
   );

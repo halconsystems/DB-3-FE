@@ -28,6 +28,29 @@ interface CommonEntityFormProps {
   fields?: ProfileField[];
 }
 
+const toVehicleLicensePlate = (vehicleNo?: string, vehicleNo2?: string) => {
+  const firstPart = (vehicleNo ?? '').trim();
+  const secondPart = (vehicleNo2 ?? '').trim();
+
+  if (!firstPart && !secondPart) {
+    return '';
+  }
+  return `${firstPart}-${secondPart}`;
+};
+
+const withDerivedVehicleLicensePlate = (data: ProfileFormData): ProfileFormData => {
+  const hasVehicleFields = data.vehicleNo !== undefined || data.vehicleNo2 !== undefined || data.licensePlate !== undefined;
+
+  if (!hasVehicleFields) {
+    return data;
+  }
+
+  return {
+    ...data,
+    licensePlate: toVehicleLicensePlate(data.vehicleNo, data.vehicleNo2),
+  };
+};
+
 export default function CommonEntityForm({
   onCancel,
   onSave,
@@ -50,7 +73,7 @@ export default function CommonEntityForm({
   }
   else pageName = ''
 
-  const [formData, setFormData] = useState<ProfileFormData>({ ...initialValues });
+  const [formData, setFormData] = useState<ProfileFormData>(withDerivedVehicleLicensePlate({ ...initialValues }));
   const [isActive, setIsActive] = useState(initialValues.isActive ?? true);
   React.useEffect(() => {
     // Only update if initialValues actually changed (shallow compare)
@@ -61,7 +84,7 @@ export default function CommonEntityForm({
         prevKeys.length !== initKeys.length ||
         prevKeys.some((k) => prev[k as keyof ProfileFormData] !== initialValues[k as keyof ProfileFormData])
       ) {
-        return { ...initialValues };
+        return withDerivedVehicleLicensePlate({ ...initialValues });
       }
       return prev;
     });
@@ -73,11 +96,16 @@ export default function CommonEntityForm({
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = event.target;
 
+    if (name === 'licensePlate') {
+      return;
+    }
+
     if (type === 'checkbox') {
       setFormData((prev) => ({ ...prev, [name]: (event.target as HTMLInputElement).checked }));
       return;
     }
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    setFormData((prev) => withDerivedVehicleLicensePlate({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, field: keyof ProfileFormData) => {
@@ -90,7 +118,7 @@ export default function CommonEntityForm({
 
     try {
       if (onSave) {
-        await onSave({ ...formData, isActive });
+        await onSave(withDerivedVehicleLicensePlate({ ...formData, isActive }));
       }
 
       setShowSuccess(true);

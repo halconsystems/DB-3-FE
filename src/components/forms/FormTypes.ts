@@ -102,6 +102,7 @@ export interface ProfileField {
   label: string;
   type: 'text' | 'email' | 'password' | 'select' | 'date' | 'file' | 'toggle' | 'radio';
   required?: boolean;
+  readOnly?: boolean;
   placeholder?: string;
   options?: { value: string; label: string }[];
   inputWidth?: string | number;

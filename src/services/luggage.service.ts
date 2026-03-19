@@ -1,0 +1,100 @@
+import apiClient from "../lib/apiClient";
+
+export interface Luggage {
+  id: string;
+  ser: number;
+  name: string;
+  cnic: string;
+  vehicleLicensePlate: string;
+  vehicleLicenseNo: number;
+  description: string;
+  luggagePassType: number;
+  validFrom: string;
+  validTo: string;
+  qrCode: string;
+  tagId: string;
+  pdfFilePath: string;
+  externalUserId: string;
+  externalUserName: string;
+  created: string;
+  createdBy: string;
+  lastModified: string;
+  lastModifiedBy: string;
+  isDeleted: boolean;
+  isActive: boolean;
+}
+
+export interface ApiResponse<T> {
+  statusCode: number;
+  successMessage: string | null;
+  errorMessage: string | null;
+  data: T;
+}
+
+export interface CreateLuggageRequest {
+  name: string;
+  cnic: string;
+  vehicleLicensePlate: string;
+  vehicleLicenseNo: number;
+  description: string;
+  luggagePassType: number;
+  validFrom: string;
+  validTo: string;
+  externalUserId: string;
+}
+
+export interface UpdateLuggageRequest {
+  id: string;
+  name: string;
+  cnic: string;
+  vehicleLicensePlate: string;
+  vehicleLicenseNo: number;
+  description: string;
+  luggagePassType: number;
+  validFrom: string;
+  validTo: string;
+  lastModifiedBy: string;
+  isActive: boolean;
+  isDeleted: boolean;
+}
+
+export interface DeleteLuggageRequest {
+  id: string;
+}
+
+export type CreateLuggageResponse = ApiResponse<Luggage | null>;
+export type UpdateLuggageResponse = ApiResponse<Luggage | null>;
+export type DeleteLuggageResponse = ApiResponse<Luggage | null>;
+export type GetLuggageByIdResponse = ApiResponse<Luggage | null>;
+export type GetAllLuggageResponse = ApiResponse<Luggage[] | null>;
+
+export const getAllLuggage = async (): Promise<GetAllLuggageResponse> => {
+  const { data } = await apiClient.get<GetAllLuggageResponse>("/luggage/getall");
+  return data;
+};
+
+export const getLuggageById = async (id: string): Promise<GetLuggageByIdResponse> => {
+  const { data } = await apiClient.get<GetLuggageByIdResponse>("/luggage/getbyId", {
+    params: { id },
+  });
+  return data;
+};
+
+export const createLuggage = async (
+  payload: CreateLuggageRequest
+): Promise<CreateLuggageResponse> => {
+  const { data } = await apiClient.post<CreateLuggageResponse>("/luggage/create", payload);
+  return data;
+};
+
+export const updateLuggage = async (
+  payload: UpdateLuggageRequest
+): Promise<UpdateLuggageResponse> => {
+  const { data } = await apiClient.post<UpdateLuggageResponse>("/luggage/update", payload);
+  return data;
+};
+
+export const deleteLuggage = async (id: string): Promise<DeleteLuggageResponse> => {
+  const { data } = await apiClient.post<DeleteLuggageResponse>("/luggage/delete", { id });
+  return data;
+};
