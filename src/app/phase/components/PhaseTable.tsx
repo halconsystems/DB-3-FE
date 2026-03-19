@@ -97,17 +97,16 @@ export default function VendorTable({
     },
   ];
 
-  if (isLoading) return <div>Loading phases...</div>;
-  if (isError) return <div>Failed to load phases.</div>;
-
   return (
     <>
+      {isError && <div style={{ color: 'red', marginBottom: 12 }}>Failed to load phases.</div>}
       <DataTable<Phase>
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={onTabChange}
         columns={phaseColumns}
         data={phases}
+        loading={isLoading}
         showAddButton={false}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
