@@ -5,5 +5,9 @@ export const useUnreadNotifications = () => {
   return useQuery({
     queryKey: ["unread-notifications"],
     queryFn: getUnreadNotifications,
+    select: (data) => ({
+      notifications: data.data,
+      count: data.data.filter((n) => !n.isRead).length,
+    }),
   });
 };

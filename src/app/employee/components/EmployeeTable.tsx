@@ -8,7 +8,6 @@ import WarningModal from '../../../components/popup/WarningModal';
 import { saveTableRow } from '../../../lib/tableRowStorage';
 import { useEmployees } from '../../../hooks/employee/useEmployees';
 import { useRemoveEmployee } from '../../../hooks/employee/useRemoveEmployee';
-import Loader from '../../../components/ui/loader';
 
 export interface Employee {
   id: string;
