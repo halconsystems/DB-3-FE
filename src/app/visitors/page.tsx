@@ -1,11 +1,19 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
-import { ActionIcon, IconButton, AddNewButton } from '../../components/ui/ActionButton';
+import CircularButton from '../../components/ui/CircularButton';
+import { AddNewButton } from '../../components/ui/ActionButton';
+import HostDetailsModal from '../../components/ui/components/HostDetailsModal';
+import WarningModal from '../../components/popup/WarningModal';
+import { saveTableRow } from '../../lib/tableRowStorage';
+import { useVisitors } from '../../hooks/visitors/useVisitors';
+import { useDeleteVisitor } from '../../hooks/visitors/useDeleteVisitor';
+import type { ExternalVisitorPass } from '../../services/visitor.service';
 
 interface Visitor {
-  id: number;
+  id: string;
   name: string;
   vehicleInfo: string;
   visitDetail: string;
@@ -16,31 +24,92 @@ interface Visitor {
   status: 'Active' | 'Inactive';
 }
 
-const sampleVisitors: Visitor[] = [
-  { id: 1, name: 'Shahid Husain', vehicleInfo: 'ABC-123', visitDetail: 'Day Pass', validity: '07-02-1999', cnicNicopNo: '12345-1234567-1', qrReference: '0098451230892', hostDetails: 'host', status: 'Active' },
-  { id: 2, name: 'Ahmed Faraz', vehicleInfo: 'DEF-909', visitDetail: 'Day Pass', validity: '02-11-1997', cnicNicopNo: '12345-4564567-1', qrReference: '0098451230666', hostDetails: 'host', status: 'Inactive' },
-  { id: 3, name: 'Mustafa Javaid', vehicleInfo: 'PPA-889', visitDetail: 'Day Pass', validity: '17-12-1999', cnicNicopNo: '12345-4522267-1', qrReference: '0095541230892', hostDetails: 'host', status: 'Active' },
-  { id: 4, name: 'Arsalan Khan', vehicleInfo: 'SLP-786', visitDetail: 'Day Pass', validity: '21-07-2001', cnicNicopNo: '12345-4528907-1', qrReference: '1108451230892', hostDetails: 'host', status: 'Inactive' },
-  { id: 5, name: 'Shahid Husain', vehicleInfo: 'ABC-123', visitDetail: 'Day Pass', validity: '07-02-1999', cnicNicopNo: '12345-1234567-1', qrReference: '0098451230892', hostDetails: 'host', status: 'Active' },
-  { id: 6, name: 'Ahmed Faraz', vehicleInfo: 'DEF-909', visitDetail: 'Day Pass', validity: '02-11-1997', cnicNicopNo: '12345-4564567-1', qrReference: '0098451230666', hostDetails: 'host', status: 'Inactive' },
-  { id: 7, name: 'Mustafa Javaid', vehicleInfo: 'PPA-889', visitDetail: 'Day Pass', validity: '17-12-1999', cnicNicopNo: '12345-4522267-1', qrReference: '0095541230892', hostDetails: 'host', status: 'Active' },
-  { id: 8, name: 'Arsalan Khan', vehicleInfo: 'SLP-786', visitDetail: 'Day Pass', validity: '21-07-2001', cnicNicopNo: '12345-4528907-1', qrReference: '1108451230892', hostDetails: 'host', status: 'Inactive' },
-  { id: 9, name: 'Shahid Husain', vehicleInfo: 'ABC-123', visitDetail: 'Day Pass', validity: '07-02-1999', cnicNicopNo: '12345-1234567-1', qrReference: '0098451230892', hostDetails: 'host', status: 'Active' },
-  { id: 10, name: 'Ahmed Faraz', vehicleInfo: 'DEF-909', visitDetail: 'Day Pass', validity: '02-11-1997', cnicNicopNo: '12345-4564567-1', qrReference: '0098451230666', hostDetails: 'host', status: 'Inactive' },
-  { id: 11, name: 'Mustafa Javaid', vehicleInfo: 'PPA-889', visitDetail: 'Day Pass', validity: '17-12-1999', cnicNicopNo: '12345-4522267-1', qrReference: '0095541230892', hostDetails: 'host', status: 'Active' },
-];
+type SelectedVisitorRow = Pick<ExternalVisitorPass, 'id'>;
+
+const formatDate = (value: string) => {
+  if (!value) {
+    return '';
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString();
+};
 
 
 
 export default function VisitorsPage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [hostModalOpen, setHostModalOpen] = useState(false);
+  const [selectedHost, setSelectedHost] = useState<any>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedVisitor, setSelectedVisitor] = useState<SelectedVisitorRow | null>(null);
+  const [localRemovedIds, setLocalRemovedIds] = useState<string[]>([]);
+
+  const { data, isLoading, isError, error } = useVisitors();
+  const { mutateAsync: deleteVisitor, isPending: isDeleting } = useDeleteVisitor();
+
+  const visitors: Visitor[] = (data?.data || [])
+    .filter((item) => item && !localRemovedIds.includes(item.id))
+    .map((item) => ({
+      id: item.id,
+      name: item.name,
+      vehicleInfo: `${item.vehicleLicensePlate || '-'} ${item.vehicleLicenseNo || ''}`.trim(),
+      visitDetail: item.visitorPassType === 1 ? 'Long Stay' : 'Day Pass',
+      validity: `${formatDate(item.validFrom)} - ${formatDate(item.validTo)}`,
+      cnicNicopNo: item.cnic,
+      qrReference: item.qrCode || '-',
+      hostDetails: item.externalUserName || 'host',
+      status: item.isActive && !item.isDeleted ? 'Active' : 'Inactive',
+    }));
+
+  const router = useRouter();
 
   const handleAddNew = () => {
-    console.log('Add new visitor');
+    router.push('/visitors/add-visitor');
   };
 
   const handleEdit = (visitor: Visitor) => {
-    console.log('Edit visitor:', visitor);
+    saveTableRow('visitors', { id: visitor.id });
+    router.push('/visitors/edit-visitor');
+  };
+
+  const handleDelete = (visitor: SelectedVisitorRow) => {
+    setSelectedVisitor(visitor);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedVisitor) {
+      return;
+    }
+
+    try {
+      const response = await deleteVisitor({ id: selectedVisitor.id });
+      const isSuccess = response?.statusCode === 0 || response?.statusCode === 200;
+      if (isSuccess) {
+        setLocalRemovedIds((prev) => [...prev, selectedVisitor.id]);
+      }
+    } catch {
+      // Keep modal flow stable even when API fails.
+    }
+
+    setDeleteModalOpen(false);
+    setSelectedVisitor(null);
+  };
+
+  const handleHostClick = (row: Visitor) => {
+    setSelectedHost({
+      id: row.qrReference,
+      name: row.name,
+      phone: '0321-4239813', 
+      address: row.visitDetail,
+      imageUrl: '/images/avatar-placeholder.png',
+    });
+    setHostModalOpen(true);
   };
 
   const columns: Column<Visitor>[] = [
@@ -50,36 +119,56 @@ export default function VisitorsPage() {
     { key: 'validity', header: 'Validity' },
     { key: 'cnicNicopNo', header: 'CNIC/NICOP No.' },
     { key: 'qrReference', header: 'QR Reference' },
-    { 
-      key: 'hostDetails', 
+    {
+      key: 'hostDetails',
       header: 'Host Details',
-      render: () => <IconButton icon="/icons/host.png" alt="Host" />
+      render: (_, row) => (
+        <CircularButton imagePath="/icons/host.svg" imageAlt="Host" width={32} height={32} onClick={() => handleHostClick(row)} />
+      ),
     },
-    { 
-      key: 'status', 
+    {
+      key: 'status',
       header: 'Status',
-      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
+      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />,
     },
-    { 
-      key: 'action', 
+    {
+      key: 'action',
       header: 'Action',
-      render: (_, row) => <ActionIcon onClick={() => handleEdit(row)} />
+      render: (_, row) => (
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+          <CircularButton imagePath="/icons/DeleteButton.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+        </div>
+      ),
     },
   ];
 
   return (
     <DashboardLayout pageTitle="Visitor">
+      {isError && (
+        <div style={{ color: 'red', marginBottom: 12 }}>
+          Failed to load visitors: {error instanceof Error ? error.message : 'Unknown error'}
+        </div>
+      )}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
         <AddNewButton onClick={handleAddNew} />
       </div>
       <DataTable<Visitor>
         columns={columns}
-        data={sampleVisitors}
+        data={visitors}
+        loading={isLoading}
         showAddButton={false}
         currentPage={currentPage}
-        totalPages={3}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status}
+      />
+      <HostDetailsModal open={hostModalOpen} onClose={() => setHostModalOpen(false)} host={selectedHost || { id: '', name: '', phone: '', address: '', imageUrl: '' }} />
+      <WarningModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Visitor"
+        message={isDeleting ? 'Deleting...' : 'Are you sure you want to delete this visitor? This action cannot be undone.'}
       />
     </DashboardLayout>
   );

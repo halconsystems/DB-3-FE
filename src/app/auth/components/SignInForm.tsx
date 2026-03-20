@@ -1,8 +1,11 @@
 'use client';
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-export default function SignInForm() {
+interface SignInFormProps {
+  login: (data: { email: string; password: string }, options: any) => void;
+  isPending: boolean;
+}
+export default function SignInForm({ login, isPending }: SignInFormProps) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -10,14 +13,39 @@ export default function SignInForm() {
     password: '',
     remember: false
   });
+  const [formError, setFormError] = useState("");
+
+  if (isPending) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push('/dashboard');
+    setFormError("");
+    login(
+      { email: formData.email, password: formData.password },
+      {
+        onSuccess: (data: any) => {
+          localStorage.setItem("token", data.data.token);
+          if (data.data.fullName) {
+            localStorage.setItem("fullName", data.data.fullName);
+          }
+          router.push('/dashboard');
+        },
+        onError: (error: any) => {
+          if (error?.response?.status === 400) {
+            setFormError("Invalid email or password");
+          } else {
+            setFormError("Login failed. Please try again.");
+          }
+        }
+      }
+    );
   };
-
   return (
-    <form onSubmit={handleSubmit} className="auth_form">
+    <>
+      <form onSubmit={handleSubmit} className="auth_form">
+      {formError && (
+        <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>
+      )}
       <div className="form_title">Sign In</div>
 
       <div className="input_fields">
@@ -34,7 +62,6 @@ export default function SignInForm() {
             required
           />
         </div>
-
         <div className="input_field">
           <label htmlFor="password" className="auth_label">Password</label>
           <input
@@ -51,7 +78,7 @@ export default function SignInForm() {
             <img src="/icons/password.svg" alt="" />
           </button>
         </div>
-        <div className="forget"><a href="/auth/forgot-password" className="auth_link">Forgot Password?</a></div>
+        {/* Forgot Password link removed as requested */}
       </div>
 
       <div className="terms">
@@ -62,12 +89,15 @@ export default function SignInForm() {
           checked={formData.remember}
           onChange={(e) => setFormData({ ...formData, remember: e.target.checked })}
         />
-        <label htmlFor="remember">I Agree to Terms &amp; Conditions</label>
+        <label htmlFor="remember">I Agree to Terms & Conditions</label>
       </div>
 
-      <button type="submit" className="auth_button">Sign In</button>
+      <button type="submit" className="auth_button" disabled={isPending || !formData.remember}>
+        Sign In
+      </button>
 
       <p className="auth_text">Don't have an account? <a href="/auth/sign-up" className="auth_link">Sign Up</a></p>
-    </form>
+      </form>
+    </>
   );
 }

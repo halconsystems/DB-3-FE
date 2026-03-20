@@ -1,8 +1,10 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column, Tab } from '../../components/tables/DataTable';
 import { AddNewButton } from '../../components/ui/ActionButton';
+import CpAgentTable from '../cp-agent/components/CpAgentTable';
 import BankAccountTable from '../bank-account/components/BankAccountTable';
 import EmployeeTable from '../employee/components/EmployeeTable';
 import VendorTable from '../vendor-supplier/components/VendorTable';
@@ -41,12 +43,30 @@ const getAddButtonLabel = (tab: string) => {
   }
 };
 
+
 export default function ZonePage() {
-  const [activeTab, setActiveTab] = useState('bank-account');
+  const [activeTab, setActiveTab] = useState('cp-agent');
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
 
   const handleAddNew = () => {
-    console.log(`Add new ${activeTab}`);
+    if (activeTab === 'cp-agent') {
+      router.push('/cp-agent/add-cp');
+    } else if (activeTab === 'bank-account') {
+      router.push('/bank-account/add-bank');
+    } else if (activeTab === 'employee') {
+      router.push('/employee/add-employee');
+    } else if (activeTab === 'vendor-supplier') {
+      router.push('/vendor-supplier/add-vendor');
+    } else if (activeTab === 'package-type') {
+      router.push('/package-type/add-package');
+    } else if (activeTab === 'phase') {
+      router.push('/phase/add-phase');
+    } else if (activeTab === 'zone') {
+      router.push('/zone/add-zone');
+    } else {
+      console.log(`Add new ${activeTab}`);
+    }
   };
 
   const zoneColumns: Column<Zone>[] = [
@@ -61,6 +81,16 @@ export default function ZonePage() {
 
   const renderContent = () => {
     switch (activeTab) {
+      case 'cp-agent':
+        return (
+          <CpAgentTable
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onAddNew={handleAddNew}
+            addButtonLabel={getAddButtonLabel(activeTab)}
+          />
+        );
       case 'bank-account':
         return (
           <BankAccountTable
@@ -104,6 +134,16 @@ export default function ZonePage() {
       case 'phase':
         return (
           <PhaseTable
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onAddNew={handleAddNew}
+            addButtonLabel={getAddButtonLabel(activeTab)}
+          />
+        );
+      case 'zone':
+        return (
+          <ZoneTable
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={setActiveTab}

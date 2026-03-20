@@ -1,11 +1,18 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
-import { ActionIcon, AddNewButton } from '../../components/ui/ActionButton';
+import CircularButton from '../../components/ui/CircularButton';
+import { AddNewButton } from '../../components/ui/ActionButton';
+import WarningModal from '../../components/popup/WarningModal';
+import { saveTableRow } from '../../lib/tableRowStorage';
+import { useLuggage } from '../../hooks/luggage/useLuggage';
+import { useDeleteLuggage } from '../../hooks/luggage/useDeleteLuggage';
+import type { Luggage } from '../../services/luggage.service';
 
 interface LuggagePass {
-  id: number;
+  id: string;
   name: string;
   vehicleInfo: string;
   visitDetail: string;
@@ -15,31 +22,76 @@ interface LuggagePass {
   status: 'Active' | 'Inactive' | 'Pending';
 }
 
-const sampleLuggagePasses: LuggagePass[] = [
-  { id: 1, name: 'Shahid Husain', vehicleInfo: 'ABC-123', visitDetail: 'Day Pass', validity: '07-02-1999', cnicNicopNo: '12345-1234567-1', qrReference: '0098451230892', status: 'Active' },
-  { id: 2, name: 'Ahmed Faraz', vehicleInfo: 'DEF-909', visitDetail: 'Day Pass', validity: '02-11-1997', cnicNicopNo: '12345-4564567-1', qrReference: '0098451230666', status: 'Pending' },
-  { id: 3, name: 'Mustafa Javaid', vehicleInfo: 'PPA-889', visitDetail: 'Day Pass', validity: '17-12-1999', cnicNicopNo: '12345-4522267-1', qrReference: '0095541230892', status: 'Active' },
-  { id: 4, name: 'Arsalan Khan', vehicleInfo: 'SLP-786', visitDetail: 'Day Pass', validity: '21-07-2001', cnicNicopNo: '12345-4528907-1', qrReference: '1108451230892', status: 'Inactive' },
-  { id: 5, name: 'Shahid Husain', vehicleInfo: 'ABC-123', visitDetail: 'Day Pass', validity: '07-02-1999', cnicNicopNo: '12345-1234567-1', qrReference: '0098451230892', status: 'Active' },
-  { id: 6, name: 'Ahmed Faraz', vehicleInfo: 'DEF-909', visitDetail: 'Day Pass', validity: '02-11-1997', cnicNicopNo: '12345-4564567-1', qrReference: '0098451230666', status: 'Pending' },
-  { id: 7, name: 'Mustafa Javaid', vehicleInfo: 'PPA-889', visitDetail: 'Day Pass', validity: '17-12-1999', cnicNicopNo: '12345-4522267-1', qrReference: '0095541230892', status: 'Active' },
-  { id: 8, name: 'Arsalan Khan', vehicleInfo: 'SLP-786', visitDetail: 'Day Pass', validity: '21-07-2001', cnicNicopNo: '12345-4528907-1', qrReference: '1108451230892', status: 'Inactive' },
-  { id: 9, name: 'Shahid Husain', vehicleInfo: 'ABC-123', visitDetail: 'Day Pass', validity: '07-02-1999', cnicNicopNo: '12345-1234567-1', qrReference: '0098451230892', status: 'Pending' },
-  { id: 10, name: 'Ahmed Faraz', vehicleInfo: 'DEF-909', visitDetail: 'Day Pass', validity: '02-11-1997', cnicNicopNo: '12345-4564567-1', qrReference: '0098451230666', status: 'Inactive' },
-  { id: 11, name: 'Mustafa Javaid', vehicleInfo: 'PPA-889', visitDetail: 'Day Pass', validity: '17-12-1999', cnicNicopNo: '12345-4522267-1', qrReference: '0095541230892', status: 'Active' },
-];
+type SelectedLuggageRow = Pick<Luggage, 'id'>;
 
+const formatDate = (value: string) => {
+  if (!value) {
+    return '';
+  }
 
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString();
+};
 
 export default function LuggagePage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedLuggage, setSelectedLuggage] = useState<SelectedLuggageRow | null>(null);
+  const [localRemovedIds, setLocalRemovedIds] = useState<string[]>([]);
+
+  const { data, isLoading, isError, error } = useLuggage();
+  const { mutateAsync: deleteLuggage, isPending: isDeleting } = useDeleteLuggage();
+
+  const luggagePasses: LuggagePass[] = (data?.data || [])
+    .filter((item) => item && !localRemovedIds.includes(item.id))
+    .map((item) => ({
+      id: item.id,
+      name: item.name,
+      vehicleInfo: `${item.vehicleLicensePlate || '-'} ${item.vehicleLicenseNo || ''}`.trim(),
+      visitDetail: item.luggagePassType === 1 ? 'Long Stay' : 'Day Pass',
+      validity: `${formatDate(item.validFrom)} - ${formatDate(item.validTo)}`,
+      cnicNicopNo: item.cnic,
+      qrReference: item.qrCode || item.tagId || '-',
+      status: item.isActive && !item.isDeleted ? 'Active' : 'Inactive',
+    }));
+
+  const router = useRouter();
 
   const handleAddNew = () => {
-    console.log('Add new luggage pass');
+    router.push('/luggage/add-luggage');
   };
 
   const handleEdit = (luggage: LuggagePass) => {
-    console.log('Edit luggage pass:', luggage);
+    saveTableRow('luggage', { id: luggage.id });
+    router.push('/luggage/edit-luggage');
+  };
+
+  const handleDelete = (luggage: SelectedLuggageRow) => {
+    setSelectedLuggage(luggage);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedLuggage) {
+      return;
+    }
+
+    try {
+      const response = await deleteLuggage({ id: selectedLuggage.id });
+      const isSuccess = response?.statusCode === 0 || response?.statusCode === 200;
+      if (isSuccess) {
+        setLocalRemovedIds((prev) => [...prev, selectedLuggage.id]);
+      }
+    } catch {
+      // Keep modal flow stable even when API fails.
+    }
+
+    setDeleteModalOpen(false);
+    setSelectedLuggage(null);
   };
 
   const columns: Column<LuggagePass>[] = [
@@ -57,23 +109,40 @@ export default function LuggagePage() {
     { 
       key: 'action', 
       header: 'Action',
-      render: (_, row) => <ActionIcon onClick={() => handleEdit(row)} />
+      render: (_, row) => (
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+          <CircularButton imagePath="/icons/DeleteButton.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+        </div>
+      )
     },
   ];
 
   return (
     <DashboardLayout pageTitle="Luggage">
+      {isError && (
+        <div style={{ color: 'red', marginBottom: 12 }}>
+          Failed to load luggage: {error instanceof Error ? error.message : 'Unknown error'}
+        </div>
+      )}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
         <AddNewButton onClick={handleAddNew} />
       </div>
       <DataTable<LuggagePass>
         columns={columns}
-        data={sampleLuggagePasses}
+        data={luggagePasses}
+        loading={isLoading}
         showAddButton={false}
         currentPage={currentPage}
-        totalPages={3}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status}
+      />
+      <WarningModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Luggage Record"
+        message={isDeleting ? 'Deleting...' : 'Are you sure you want to delete this luggage record? This action cannot be undone.'}
       />
     </DashboardLayout>
   );

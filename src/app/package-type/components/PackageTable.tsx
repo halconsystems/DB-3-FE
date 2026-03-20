@@ -1,8 +1,11 @@
 'use client';
 import { useState } from 'react';
-import DataTable, { Column, Tab } from '../../../components/tables/DataTable';
+import { useRouter } from 'next/navigation';
+import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
+import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
-import { statusColumn, actionColumn } from '../../../components/tables/TableColumns';
+import WarningModal from '../../../components/popup/WarningModal';
+import { saveTableRow } from '../../../lib/tableRowStorage';
 
 export interface PackageType {
   id: number;
@@ -41,7 +44,7 @@ const DeleteIcon = ({ onClick }: { onClick: () => void }) => (
       cursor: 'pointer'
     }}
   >
-    <img src="/icons/delete Button.png" alt="Delete" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+    <img src="/icons/DeleteButton.svg" alt="Delete" style={{ width: 18, height: 18, objectFit: 'contain' }} />
   </button>
 );
 
@@ -61,32 +64,62 @@ export default function VendorTable({
   addButtonLabel
 }: VendorTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [packages, setPackages] = useState(samplePackages);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<PackageType | null>(null);
+
+  const router = useRouter();
 
   const handleEdit = (item: PackageType) => {
-    
+    saveTableRow('package-type', item);
+    router.push('/package-type/edit-package');
   };
   const handleDelete = (item: PackageType) => {
-    
+    setSelectedPackage(item);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedPackage) {
+      return;
+    }
+
+    setPackages((prev) => prev.filter((pkg) => pkg.id !== selectedPackage.id));
+    setDeleteModalOpen(false);
+    setSelectedPackage(null);
   };
   const packageColumns: Column<PackageType>[] = [
     { key: 'packageName', header: 'Package Name' },
     { key: 'packageId', header: 'Package ID' },
     { key: 'minCharges', header: 'Minimum Charges' },
     { key: 'minRenewalCharges', header: 'Minimum Renewal Charges' },
-    statusColumn,
-    actionColumn(handleEdit, handleDelete),
+    { 
+      key: 'status', 
+      header: 'Status',
+      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
+    },
+    { 
+      key: 'action', 
+      header: 'Action',
+      render: (_, row) => (
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+          <CircularButton imagePath="/icons/DeleteButton.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+        </div>
+      )
+    },
   ];
 
   return (
+    <>
     <DataTable<PackageType>
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={onTabChange}
       columns={packageColumns}
-      data={samplePackages}
+      data={packages}
       showAddButton={false}
       currentPage={currentPage}
-      totalPages={3}
       onPageChange={setCurrentPage}
       getRowStatus={(row) => row.status}
       headerContent={
@@ -95,5 +128,13 @@ export default function VendorTable({
         </div>
       }
     />
+    <WarningModal
+      isOpen={deleteModalOpen}
+      onClose={() => setDeleteModalOpen(false)}
+      onConfirm={handleConfirmDelete}
+      title="Delete Package"
+      message="Are you sure you want to delete this package? This action cannot be undone."
+    />
+    </>
   );
 }

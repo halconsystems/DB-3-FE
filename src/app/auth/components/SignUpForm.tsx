@@ -1,5 +1,8 @@
 'use client';
 import { useState } from "react";
+import { useRegister } from "../../../hooks/auth/useRegister";
+import { ToastContainer } from "../../../components/ui/toast";
+import Loader from "../../../components/ui/loader";
 
 interface SignUpFormProps {
   onDocumentUpload?: () => void;
@@ -23,9 +26,27 @@ export default function SignUpForm({ onDocumentUpload }: SignUpFormProps) {
     setCurrentStep(2);
   };
 
+  const { mutate: register, isPending } = useRegister();
+
+  if (isPending) {
+    return <Loader />;
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    // Map formData to RegisterRequest
+    register({
+      FullName: formData.fullName,
+      Email: formData.email,
+      Password: formData.password,
+      PhoneNumber: "", // Add phone number field if present in your form
+      VehicleId: formData.vehicleId,
+      CNIC: formData.cnic,
+      RoleId: "", // Add role id field if present in your form
+      ProfilePicture: undefined, // Add profile picture field if present in your form
+      CNICFrontImage: formData.document1 || undefined,
+      CNICBackImage: formData.document2 || undefined,
+    });
     if (onDocumentUpload) {
       onDocumentUpload();
     }
@@ -40,7 +61,9 @@ export default function SignUpForm({ onDocumentUpload }: SignUpFormProps) {
   };
 
   return (
-    <div style={{ height: currentStep === 1 ? "auto" : "100vh" }}>
+    <>
+      <ToastContainer />
+      <div style={{ height: currentStep === 1 ? "auto" : "100vh" }}>
       <div className="auth_lines">
         <div className={`auth_line ${currentStep === 1 ? 'active' : ''}`} onClick={() => { setCurrentStep(1) }}></div>
         <div className={`auth_line ${currentStep === 2 ? 'active' : ''}`} onClick={() => { setCurrentStep(2) }}></div>
@@ -109,7 +132,6 @@ export default function SignUpForm({ onDocumentUpload }: SignUpFormProps) {
                 required
               />
             </div>
-
             <div className="input_field">
               <label htmlFor="vehicleId" className="auth_label">Vehicle ID</label>
               <input
@@ -186,11 +208,14 @@ export default function SignUpForm({ onDocumentUpload }: SignUpFormProps) {
             </div>
           </div> */}
 
-          <button type="submit" className="auth_button" id="authBtn1">Submit</button>
+          <button type="submit" className="auth_button" id="authBtn1" disabled={isPending}>
+            {isPending ? "Registering..." : "Submit"}
+          </button>
 
           <p className="auth_text">Already have an account? <a href="/auth/sign-in" className="auth_link">Login</a></p>
         </form>
       )}
-    </div>
+      </div>
+    </>
   );
 }

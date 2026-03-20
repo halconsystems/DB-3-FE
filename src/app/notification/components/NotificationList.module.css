@@ -1,3 +1,26 @@
+.markAsReadButton {
+  margin-left: 16px;
+  padding: 6px 16px;
+  background: #27ae60;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px rgba(39, 174, 96, 0.08);
+}
+
+.markAsReadButton:hover:not(:disabled) {
+  background: #219150;
+}
+
+.markAsReadButton:disabled {
+  background: #b5e0c7;
+  color: #f4f4f4;
+  cursor: not-allowed;
+}
 .container {
   background: #fff;
   border-radius: 20px;

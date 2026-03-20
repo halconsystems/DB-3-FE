@@ -1,0 +1,106 @@
+// Demo data for Family Details, Vehicles, Workers, Visitor
+export const familyDetails = [
+  {
+    name: 'Shahid Husain',
+    relation: 'Son',
+    phone: '0301-2346550',
+    dob: '07-11-1998',
+    cnic: '12345-1234567-1',
+    residentCard: 'UID-9278645300001192',
+    issueDate: '23-02-2026',
+    expiryDate: '04-06-2030',
+    cardStatus: 'Active',
+  },
+  {
+    name: 'Mustafa Ahmed',
+    relation: 'Son',
+    phone: '0301-2346678',
+    dob: '22-05-1999',
+    cnic: '12345-1234562-3',
+    residentCard: 'UID-9278645300001188',
+    issueDate: '23-02-2026',
+    expiryDate: '04-06-2030',
+    cardStatus: 'Inactive',
+  },
+];
+
+export const vehicles = [
+  {
+    licensePlate: 'ABC-123',
+    vehicleETagId: '99952346550',
+    eTagType: '99952346550',
+    issueDate: '23-02-2026',
+    expiryDate: '04-06-2030',
+    tagStatus: 'Active',
+    ownership: 'Mrs. Shahid',
+    make: 'Toyota',
+    model: 'Land Cruiser',
+    year: '2022',
+    color: 'White',
+    status: 'Active',
+  },
+  {
+    licensePlate: 'DEF-909',
+    vehicleETagId: '96752346550',
+    eTagType: '96752346550',
+    issueDate: '23-02-2026',
+    expiryDate: '04-06-2030',
+    tagStatus: 'Inactive',
+    ownership: 'Owais Ahmed',
+    make: 'Honda',
+    model: 'Civic',
+    year: '2020',
+    color: 'Black',
+    status: 'Inactive',
+  },
+];
+
+export const workers = [
+  {
+    name: 'Shahid Husain',
+    jobType: 'Guard',
+    phone: '0301-2346550',
+    dob: '02-02-1999',
+    cnic: '12345-1234567-1',
+    policeVerification: 'Yes',
+    workerCardDelivery: 'Owner Address',
+    address: 'Khayaban E Iqbal, Phase VIII',
+    workerStatus: 'Active',
+    workerCard: 'UID-927864',
+  },
+  {
+    name: 'Ahmed Faraz',
+    jobType: 'Driver',
+    phone: '0301-2346540',
+    dob: '02-11-1997',
+    cnic: '12345-4548567-1',
+    policeVerification: 'No',
+    workerCardDelivery: 'Employer Address',
+    address: 'Khayaban E Iqbal, Phase VIII',
+    workerStatus: 'Inactive',
+    workerCard: 'UID-927864',
+  },
+];
+
+export const visitors = [
+  {
+    name: 'Shahid Husain',
+    vehicleInfo: 'ABC-123',
+    visitDetail: 'Day Pass',
+    validity: '07-02-1999',
+    cnic: '12345-1234567-1',
+    qrReference: '0098451230892',
+    hostDetails: '',
+    status: 'Active',
+  },
+  {
+    name: 'Ahmed Faraz',
+    vehicleInfo: 'DEF-909',
+    visitDetail: 'Day Pass',
+    validity: '02-11-1997',
+    cnic: '12345-4548567-1',
+    qrReference: '0098451230666',
+    hostDetails: '',
+    status: 'Inactive',
+  },
+];

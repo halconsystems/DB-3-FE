@@ -1,8 +1,11 @@
 'use client';
 import { useState } from 'react';
-import DataTable, { Column, Tab } from '../../../components/tables/DataTable';
+import { useRouter } from 'next/navigation';
+import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
+import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
-import { statusColumn, actionColumn } from '../../../components/tables/TableColumns';
+import WarningModal from '../../../components/popup/WarningModal';
+import { saveTableRow } from '../../../lib/tableRowStorage';
 export interface BankAccount {
   id: number;
   bankName: string;
@@ -42,13 +45,30 @@ export default function BankAccountTable({
   addButtonLabel 
 }: BankAccountTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [bankAccounts, setBankAccounts] = useState(sampleBankAccounts);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
+
+  const router = useRouter();
 
   const handleEdit = (item: BankAccount) => {
-    console.log('Edit item:', item);
+    saveTableRow('bank-account', item);
+    router.push('/bank-account/edit-bank');
   };
 
   const handleDelete = (item: BankAccount) => {
-    console.log('Delete item:', item);
+    setSelectedAccount(item);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedAccount) {
+      return;
+    }
+
+    setBankAccounts((prev) => prev.filter((account) => account.id !== selectedAccount.id));
+    setDeleteModalOpen(false);
+    setSelectedAccount(null);
   };
 
   const bankAccountColumns: Column<BankAccount>[] = [
@@ -58,20 +78,33 @@ export default function BankAccountTable({
     { key: 'iban', header: 'IBAN' },
     { key: 'branchCode', header: 'Branch Code' },
     { key: 'branch', header: 'Branch' },
-    statusColumn,
-    actionColumn(handleEdit, handleDelete),
+    { 
+      key: 'status', 
+      header: 'Status',
+      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
+    },
+    { 
+      key: 'action', 
+      header: 'Action',
+      render: (_, row) => (
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
+          <CircularButton imagePath="/icons/DeleteButton.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+        </div>
+      )
+    },
   ];
 
   return (
+    <>
     <DataTable<BankAccount>
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={onTabChange}
       columns={bankAccountColumns}
-      data={sampleBankAccounts}
+      data={bankAccounts}
       showAddButton={false}
       currentPage={currentPage}
-      totalPages={3}
       onPageChange={setCurrentPage}
       getRowStatus={(row) => row.status}
       headerContent={
@@ -80,5 +113,13 @@ export default function BankAccountTable({
         </div>
       }
     />
+    <WarningModal
+      isOpen={deleteModalOpen}
+      onClose={() => setDeleteModalOpen(false)}
+      onConfirm={handleConfirmDelete}
+      title="Delete Bank Account"
+      message="Are you sure you want to delete this bank account? This action cannot be undone."
+    />
+    </>
   );
 }
