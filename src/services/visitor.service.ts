@@ -34,7 +34,7 @@ export interface CreateExternalVisitorPassRequest {
   cnic: string;
   vehicleLicensePlate: string;
   vehicleLicenseNo: number;
-  description: string;
+  description?: string;
   visitorPassType: number;
   validFrom: string;
   validTo: string;
@@ -102,7 +102,7 @@ export const deleteExternalVisitorPass = async (
   id: string
 ): Promise<DeleteExternalVisitorPassResponse> => {
   const { data } = await apiClient.post<DeleteExternalVisitorPassResponse>(
-    "/visitors/deleteExternalVisitorPass",
+    "/visitors/deleteExternalVisitorPass",null,
     { params: { id } }
   );
   return data;

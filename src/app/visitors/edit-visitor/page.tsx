@@ -68,7 +68,7 @@ export default function EditVisitor() {
     ? {
         fullName: data.data.name,
         cnic: data.data.cnic,
-        vehicleNo: data.data.vehicleLicensePlate,
+        vehicleNo: data.data.vehicleLicensePlate?.split('-')[0] || '',
         vehicleNo2: String(data.data.vehicleLicenseNo || ''),
         licensePlate: data.data.vehicleLicensePlate,
         qrReference: data.data.qrCode,
@@ -84,7 +84,7 @@ export default function EditVisitor() {
     if (selected?.id) {
       setVisitorId(selected.id);
     }
-    clearTableRow('visitors');
+    // clearTableRow('visitors');
   }, []);
 
   const handleSave = async (formData: ProfileFormData) => {

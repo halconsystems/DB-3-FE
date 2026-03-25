@@ -83,7 +83,6 @@ export default function EditVehicle() {
         color: data.data.color || '',
         year: data.data.year || '',
         eTagId: data.data.eTagId || '',
-        eTagType: data.data.eTagId || '',
         issueDate: toDateInputValue(data.data.validFrom),
         expiryDate: toDateInputValue(data.data.validTo),
         tagStatus: data.data.tagStatus === 1 ? 'active' : 'inactive',

@@ -5,6 +5,7 @@ import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { vehicleFields } from '../fields';
 import { useCreateVehicle } from '../../../hooks/vehicle/useCreateVehicle';
+import { getAllExternalUsers } from '../../../services/externalUser.service';
 
 const toIsoDate = (value?: string) => {
   if (!value) {
@@ -45,19 +46,28 @@ export default function AddNewVehicle() {
   const handleSave = async (data: ProfileFormData) => {
     setFormError('');
 
+    // Get createdBy from localStorage as before
     const userRaw = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
     let createdBy = 'system';
-    let externalUserId = 'system';
-
     if (userRaw) {
       try {
         const user = JSON.parse(userRaw);
         createdBy = user?.fullName || user?.name || user?.email || 'system';
-        externalUserId = user?.id || user?.userId || user?.email || 'system';
       } catch {
         createdBy = 'system';
-        externalUserId = 'system';
       }
+    }
+
+    // Fetch external users and use first valid id, fallback to 'system'
+    let externalUserId = 'system';
+    try {
+      const users = await getAllExternalUsers();
+      const firstValid = users.find(u => u.id);
+      if (firstValid && firstValid.id) {
+        externalUserId = firstValid.id;
+      }
+    } catch (e) {
+      // fallback to 'system' if API fails
     }
 
     try {
