@@ -51,7 +51,7 @@ export default function LuggagePage() {
     .map((item) => ({
       id: item.id,
       name: item.name,
-      vehicleInfo: `${item.vehicleLicensePlate || '-'} ${item.vehicleLicenseNo || ''}`.trim(),
+      vehicleInfo: item.vehicleLicensePlate || '-',
       visitDetail: item.luggagePassType === 1 ? 'Long Stay' : 'Day Pass',
       validity: `${formatDate(item.validFrom)} - ${formatDate(item.validTo)}`,
       cnicNicopNo: item.cnic,
@@ -66,8 +66,8 @@ export default function LuggagePage() {
   };
 
   const handleEdit = (luggage: LuggagePass) => {
-    saveTableRow('luggage', { id: luggage.id });
-    router.push('/luggage/edit-luggage');
+    saveTableRow('luggage', luggage);
+    router.push(`/luggage/edit-luggage?id=${encodeURIComponent(luggage.id)}`);
   };
 
   const handleDelete = (luggage: SelectedLuggageRow) => {

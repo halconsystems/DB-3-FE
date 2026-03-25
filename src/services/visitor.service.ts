@@ -34,6 +34,7 @@ export interface CreateExternalVisitorPassRequest {
   cnic: string;
   vehicleLicensePlate: string;
   vehicleLicenseNo: number;
+  description: string;
   visitorPassType: number;
   validFrom: string;
   validTo: string;
@@ -62,7 +63,7 @@ export type GetAllExternalVisitorPassResponse = ApiResponse<ExternalVisitorPass[
 
 export const getAllExternalVisitorPass = async (): Promise<GetAllExternalVisitorPassResponse> => {
   const { data } = await apiClient.get<GetAllExternalVisitorPassResponse>(
-    "/visitors/getall"
+    "/visitors/getallExternalVisitorPass"
   );
   return data;
 };
@@ -71,7 +72,7 @@ export const getExternalVisitorPassById = async (
   id: string
 ): Promise<GetExternalVisitorPassByIdResponse> => {
   const { data } = await apiClient.get<GetExternalVisitorPassByIdResponse>(
-    "/visitors/getbyId",
+    "/visitors/getbyIdExternalVisitorPass",
     { params: { id } }
   );
   return data;
@@ -81,7 +82,7 @@ export const createExternalVisitorPass = async (
   payload: CreateExternalVisitorPassRequest
 ): Promise<CreateExternalVisitorPassResponse> => {
   const { data } = await apiClient.post<CreateExternalVisitorPassResponse>(
-    "/visitors/create-external-visitor-pass",
+    "/visitors/createExternalVisitorPass",
     payload
   );
   return data;
@@ -91,7 +92,7 @@ export const updateExternalVisitorPass = async (
   payload: UpdateExternalVisitorPassRequest
 ): Promise<UpdateExternalVisitorPassResponse> => {
   const { data } = await apiClient.post<UpdateExternalVisitorPassResponse>(
-    "/visitors/update-external-visitor-pass",
+    "/visitors/updateExternalVisitorPass",
     payload
   );
   return data;
@@ -101,7 +102,7 @@ export const deleteExternalVisitorPass = async (
   id: string
 ): Promise<DeleteExternalVisitorPassResponse> => {
   const { data } = await apiClient.delete<DeleteExternalVisitorPassResponse>(
-    "/visitors/delete-external-visitor-pass",
+    "/visitors/deleteExternalVisitorPass",
     { params: { id } }
   );
   return data;

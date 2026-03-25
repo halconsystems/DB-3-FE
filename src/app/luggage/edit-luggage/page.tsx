@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
@@ -56,8 +57,10 @@ const toLuggagePassType = (quickPick?: string): number | null => {
   return null;
 };
 
+
 export default function EditLuggage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [luggageId, setLuggageId] = useState<string | undefined>();
   const [formError, setFormError] = useState('');
   const updateLuggageMutation = useUpdateLuggage();
@@ -68,8 +71,8 @@ export default function EditLuggage() {
     ? {
         fullName: data.data.name,
         cnic: data.data.cnic,
-        vehicleNo: data.data.vehicleLicensePlate,
-        vehicleNo2: String(data.data.vehicleLicenseNo || ''),
+        vehicleNo: data.data.vehicleLicensePlate?.split('-')[0] || '',
+        vehicleNo2: data.data.vehicleLicensePlate?.split('-')[1] || '',
         licensePlate: data.data.vehicleLicensePlate,
         qrReference: data.data.qrCode,
         status: data.data.isActive ? 'active' : 'inactive',
@@ -85,9 +88,15 @@ export default function EditLuggage() {
     const selected = getTableRow<{ id?: string }>('luggage');
     if (selected?.id) {
       setLuggageId(selected.id);
+      clearTableRow('luggage');
+      return;
     }
-    clearTableRow('luggage');
-  }, []);
+    // Fallback: try to get id from URL query string
+    const urlId = searchParams?.get('id');
+    if (urlId) {
+      setLuggageId(urlId);
+    }
+  }, [searchParams]);
 
   const handleSave = async (formData: ProfileFormData) => {
     if (!luggageId || !data?.data) {
