@@ -84,7 +84,9 @@ export default function EditVisitor() {
     if (selected?.id) {
       setVisitorId(selected.id);
     }
-    // clearTableRow('visitors');
+    setTimeout(() => {
+      clearTableRow('visitors');
+    }, 5000);
   }, []);
 
   const handleSave = async (formData: ProfileFormData) => {

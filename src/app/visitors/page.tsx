@@ -56,7 +56,7 @@ export default function VisitorsPage() {
     .map((item) => ({
       id: item.id,
       name: item.name,
-      vehicleInfo: `${item.vehicleLicensePlate || '-'} ${item.vehicleLicenseNo || ''}`.trim(),
+      vehicleInfo: `${item.vehicleLicensePlate}`,
       visitDetail: item.visitorPassType === 1 ? 'Long Stay' : 'Day Pass',
       validity: `${formatDate(item.validFrom)} - ${formatDate(item.validTo)}`,
       cnicNicopNo: item.cnic,
