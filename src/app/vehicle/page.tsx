@@ -7,9 +7,12 @@ import CircularButton from '../../components/ui/CircularButton';
 import { AddNewButton } from '../../components/ui/ActionButton';
 import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
+import { useVehicles } from '../../hooks/vehicle/useVehicles';
+import { useDeleteVehicle } from '../../hooks/vehicle/useDeleteVehicle';
+import type { ExternalVehicle } from '../../services/vehicle.service';
 
 interface Vehicle {
-  id: number;
+  id: string;
   licensePlate: string;
   vehicleETagId: string;
   eTagType: string;
@@ -24,28 +27,67 @@ interface Vehicle {
   status: 'Active' | 'Inactive';
 }
 
-const sampleVehicles: Vehicle[] = [
-  { id: 1, licensePlate: 'ABC-123', vehicleETagId: '99952346550', eTagType: '99952346550', issueDate: '23-02-2026', expiryDate: '04-06-2030', tagStatus: 'Active', ownership: 'Mrs. Shahid', make: 'Toyota', model: 'Land Cruiser', year: '2022', color: 'White', status: 'Active' },
-  { id: 2, licensePlate: 'DEF-909', vehicleETagId: '96752346550', eTagType: '96752346550', issueDate: '23-02-2026', expiryDate: '04-06-2030', tagStatus: 'Inactive', ownership: 'Owais Ahmed', make: 'Honda', model: 'Civic', year: '2020', color: 'Black', status: 'Inactive' },
-  { id: 3, licensePlate: 'PPA-889', vehicleETagId: '96752346666', eTagType: '96752346666', issueDate: '23-02-2026', expiryDate: '04-06-2030', tagStatus: 'Active', ownership: 'Arsalan Khan', make: 'Toyota', model: 'Prado', year: '2017', color: 'Silver', status: 'Active' },
-  { id: 4, licensePlate: 'SLP-786', vehicleETagId: '96110346666', eTagType: '96110346666', issueDate: '23-02-2026', expiryDate: '04-06-2030', tagStatus: 'Inactive', ownership: 'Ayaan Shabbir', make: 'Toyota', model: 'Corolla', year: '2019', color: 'Gold', status: 'Inactive' },
-  { id: 5, licensePlate: 'ABC-123', vehicleETagId: '99952346550', eTagType: '99952346550', issueDate: '23-02-2026', expiryDate: '04-06-2030', tagStatus: 'Active', ownership: 'Mrs. Shahid', make: 'Toyota', model: 'Land Cruiser', year: '2022', color: 'White', status: 'Active' },
-  { id: 6, licensePlate: 'DEF-909', vehicleETagId: '96752346550', eTagType: '96752346550', issueDate: '23-02-2026', expiryDate: '04-06-2030', tagStatus: 'Inactive', ownership: 'Owais Ahmed', make: 'Honda', model: 'Civic', year: '2020', color: 'Black', status: 'Inactive' },
-  { id: 7, licensePlate: 'PPA-889', vehicleETagId: '96752346666', eTagType: '96752346666', issueDate: '23-02-2026', expiryDate: '04-06-2030', tagStatus: 'Active', ownership: 'Arsalan Khan', make: 'Toyota', model: 'Prado', year: '2017', color: 'Silver', status: 'Active' },
-  { id: 8, licensePlate: 'SLP-786', vehicleETagId: '96110346666', eTagType: '96110346666', issueDate: '23-02-2026', expiryDate: '04-06-2030', tagStatus: 'Inactive', ownership: 'Ayaan Shabbir', make: 'Toyota', model: 'Corolla', year: '2019', color: 'Gold', status: 'Inactive' },
-  { id: 9, licensePlate: 'ABC-123', vehicleETagId: '99952346550', eTagType: '99952346550', issueDate: '23-02-2026', expiryDate: '04-06-2030', tagStatus: 'Active', ownership: 'Mrs. Shahid', make: 'Toyota', model: 'Land Cruiser', year: '2022', color: 'White', status: 'Active' },
-  { id: 10, licensePlate: 'DEF-909', vehicleETagId: '96752346550', eTagType: '96752346550', issueDate: '23-02-2026', expiryDate: '04-06-2030', tagStatus: 'Inactive', ownership: 'Owais Ahmed', make: 'Honda', model: 'Civic', year: '2020', color: 'Black', status: 'Inactive' },
-  { id: 11, licensePlate: 'PPA-889', vehicleETagId: '96752346666', eTagType: '96752346666', issueDate: '23-02-2026', expiryDate: '04-06-2030', tagStatus: 'Active', ownership: 'Arsalan Khan', make: 'Toyota', model: 'Prado', year: '2017', color: 'Silver', status: 'Active' },
-  { id: 12, licensePlate: 'SLP-786', vehicleETagId: '96110346666', eTagType: '96110346666', issueDate: '23-02-2026', expiryDate: '04-06-2030', tagStatus: 'Inactive', ownership: 'Ayaan Shabbir', make: 'Toyota', model: 'Corolla', year: '2019', color: 'Gold', status: 'Inactive' },
-];
+type SelectedVehicleRow = Pick<ExternalVehicle, 'id'>;
 
+const formatDate = (value?: string | null) => {
+  if (!value) {
+    return '-';
+  }
 
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString();
+};
+
+const formatLicensePlate = (license?: string | null, licenseNo?: number | null) => {
+  const first = (license || '').trim();
+  const second = licenseNo === null || licenseNo === undefined ? '' : String(licenseNo);
+
+  if (!first && !second) {
+    return '-';
+  }
+
+  if (!second) {
+    return first || '-';
+  }
+
+  if (first.includes('-')) {
+    return first;
+  }
+
+  return `${first}-${second}`;
+};
 
 export default function VehiclePage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [vehicles, setVehicles] = useState(sampleVehicles);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<SelectedVehicleRow | null>(null);
+  const [localRemovedIds, setLocalRemovedIds] = useState<string[]>([]);
+
+  const { data, isLoading, isError, error } = useVehicles();
+  const { mutateAsync: deleteVehicle, isPending: isDeleting } = useDeleteVehicle();
+
+  const vehicles: Vehicle[] = (data?.data || [])
+    .filter((item) => item && !localRemovedIds.includes(item.id))
+    .map((item) => ({
+      id: item.id,
+      licensePlate: formatLicensePlate(item.license, item.licenseNo),
+      vehicleETagId: item.eTagId || '-',
+      eTagType: item.eTagId || '-',
+      issueDate: formatDate(item.validFrom),
+      expiryDate: formatDate(item.validTo),
+      tagStatus: item.tagStatus === 1 ? 'Active' : 'Inactive',
+      ownership: item.externalUserId || '-',
+      make: item.make || '-',
+      model: item.model || '-',
+      year: item.year || '-',
+      color: item.color || '-',
+      status: item.isActive && !item.isDeleted ? 'Active' : 'Inactive',
+    }));
+
   const router = useRouter();
 
   const handleAddNew = () => {
@@ -54,21 +96,30 @@ export default function VehiclePage() {
   };
 
   const handleEdit = (vehicle: Vehicle) => {
-    saveTableRow('vehicle', vehicle);
-    router.push('/vehicle/edit-vehicle');
+    saveTableRow('vehicle', { id: vehicle.id });
+    router.push(`/vehicle/edit-vehicle?id=${encodeURIComponent(vehicle.id)}`);
   };
 
-  const handleDelete = (vehicle: Vehicle) => {
+  const handleDelete = (vehicle: SelectedVehicleRow) => {
     setSelectedVehicle(vehicle);
     setDeleteModalOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!selectedVehicle) {
       return;
     }
 
-    setVehicles((prev) => prev.filter((vehicle) => vehicle.id !== selectedVehicle.id));
+    try {
+      const response = await deleteVehicle({ id: selectedVehicle.id });
+      const isSuccess = response?.statusCode === 0 || response?.statusCode === 200 || response?.statusCode === 204;
+      if (isSuccess) {
+        setLocalRemovedIds((prev) => [...prev, selectedVehicle.id]);
+      }
+    } catch {
+      // Keep modal flow stable even when API fails.
+    }
+
     setDeleteModalOpen(false);
     setSelectedVehicle(null);
   };
@@ -108,12 +159,18 @@ export default function VehiclePage() {
 
   return (
     <DashboardLayout pageTitle="Vehicle">
+      {isError && (
+        <div style={{ color: 'red', marginBottom: 12 }}>
+          Failed to load vehicles: {error instanceof Error ? error.message : 'Unknown error'}
+        </div>
+      )}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
         <AddNewButton onClick={handleAddNew} />
       </div>
       <DataTable<Vehicle>
         columns={columns}
         data={vehicles}
+        loading={isLoading}
         showAddButton={false}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
@@ -124,7 +181,7 @@ export default function VehiclePage() {
         onClose={() => setDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Delete Vehicle"
-        message="Are you sure you want to delete this vehicle? This action cannot be undone."
+        message={isDeleting ? 'Deleting...' : 'Are you sure you want to delete this vehicle? This action cannot be undone.'}
       />
     </DashboardLayout>
   );

@@ -1,83 +1,232 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
+import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
+import { workerFields } from '../fields';
 import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
+import { useWorkerById } from '../../../hooks/workers/useWorkerById';
+import { useUpdateWorker } from '../../../hooks/workers/useUpdateWorker';
 
-// Fields for Edit Worker (same as Add Worker)
-const workerFields: ProfileField[] = [
-  { name: 'search', label: 'Search (If already registered)', type: 'text', required: false, placeholder: 'Type Membership No. / CNIC / Reg. Cell No.' },
-  { name: 'jobType', label: 'Select Job Type', type: 'select', required: true, options: [ { value: '', label: 'Select here' }, { value: 'driver', label: 'Driver' }, { value: 'cook', label: 'Cook' }, { value: 'guard', label: 'Guard' }, { value: 'peon', label: 'Peon' }, { value: 'gardener', label: 'Gardener' } ] },
-  { name: 'fullName', label: 'Full Name', type: 'text', required: true, placeholder: 'Full Name here' },
-  { name: 'fatherOrHusband', label: 'Father / Husband Name', type: 'text', required: true, placeholder: 'Full Name here' },
-  { name: 'dob', label: 'Date of Birth (DOB)', type: 'date', required: true, placeholder: 'Select Date' },
-  { name: 'cellNumber', label: 'Add Cell Number', type: 'text', required: true, placeholder: '0300-1234567' },
-  { name: 'cnic', label: 'CNIC / NICOP No.', type: 'text', required: false, placeholder: '(12345-1234567-1)' },
-  { name: 'policeVerification', label: 'Police Verification', type: 'select', required: true, options: [ { value: '', label: 'Select (Yes/No)' }, { value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' } ] },
-  { name: 'cardDelivery', label: `Select Worker's Card Delivery`, type: 'select', required: false, options: [ { value: '', label: 'Select here' }, { value: 'owner', label: 'Owner/Employer Address' }, { value: 'self', label: 'Self Pick Up' } ] },
-  { name: 'address', label: 'Select Address / Location', type: 'text', required: false, placeholder: 'Select here' },
-  { name: 'cardNo', label: 'Card No. / ID', type: 'text', required: false, placeholder: 'Type here' },
-  { name: 'issueDate', label: 'Issue Date', type: 'date', required: false, placeholder: 'Select Date' },
-  { name: 'expiryDate', label: 'Expiry Date', type: 'date', required: true, placeholder: 'Select Date' },
-  { name: 'cardStatus', label: 'Card Status', type: 'select', required: true, options: [ { value: '', label: 'Select here' }, { value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' } ] },
-  { name: 'profilePicture', label: 'Profile Picture', type: 'file', required: true },
-  { name: 'policeVerificationFile', label: 'Police Verification+', type: 'file', required: false, placeholder: 'If Yes Add Picture' },
-  { name: 'cnicFront', label: 'CNIC Front', type: 'file', required: true },
-  { name: 'cnicBack', label: 'CNIC Back', type: 'file', required: true },
-];
+const toDateInputValue = (value?: string | null) => {
+  if (!value) {
+    return '';
+  }
 
-// Mock data for editing a worker
-const mockWorkerData: ProfileFormData = {
-  search: '',
-  jobType: 'driver',
-  fullName: 'Ali Raza',
-  fatherOrHusband: 'Raza Hussain',
-  dob: '1990-01-01',
-  cellNumber: '0300-1234567',
-  cnic: '12345-1234567-1',
-  policeVerification: 'yes',
-  cardDelivery: 'owner',
-  address: '123 Main St',
-  cardNo: 'W-001',
-  issueDate: '2026-03-01',
-  expiryDate: '2027-03-01',
-  cardStatus: 'active',
-  profilePicture: undefined,
-  policeVerificationFile: undefined,
-  cnicFront: undefined,
-  cnicBack: undefined,
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  return date.toISOString().split('T')[0];
+};
+
+const toIsoDate = (value?: string) => {
+  if (!value) {
+    return new Date().toISOString();
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return new Date().toISOString();
+  }
+
+  return date.toISOString();
+};
+
+const toJobType = (value?: string): number => {
+  switch (value) {
+    case 'driver':
+      return 0;
+    case 'cook':
+      return 1;
+    case 'guard':
+      return 2;
+    case 'peon':
+      return 3;
+    case 'gardener':
+      return 4;
+    default:
+      return 0;
+  }
+};
+
+const toJobTypeFormValue = (value?: number): string => {
+  switch (value) {
+    case 0:
+      return 'driver';
+    case 1:
+      return 'cook';
+    case 2:
+      return 'guard';
+    case 3:
+      return 'peon';
+    case 4:
+      return 'gardener';
+    default:
+      return '';
+  }
+};
+
+const toCardStatus = (value?: string): number => {
+  if (value === 'active') {
+    return 1;
+  }
+  if (value === 'inactive') {
+    return 0;
+  }
+  return 0;
+};
+
+const toCardStatusFormValue = (value?: number): string => {
+  if (value === 1) {
+    return 'active';
+  }
+  return 'inactive';
+};
+
+const toWorkerCardDeliveryType = (value?: string): number => {
+  if (value === 'owner') {
+    return 0;
+  }
+  if (value === 'self') {
+    return 1;
+  }
+  return 0;
+};
+
+const toWorkerCardDeliveryTypeFormValue = (value?: number): string => {
+  if (value === 0) {
+    return 'owner';
+  }
+  if (value === 1) {
+    return 'self';
+  }
+  return '';
+};
+
+const toPoliceVerification = (value?: string): boolean => {
+  return value === 'yes';
+};
+
+const toPoliceVerificationFormValue = (value?: boolean): string => {
+  return value ? 'yes' : 'no';
+};
+
+const toAttachmentString = (value?: File | null, fallback?: string | null): string => {
+  if (value) {
+    return value.name;
+  }
+  return fallback || '';
 };
 
 export default function EditWorker() {
   const router = useRouter();
-  const [initialValues, setInitialValues] = useState<ProfileFormData>(mockWorkerData);
+  const searchParams = useSearchParams();
+  const [workerId, setWorkerId] = useState<string | undefined>();
+  const [formError, setFormError] = useState('');
+  const updateWorkerMutation = useUpdateWorker();
+
+  const { data, isLoading, isError } = useWorkerById(workerId);
+
+  const initialValues: ProfileFormData | null = data?.data
+    ? {
+        jobType: toJobTypeFormValue(data.data.jobType),
+        fullName: data.data.name,
+        fatherOrHusband: data.data.fatherOrHusbandName,
+        dob: toDateInputValue(data.data.dateOfBirth),
+        cellNumber: data.data.phoneNumber,
+        cnic: data.data.cnic,
+        policeVerification: toPoliceVerificationFormValue(data.data.policeVerification),
+        cardDelivery: toWorkerCardDeliveryTypeFormValue(data.data.workerCardDeliveryType),
+        cardNo: data.data.workerCardNumber,
+        issueDate: toDateInputValue(data.data.validFrom),
+        expiryDate: toDateInputValue(data.data.validTo),
+        cardStatus: toCardStatusFormValue(data.data.cardStatus),
+      }
+    : null;
 
   useEffect(() => {
-    const selected = getTableRow<ProfileFormData>('workers');
-    setInitialValues({ ...mockWorkerData, ...(selected ?? {}) });
-    clearTableRow('workers');
-  }, []);
+    const selected = getTableRow<{ id?: string }>('workers');
+    if (selected?.id) {
+      setWorkerId(selected.id);
+      clearTableRow('workers');
+      return;
+    }
 
-  const handleSave = (data: ProfileFormData) => {
-    // Save logic here
-    console.log('Updated:', data);
+    const urlId = searchParams?.get('id');
+    if (urlId) {
+      setWorkerId(urlId);
+    }
+  }, [searchParams]);
+
+  const handleSave = async (formData: ProfileFormData) => {
+    if (!workerId || !data?.data) {
+      return;
+    }
+
+    setFormError('');
+
+    const userRaw = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    let lastModifiedBy = 'system';
+
+    if (userRaw) {
+      try {
+        const user = JSON.parse(userRaw);
+        lastModifiedBy = user?.fullName || user?.name || user?.email || 'system';
+      } catch {
+        lastModifiedBy = 'system';
+      }
+    }
+
+    try {
+      await updateWorkerMutation.mutateAsync({
+        id: workerId,
+        ser: data.data.ser,
+        jobType: toJobType(formData.jobType),
+        name: formData.fullName || data.data.name || '',
+        fatherOrHusbandName: formData.fatherOrHusband || data.data.fatherOrHusbandName || '',
+        phoneNumber: formData.cellNumber || data.data.phoneNumber || '',
+        cnic: formData.cnic || data.data.cnic || '',
+        dateOfBirth: toIsoDate(formData.dob),
+        cnicFront: toAttachmentString(formData.cnicFront, data.data.cnicFront),
+        cnicBack: toAttachmentString(formData.cnicBack, data.data.cnicBack),
+        profilePicture: toAttachmentString(formData.profilePicture, data.data.profilePicture),
+        policeVerification: toPoliceVerification(formData.policeVerification),
+        policeVerificationAttachment: toAttachmentString(formData.policeVerificationFile, data.data.policeVerificationAttachment),
+        workerCardNumber: formData.cardNo || data.data.workerCardNumber || '',
+        lastModifiedBy,
+        cardStatus: toCardStatus(formData.cardStatus),
+        workerCardDeliveryType: toWorkerCardDeliveryType(formData.cardDelivery),
+        validFrom: toIsoDate(formData.issueDate),
+        validTo: toIsoDate(formData.expiryDate),
+      });
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update worker';
+      setFormError(message);
+      throw new Error(message);
+    }
   };
 
   return (
     <DashboardLayout pageTitle="Edit Worker">
       <div style={{ margin: '0 auto' }}>
-        <CommonEntityForm
-          title="Please update details below!"
-          onSave={handleSave}
-          onCancel={() => router.back()}
-          saveButtonText='Edit'
-          fields={workerFields}
-          initialValues={initialValues}
-        />
+        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
+        {!workerId && <div style={{ color: 'red', marginBottom: 12 }}>No worker id found for editing.</div>}
+        {isError && <div style={{ color: 'red', marginBottom: 12 }}>Failed to load worker details.</div>}
+        {(isLoading || initialValues) && (
+          <CommonEntityForm
+            title="Please update details below!"
+            onSave={handleSave}
+            onCancel={() => router.back()}
+            saveButtonText="Edit"
+            fields={workerFields}
+            initialValues={initialValues || undefined}
+            loading={isLoading || updateWorkerMutation.isPending}
+            showStatusToggle={false}
+          />
+        )}
       </div>
     </DashboardLayout>
   );
 }
-
-

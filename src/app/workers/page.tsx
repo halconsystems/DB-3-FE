@@ -6,9 +6,13 @@ import DataTable, { StatusBadge, Column } from '../../components/tables/DataTabl
 import { AddNewButton } from '../../components/ui/ActionButton';
 import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
+import { useWorkers } from '../../hooks/workers/useWorkers';
+import { useDeleteWorker } from '../../hooks/workers/useDeleteWorker';
+import type { ExternalWorker } from '../../services/worker.service';
+import CircularButton from '../../components/ui/CircularButton';
 
 interface Worker {
-  id: number;
+  id: string;
   name: string;
   jobType: string;
   phone: string;
@@ -24,29 +28,88 @@ interface Worker {
   cardStatus?: 'Active' | 'Expire' | 'Blocked';
 }
 
-const sampleWorkers: Worker[] = [
-  { id: 1, name: 'Shahid Husain', jobType: 'Guard', phone: '0301-2346550', dob: '07-02-1999', cnicNicopNo: '12345-1234567-1', policeVerification: 'Yes', workerCardDelivery: 'Owner Address', address: 'Khayaban E Iqbal, Phase VIII', workerStatus: 'Active', workerCard: 'UID-927864' , issuedDate: '01-01-2023', expiryDate: '31-12-2023', cardStatus: 'Active' },
-  { id: 2, name: 'Ahmed Faraz', jobType: 'Driver', phone: '0301-2346540', dob: '02-11-1997', cnicNicopNo: '12345-4564567-1', policeVerification: 'No', workerCardDelivery: 'Employer Address', address: 'Khayaban E Iqbal, Phase VIII', workerStatus: 'Inactive', workerCard: 'UID-927864' , issuedDate: '01-01-2023', expiryDate: '31-12-2023', cardStatus: 'Blocked' },
-  { id: 3, name: 'Mustafa Javaid', jobType: 'Cook', phone: '0301-2346530', dob: '17-12-1999', cnicNicopNo: '12345-4522267-1', policeVerification: 'Yes', workerCardDelivery: 'Self Pickup', address: 'Khayaban E Iqbal, Phase VIII', workerStatus: 'Active', workerCard: 'UID-927864' , issuedDate: '01-01-2023', expiryDate: '31-12-2023', cardStatus: 'Expire' },
-  { id: 4, name: 'Arsalan Khan', jobType: 'Peon', phone: '0301-2346520', dob: '21-07-2001', cnicNicopNo: '12345-4528907-1', policeVerification: 'No', workerCardDelivery: 'Owner Address', address: 'Khayaban E Iqbal, Phase VIII', workerStatus: 'Inactive', workerCard: 'UID-927864' , issuedDate: '01-01-2023', expiryDate: '31-12-2023', cardStatus: 'Active' },
-  { id: 5, name: 'Shahid Husain', jobType: 'Guard', phone: '0301-2346540', dob: '07-02-1999', cnicNicopNo: '12345-1234567-1', policeVerification: 'Yes', workerCardDelivery: 'Owner Address', address: 'Khayaban E Iqbal, Phase VIII', workerStatus: 'Active', workerCard: 'UID-927864' , issuedDate: '01-01-2023', expiryDate: '31-12-2023', cardStatus: 'Active' },
-  { id: 6, name: 'Ahmed Faraz', jobType: 'Driver', phone: '0301-2346540', dob: '02-11-1997', cnicNicopNo: '12345-4564567-1', policeVerification: 'No', workerCardDelivery: 'Employer Address', address: 'Khayaban E Iqbal, Phase VIII', workerStatus: 'Inactive', workerCard: 'UID-927864' , issuedDate: '01-01-2023', expiryDate: '31-12-2023', cardStatus: 'Active' },
-  { id: 7, name: 'Mustafa Javaid', jobType: 'Cook', phone: '0301-2346530', dob: '17-12-1999', cnicNicopNo: '12345-4522267-1', policeVerification: 'Yes', workerCardDelivery: 'Self Pickup', address: 'Khayaban E Iqbal, Phase VIII', workerStatus: 'Active', workerCard: 'UID-927864' , issuedDate: '01-01-2023', expiryDate: '31-12-2023', cardStatus: 'Active' },
-  { id: 8, name: 'Arsalan Khan', jobType: 'Peon', phone: '0301-2346520', dob: '21-07-2001', cnicNicopNo: '12345-4528907-1', policeVerification: 'No', workerCardDelivery: 'Owner Address', address: 'Khayaban E Iqbal, Phase VIII', workerStatus: 'Inactive', workerCard: 'UID-927864' , issuedDate: '01-01-2023', expiryDate: '31-12-2023', cardStatus: 'Active' },
-  { id: 9, name: 'Shahid Husain', jobType: 'Guard', phone: '0301-2346540', dob: '07-02-1999', cnicNicopNo: '12345-1234567-1', policeVerification: 'Yes', workerCardDelivery: 'Owner Address', address: 'Khayaban E Iqbal, Phase VIII', workerStatus: 'Active', workerCard: 'UID-927864' , issuedDate: '01-01-2023', expiryDate: '31-12-2023', cardStatus: 'Expire' },
-  { id: 10, name: 'Ahmed Faraz', jobType: 'Driver', phone: '0301-2346540', dob: '02-11-1997', cnicNicopNo: '12345-4564567-1', policeVerification: 'No', workerCardDelivery: 'Employer Address', address: 'Khayaban E Iqbal, Phase VIII', workerStatus: 'Inactive', workerCard: 'UID-927864' , issuedDate: '01-01-2023', expiryDate: '31-12-2023', cardStatus: 'Blocked' },
-  { id: 11, name: 'Mustafa Javaid', jobType: 'Cook', phone: '0301-2346530', dob: '17-12-1999', cnicNicopNo: '12345-4522267-1', policeVerification: 'Yes', workerCardDelivery: 'Self Pickup', address: 'Khayaban E Iqbal, Phase VIII', workerStatus: 'Active', workerCard: 'UID-927864' , issuedDate: '01-01-2023', expiryDate: '31-12-2023', cardStatus: 'Active' },
-  { id: 12, name: 'Arsalan Khan', jobType: 'Peon', phone: '0301-2346520', dob: '21-07-2001', cnicNicopNo: '12345-4528907-1', policeVerification: 'No', workerCardDelivery: 'Owner Address', address: 'Khayaban E Iqbal, Phase VIII', workerStatus: 'Inactive', workerCard: 'UID-927864' , issuedDate: '01-01-2023', expiryDate: '31-12-2023', cardStatus: 'Active' },
-];
+type SelectedWorkerRow = Pick<ExternalWorker, 'id'>;
 
+const formatDate = (value?: string | null) => {
+  if (!value) {
+    return '-';
+  }
 
-import CircularButton from '../../components/ui/CircularButton';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString();
+};
+
+const toJobTypeLabel = (jobType?: number) => {
+  switch (jobType) {
+    case 0:
+      return 'Driver';
+    case 1:
+      return 'Cook';
+    case 2:
+      return 'Guard';
+    case 3:
+      return 'Peon';
+    case 4:
+      return 'Gardener';
+    default:
+      return 'Unknown';
+  }
+};
+
+const toWorkerCardDeliveryLabel = (deliveryType?: number) => {
+  switch (deliveryType) {
+    case 0:
+      return 'Owner Address';
+    case 1:
+      return 'Self Pickup';
+    default:
+      return '-';
+  }
+};
+
+const toCardStatusLabel = (cardStatus?: number): 'Active' | 'Expire' | 'Blocked' => {
+  switch (cardStatus) {
+    case 2:
+      return 'Blocked';
+    case 3:
+      return 'Expire';
+    default:
+      return 'Active';
+  }
+};
 
 export default function WorkersPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [workers, setWorkers] = useState(sampleWorkers);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
+  const [selectedWorker, setSelectedWorker] = useState<SelectedWorkerRow | null>(null);
+  const [localRemovedIds, setLocalRemovedIds] = useState<string[]>([]);
+
+  const { data, isLoading, isError, error } = useWorkers();
+  const { mutateAsync: deleteWorker, isPending: isDeleting } = useDeleteWorker();
+
+  const workers: Worker[] = (data?.data || [])
+    .filter((item) => item && !localRemovedIds.includes(item.id))
+    .map((item) => ({
+      id: item.id,
+      name: item.name || '-',
+      jobType: toJobTypeLabel(item.jobType),
+      phone: item.phoneNumber || '-',
+      dob: formatDate(item.dateOfBirth),
+      cnicNicopNo: item.cnic || '-',
+      policeVerification: item.policeVerification ? 'Yes' : 'No',
+      workerCardDelivery: toWorkerCardDeliveryLabel(item.workerCardDeliveryType),
+      address: '-',
+      workerStatus: item.isActive && !item.isDeleted ? 'Active' : 'Inactive',
+      workerCard: item.workerCardNumber || '-',
+      issuedDate: formatDate(item.validFrom),
+      expiryDate: formatDate(item.validTo),
+      cardStatus: toCardStatusLabel(item.cardStatus),
+    }));
+
   const router = useRouter();
 
   const handleAddNew = () => {
@@ -54,21 +117,30 @@ export default function WorkersPage() {
   };
 
   const handleEdit = (worker: Worker) => {
-    saveTableRow('workers', worker);
-    router.push('/workers/edit-worker');
+    saveTableRow('workers', { id: worker.id });
+    router.push(`/workers/edit-worker?id=${encodeURIComponent(worker.id)}`);
   };
 
-  const handleDelete = (worker: Worker) => {
+  const handleDelete = (worker: SelectedWorkerRow) => {
     setSelectedWorker(worker);
     setDeleteModalOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!selectedWorker) {
       return;
     }
 
-    setWorkers((prev) => prev.filter((worker) => worker.id !== selectedWorker.id));
+    try {
+      const response = await deleteWorker({ id: selectedWorker.id });
+      const isSuccess = response?.statusCode === 0 || response?.statusCode === 200 || response?.statusCode === 204;
+      if (isSuccess) {
+        setLocalRemovedIds((prev) => [...prev, selectedWorker.id]);
+      }
+    } catch {
+      // Keep modal flow stable even when API fails.
+    }
+
     setDeleteModalOpen(false);
     setSelectedWorker(null);
   };
@@ -109,12 +181,18 @@ export default function WorkersPage() {
 
   return (
     <DashboardLayout pageTitle="Workers">
+      {isError && (
+        <div style={{ color: 'red', marginBottom: 12 }}>
+          Failed to load workers: {error instanceof Error ? error.message : 'Unknown error'}
+        </div>
+      )}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
         <AddNewButton onClick={handleAddNew} />
       </div>
       <DataTable<Worker>
         columns={columns}
         data={workers}
+        loading={isLoading}
         showAddButton={false}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
@@ -125,7 +203,7 @@ export default function WorkersPage() {
         onClose={() => setDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Delete Worker"
-        message="Are you sure you want to delete this worker? This action cannot be undone."
+        message={isDeleting ? 'Deleting...' : 'Are you sure you want to delete this worker? This action cannot be undone.'}
       />
     </DashboardLayout>
   );

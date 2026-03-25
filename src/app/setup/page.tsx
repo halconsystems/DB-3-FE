@@ -2,8 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import DataTable, { StatusBadge, Column, Tab } from '../../components/tables/DataTable';
-import { AddNewButton } from '../../components/ui/ActionButton';
+import DataTable, { Tab } from '../../components/tables/DataTable';
 import CpAgentTable from '../cp-agent/components/CpAgentTable';
 import BankAccountTable from '../bank-account/components/BankAccountTable';
 import EmployeeTable from '../employee/components/EmployeeTable';
@@ -11,14 +10,6 @@ import VendorTable from '../vendor-supplier/components/VendorTable';
 import PackageTable from '../package-type/components/PackageTable';
 import PhaseTable from '../phase/components/PhaseTable';
 import ZoneTable from '../zone/components/ZoneTable';
-interface Zone {
-  id: number;
-  zoneName: string;
-  phase: string;
-  status: 'Active' | 'Inactive';
-}
-
-const sampleZones: Zone[] = [];
 
 const tabs: Tab[] = [
   { key: 'cp-agent', label: 'CP/Agent' },
@@ -68,17 +59,6 @@ export default function ZonePage() {
       console.log(`Add new ${activeTab}`);
     }
   };
-
-  const zoneColumns: Column<Zone>[] = [
-    { key: 'zoneName', header: 'Zone Name' },
-    { key: 'phase', header: 'Phase' },
-    { 
-      key: 'status', 
-      header: 'Status',
-      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
-    },
-  ];
-
   const renderContent = () => {
     switch (activeTab) {
       case 'cp-agent':

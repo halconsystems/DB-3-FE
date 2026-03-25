@@ -50,7 +50,6 @@ const visitorColumns: Column<any>[] = [
   { key: 'visitDetail', header: 'Visit Detail' },
   { key: 'validity', header: 'Validity' },
   { key: 'cnic', header: 'CNIC/NICOP No.' },
-  { key: 'qrReference', header: 'QR Reference' },
   { key: 'hostDetails', header: 'Host Details', render: () => <img src="/icons/host.svg" alt="Host" width={24} height={24} /> },
   { key: 'status', header: 'Status', render: (value) => <StatusBadge status={value} /> },
 ];

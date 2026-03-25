@@ -101,7 +101,7 @@ export const updateExternalVisitorPass = async (
 export const deleteExternalVisitorPass = async (
   id: string
 ): Promise<DeleteExternalVisitorPassResponse> => {
-  const { data } = await apiClient.delete<DeleteExternalVisitorPassResponse>(
+  const { data } = await apiClient.post<DeleteExternalVisitorPassResponse>(
     "/visitors/deleteExternalVisitorPass",
     { params: { id } }
   );

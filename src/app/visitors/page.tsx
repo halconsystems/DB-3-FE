@@ -19,7 +19,6 @@ interface Visitor {
   visitDetail: string;
   validity: string;
   cnicNicopNo: string;
-  qrReference: string;
   hostDetails: string;
   status: 'Active' | 'Inactive';
 }
@@ -61,7 +60,6 @@ export default function VisitorsPage() {
       visitDetail: item.visitorPassType === 1 ? 'Long Stay' : 'Day Pass',
       validity: `${formatDate(item.validFrom)} - ${formatDate(item.validTo)}`,
       cnicNicopNo: item.cnic,
-      qrReference: item.qrCode || '-',
       hostDetails: item.externalUserName || 'host',
       status: item.isActive && !item.isDeleted ? 'Active' : 'Inactive',
     }));
@@ -103,7 +101,7 @@ export default function VisitorsPage() {
 
   const handleHostClick = (row: Visitor) => {
     setSelectedHost({
-      id: row.qrReference,
+      id: row.id,
       name: row.name,
       phone: '0321-4239813', 
       address: row.visitDetail,
@@ -118,7 +116,6 @@ export default function VisitorsPage() {
     { key: 'visitDetail', header: 'Visit Detail' },
     { key: 'validity', header: 'Validity' },
     { key: 'cnicNicopNo', header: 'CNIC/NICOP No.' },
-    { key: 'qrReference', header: 'QR Reference' },
     {
       key: 'hostDetails',
       header: 'Host Details',

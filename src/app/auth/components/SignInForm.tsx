@@ -76,7 +76,7 @@ export default function SignInForm({ login, isPending }: SignInFormProps) {
           />
           <button type="button" className="toggle_password" onClick={() => setShowPassword(!showPassword)}>
             <img src="/icons/password.svg" alt="" />
-          </button>
+          </button> 
         </div>
         {/* Forgot Password link removed as requested */}
       </div>

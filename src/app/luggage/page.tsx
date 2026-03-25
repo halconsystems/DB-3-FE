@@ -18,7 +18,6 @@ interface LuggagePass {
   visitDetail: string;
   validity: string;
   cnicNicopNo: string;
-  qrReference: string;
   status: 'Active' | 'Inactive' | 'Pending';
 }
 
@@ -55,7 +54,6 @@ export default function LuggagePage() {
       visitDetail: item.luggagePassType === 1 ? 'Long Stay' : 'Day Pass',
       validity: `${formatDate(item.validFrom)} - ${formatDate(item.validTo)}`,
       cnicNicopNo: item.cnic,
-      qrReference: item.qrCode || item.tagId || '-',
       status: item.isActive && !item.isDeleted ? 'Active' : 'Inactive',
     }));
 
@@ -100,7 +98,6 @@ export default function LuggagePage() {
     { key: 'visitDetail', header: 'Visit Detail' },
     { key: 'validity', header: 'Validity' },
     { key: 'cnicNicopNo', header: 'CNIC/NICOP No.' },
-    { key: 'qrReference', header: 'QR Reference' },
     { 
       key: 'status', 
       header: 'Status',
