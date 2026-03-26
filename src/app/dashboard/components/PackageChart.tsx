@@ -93,7 +93,7 @@ export default function PackageChart() {
               <Pie
                 data={data}
                 dataKey="value"
-                outerRadius={120}
+                outerRadius={100}
                 startAngle={270}
                 endAngle={-90}
                 label={renderCustomLabel}

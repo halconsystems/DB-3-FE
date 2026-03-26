@@ -95,8 +95,6 @@ export default function SignInForm({ login, isPending }: SignInFormProps) {
       <button type="submit" className="auth_button" disabled={isPending || !formData.remember}>
         Sign In
       </button>
-
-      <p className="auth_text">Don't have an account? <a href="/auth/sign-up" className="auth_link">Sign Up</a></p>
       </form>
     </>
   );

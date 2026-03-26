@@ -72,10 +72,11 @@ interface GetAllCpAgentApiResponse {
 
 export const getAllCpAgent = async (): Promise<CpAgent[]> => {
   const response = await apiClient.get<CpAgent[] | GetAllCpAgentApiResponse>(
-    '/cpagent/get-all-CpAgent'
+    '/cpagent/GetAllCpAgent'
   );
 
   const payload = response.data;
+
   if (Array.isArray(payload)) {
     return payload;
   }
@@ -130,14 +131,14 @@ export const createCpAgent = async (data: CreateCpAgentPayload): Promise<void> =
     created: now,
     createdBy,
   };
-  await apiClient.post("/cpagent/create-CpAgent", payload);
+  await apiClient.post("/cpagent/createCpAgent", payload);
 };
 
 export const getCpAgentById = async (
   id: string
 ): Promise<GetCpAgentByIdResponse> => {
   const { data } = await apiClient.get<GetCpAgentByIdResponse>(
-    "/cpagent/get-CpAgent-by-id",
+    "/cpagent/GetCpAgentById",
     { params: { id } }
   );
   return data;
@@ -147,7 +148,7 @@ export const updateCpAgent = async (
   payload: UpdateCpAgentDto
 ): Promise<UpdateCpAgentResponse> => {
   const { data } = await apiClient.post<UpdateCpAgentResponse>(
-    "/cpagent/update-CpAgent",
+    "/cpagent/updateCpAgent",
     payload
   );
   return data;
@@ -157,8 +158,9 @@ export const deleteCpAgent = async (
   id: string
 ): Promise<DeleteCpAgentResponse> => {
   const { data } = await apiClient.post<DeleteCpAgentResponse>(
-    "/cpagent/delete-CpAgent",
+    "/cpagent/removeCpAgent",
     { id }
   );
   return data;
 };
+
