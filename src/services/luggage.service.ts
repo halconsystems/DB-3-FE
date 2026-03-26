@@ -69,12 +69,12 @@ export type GetLuggageByIdResponse = ApiResponse<Luggage | null>;
 export type GetAllLuggageResponse = ApiResponse<Luggage[] | null>;
 
 export const getAllLuggage = async (): Promise<GetAllLuggageResponse> => {
-  const { data } = await apiClient.get<GetAllLuggageResponse>("/luggage/getallExternalLuggagePass");
+  const { data } = await apiClient.get<GetAllLuggageResponse>("/luggage/GetAllLuggagePass");
   return data;
 };
 
 export const getLuggageById = async (id: string): Promise<GetLuggageByIdResponse> => {
-  const { data } = await apiClient.get<GetLuggageByIdResponse>("/luggage/getbyIdExternalLuggagePass", {
+  const { data } = await apiClient.get<GetLuggageByIdResponse>("/luggage/GetLuggagePassById", {
     params: { id },
   });
   return data;
@@ -83,18 +83,18 @@ export const getLuggageById = async (id: string): Promise<GetLuggageByIdResponse
 export const createLuggage = async (
   payload: CreateLuggageRequest
 ): Promise<CreateLuggageResponse> => {
-  const { data } = await apiClient.post<CreateLuggageResponse>("/luggage/createExternalLuggagePass", payload);
+  const { data } = await apiClient.post<CreateLuggageResponse>("/luggage/createLuggagePass", payload);
   return data;
 };
 
 export const updateLuggage = async (
   payload: UpdateLuggageRequest
 ): Promise<UpdateLuggageResponse> => {
-  const { data } = await apiClient.post<UpdateLuggageResponse>("/luggage/updateExternalLuggagePass", payload);
+  const { data } = await apiClient.post<UpdateLuggageResponse>("/luggage/updateLuggagePass", payload);
   return data;
 };
 
 export const deleteLuggage = async (id: string): Promise<DeleteLuggageResponse> => {
-  const { data } = await apiClient.post<DeleteLuggageResponse>("/luggage/deleteExternalLuggagePass", { id });
+  const { data } = await apiClient.post<DeleteLuggageResponse>("/luggage/removeLuggagePass", { id });
   return data;
 };

@@ -63,7 +63,7 @@ export type GetAllExternalVisitorPassResponse = ApiResponse<ExternalVisitorPass[
 
 export const getAllExternalVisitorPass = async (): Promise<GetAllExternalVisitorPassResponse> => {
   const { data } = await apiClient.get<GetAllExternalVisitorPassResponse>(
-    "/visitors/getallExternalVisitorPass"
+    "/visitors/GetAllVisitorPass"
   );
   return data;
 };
@@ -72,7 +72,7 @@ export const getExternalVisitorPassById = async (
   id: string
 ): Promise<GetExternalVisitorPassByIdResponse> => {
   const { data } = await apiClient.get<GetExternalVisitorPassByIdResponse>(
-    "/visitors/getbyIdExternalVisitorPass",
+    "/visitors/GetVisitorPassById",
     { params: { id } }
   );
   return data;
@@ -82,7 +82,7 @@ export const createExternalVisitorPass = async (
   payload: CreateExternalVisitorPassRequest
 ): Promise<CreateExternalVisitorPassResponse> => {
   const { data } = await apiClient.post<CreateExternalVisitorPassResponse>(
-    "/visitors/createExternalVisitorPass",
+    "/visitors/createVisitorPass",
     payload
   );
   return data;
@@ -92,7 +92,7 @@ export const updateExternalVisitorPass = async (
   payload: UpdateExternalVisitorPassRequest
 ): Promise<UpdateExternalVisitorPassResponse> => {
   const { data } = await apiClient.post<UpdateExternalVisitorPassResponse>(
-    "/visitors/updateExternalVisitorPass",
+    "/visitors/updateVisitorPass",
     payload
   );
   return data;
@@ -102,7 +102,7 @@ export const deleteExternalVisitorPass = async (
   id: string
 ): Promise<DeleteExternalVisitorPassResponse> => {
   const { data } = await apiClient.post<DeleteExternalVisitorPassResponse>(
-    "/visitors/deleteExternalVisitorPass",null,
+    "/visitors/removeVisitorPass",null,
     { params: { id } }
   );
   return data;

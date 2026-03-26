@@ -72,14 +72,14 @@ export type GetExternalVehicleByIdResponse = ApiResponse<ExternalVehicle | null>
 export type GetAllExternalVehicleResponse = ApiResponse<ExternalVehicle[] | null>;
 
 export const getAllExternalVehicles = async (): Promise<GetAllExternalVehicleResponse> => {
-  const { data } = await apiClient.get<GetAllExternalVehicleResponse>("/externalvehicle/all");
+  const { data } = await apiClient.get<GetAllExternalVehicleResponse>("/vehicle/GetAllVehicle");
   return data;
 };
 
 export const getExternalVehicleById = async (
   id: string
 ): Promise<GetExternalVehicleByIdResponse> => {
-  const { data } = await apiClient.get<GetExternalVehicleByIdResponse>("/externalvehicle/by-id", {
+  const { data } = await apiClient.get<GetExternalVehicleByIdResponse>("/vehicle/GetVehicleById", {
     params: { id },
   });
   return data;
@@ -88,21 +88,21 @@ export const getExternalVehicleById = async (
 export const createExternalVehicle = async (
   payload: CreateExternalVehicleRequest
 ): Promise<CreateExternalVehicleResponse> => {
-  const { data } = await apiClient.post<CreateExternalVehicleResponse>("/externalvehicle/create", payload);
+  const { data } = await apiClient.post<CreateExternalVehicleResponse>("/vehicle/createVehicle", payload);
   return data;
 };
 
 export const updateExternalVehicle = async (
   payload: UpdateExternalVehicleRequest
 ): Promise<UpdateExternalVehicleResponse> => {
-  const { data } = await apiClient.post<UpdateExternalVehicleResponse>("/externalvehicle/update", payload);
+  const { data } = await apiClient.post<UpdateExternalVehicleResponse>("/vehicle/updateVehicle", payload);
   return data;
 };
 
 export const deleteExternalVehicle = async (
   id: string
 ): Promise<DeleteExternalVehicleResponse> => {
-  const { data } = await apiClient.post<DeleteExternalVehicleResponse>("/externalvehicle/delete", null, {
+  const { data } = await apiClient.post<DeleteExternalVehicleResponse>("/vehicle/removeVehicle", null, {
     params: { id },
   });
   return data;

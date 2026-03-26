@@ -56,7 +56,7 @@ export interface RemovePhaseResponse {
 
 export const getAllPhase = async (): Promise<GetAllPhaseResponse> => {
   const { data } = await apiClient.get<GetAllPhaseResponse>(
-    '/phases/get-all-phase'
+    '/phases/GetAllPhases'
   );
   return data;
 };
@@ -65,7 +65,7 @@ export const getPhaseById = async (
   id: string
 ): Promise<GetPhaseByIdResponse> => {
   const { data } = await apiClient.get<GetPhaseByIdResponse>(
-    '/phases/get-phase-by-id',
+    '/phases/GetPhaseById',
     { params: { id } }
   );
   return data;
@@ -75,7 +75,7 @@ export const createPhase = async (
   payload: CreatePhaseRequest
 ): Promise<CreatePhaseResponse> => {
   const { data } = await apiClient.post<CreatePhaseResponse>(
-    '/phases/create-phase',
+    '/phases/createPhase',
     payload
   );
   return data;
@@ -85,7 +85,7 @@ export const updatePhase = async (
   payload: UpdatePhaseRequest
 ): Promise<UpdatePhaseResponse> => {
   const { data } = await apiClient.post<UpdatePhaseResponse>(
-    '/phases/update-phase',
+    '/phases/updatePhase',
     payload
   );
   return data;
@@ -95,7 +95,7 @@ export const removePhase = async (
   id: string
 ): Promise<RemovePhaseResponse> => {
   const { data } = await apiClient.post<RemovePhaseResponse>(
-    '/phases/remove-phase',
+    '/phases/removePhase',
     { id }
   );
   return data;

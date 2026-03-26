@@ -86,14 +86,14 @@ export type GetExternalWorkerByIdResponse = ApiResponse<ExternalWorker | null>;
 export type GetAllExternalWorkersResponse = ApiResponse<ExternalWorker[] | null>;
 
 export const getAllExternalWorkers = async (): Promise<GetAllExternalWorkersResponse> => {
-  const { data } = await apiClient.get<GetAllExternalWorkersResponse>("/externalworker/all");
+  const { data } = await apiClient.get<GetAllExternalWorkersResponse>("/worker/GetAllWorker");
   return data;
 };
 
 export const getExternalWorkerById = async (
   id: string
 ): Promise<GetExternalWorkerByIdResponse> => {
-  const { data } = await apiClient.get<GetExternalWorkerByIdResponse>("/externalworker/by-id", {
+  const { data } = await apiClient.get<GetExternalWorkerByIdResponse>("/worker/GetWorkerById", {
     params: { id },
   });
   return data;
@@ -102,21 +102,21 @@ export const getExternalWorkerById = async (
 export const createExternalWorker = async (
   payload: CreateExternalWorkerRequest
 ): Promise<CreateExternalWorkerResponse> => {
-  const { data } = await apiClient.post<CreateExternalWorkerResponse>("/externalworker/create", payload);
+  const { data } = await apiClient.post<CreateExternalWorkerResponse>("/worker/createWorker", payload);
   return data;
 };
 
 export const updateExternalWorker = async (
   payload: UpdateExternalWorkerRequest
 ): Promise<UpdateExternalWorkerResponse> => {
-  const { data } = await apiClient.post<UpdateExternalWorkerResponse>("/externalworker/update", payload);
+  const { data } = await apiClient.post<UpdateExternalWorkerResponse>("/worker/updateWorker", payload);
   return data;
 };
 
 export const deleteExternalWorker = async (
   id: string
 ): Promise<DeleteExternalWorkerResponse> => {
-  const { data } = await apiClient.post<DeleteExternalWorkerResponse>("/externalworker/delete", null, {
+  const { data } = await apiClient.post<DeleteExternalWorkerResponse>("/worker/removeWorker", null, {
     params: { id },
   });
   return data;

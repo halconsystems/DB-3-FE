@@ -86,13 +86,13 @@ export interface GetAllZoneResponse {
 }
 
 export const getAllZones = async (): Promise<GetAllZoneResponse> => {
-  const { data } = await apiClient.get<GetAllZoneResponse>("/zone/get-all-zone");
+  const { data } = await apiClient.get<GetAllZoneResponse>("/zone/GetAllZone");
   return data;
 };
 
 export const getZoneById = async (id: string): Promise<GetZoneByIdResponse> => {
   const { data } = await apiClient.get<GetZoneByIdResponse>(
-    "/zone/get-zone-by-id",
+    "/zone/GetZoneById",
     { params: { id } }
   );
   return data;
@@ -102,7 +102,7 @@ export const createZone = async (
   zone: CreateZoneRequest
 ): Promise<CreateZoneResponse> => {
   const { data } = await apiClient.post<CreateZoneResponse>(
-    "/zone/create-zone",
+    "/zone/createZone",
     zone
   );
   return data;
@@ -112,7 +112,7 @@ export const updateZone = async (
   zone: UpdateZoneRequest
 ): Promise<UpdateZoneResponse> => {
   const { data } = await apiClient.post<UpdateZoneResponse>(
-    "/zone/update-zone",
+    "/zone/updateZone",
     zone
   );
   return data;
@@ -120,7 +120,7 @@ export const updateZone = async (
 
 export const deleteZone = async (id: string): Promise<DeleteZoneResponse> => {
   const { data } = await apiClient.post<DeleteZoneResponse>(
-    "/zone/delete-zone",
+    "/zone/deleteZone",
     { id }
   );
   return data;
