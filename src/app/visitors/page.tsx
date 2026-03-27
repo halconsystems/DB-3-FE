@@ -120,7 +120,7 @@ export default function VisitorsPage() {
       key: 'hostDetails',
       header: 'Host Details',
       render: (_, row) => (
-        <CircularButton imagePath="/icons/host.svg" imageAlt="Host" width={32} height={32} onClick={() => handleHostClick(row)} />
+        <CircularButton imagePath="/icons/Host.svg" imageAlt="Host" width={32} height={32} onClick={() => handleHostClick(row)} />
       ),
     },
     {

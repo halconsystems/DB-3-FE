@@ -4,9 +4,7 @@ import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column, Tab } from '../../components/tables/DataTable';
 import { AddNewButton } from '../../components/ui/ActionButton';
-import HostDetailsModal from '../../components/ui/components/HostDetailsModal';
 import CircularButton from '../../components/ui/CircularButton';
-import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
 
 interface Member {
@@ -52,11 +50,6 @@ const tabs: Tab[] = [
 export default function ResidentialPage() {
   const [activeTab, setActiveTab] = useState('commercial');
   const [currentPage, setCurrentPage] = useState(1);
-  const [members, setMembers] = useState(sampleData);
-  const [hostModalOpen, setHostModalOpen] = useState(false);
-  const [selectedHost, setSelectedHost] = useState<any>(null);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const router = useRouter();
 
   const handleAddNew = () => {
@@ -68,35 +61,8 @@ export default function ResidentialPage() {
     router.push('/residential/edit-residential');
   };
 
-  const handleDelete = (member: Member) => {
-    setSelectedMember(member);
-    setDeleteModalOpen(true);
-  };
-
-  const handleConfirmDelete = () => {
-    if (!selectedMember) {
-      return;
-    }
-
-    setMembers((prev) => prev.filter((member) => member.id !== selectedMember.id));
-    setDeleteModalOpen(false);
-    setSelectedMember(null);
-  };
-
-
   const handleHostClick = (row: Member) => {
-    setSelectedHost({
-      id: row.id,
-      name: row.name,
-      phone: '0321-4239813', 
-      address: row.khayaban,
-      imageUrl: '/images/avatar-placeholder.png',
-    });
-    setHostModalOpen(true);
-  };
-
-  const handleFamilyClick = (member: Member) => {
-    saveTableRow('residential', member);
+    saveTableRow('residential', row);
     router.push('/residential/Family');
   };
 
@@ -124,19 +90,11 @@ export default function ResidentialPage() {
       render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
     },
     {
-      key: 'family',
-      header: 'Family',
-      render: (_, row) => (
-        <CircularButton imagePath="/icons/host.svg" imageAlt="Family" width={32} height={32} onClick={() => handleFamilyClick(row)} />
-      )
-    },
-    {
       key: 'action',
       header: 'Action',
       render: (_, row) => { return (<div style={{ display: 'flex', gap: '8px' }}>
           <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
-          <CircularButton imagePath="/icons/DeleteButton.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
-          <CircularButton imagePath="/icons/host.svg" imageAlt="Host" width={32} height={32} onClick={() => handleHostClick(row)} />
+          <CircularButton imagePath="/icons/Host.svg" imageAlt="Host" width={32} height={32} onClick={() => handleHostClick(row)} />
       </div>); 
       }
     },
@@ -152,19 +110,11 @@ export default function ResidentialPage() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         columns={columns}
-        data={members}
+        data={sampleData}
         showAddButton={false}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.memberStatus}
-      />
-      <HostDetailsModal open={hostModalOpen} onClose={() => setHostModalOpen(false)} host={selectedHost || { id: '', name: '', phone: '', address: '', imageUrl: '' }} />
-      <WarningModal
-        isOpen={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        onConfirm={handleConfirmDelete}
-        title="Delete Member"
-        message="Are you sure you want to delete this member? This action cannot be undone."
       />
     </DashboardLayout>
   );

@@ -20,6 +20,6 @@ export interface ExternalUser {
 }
 
 export const getAllExternalUsers = async (): Promise<ExternalUser[]> => {
-  const response = await apiClient.get("/externaluser/all");
+  const response = await apiClient.get("/user/GetAllUser");
   return response.data.data;
 };

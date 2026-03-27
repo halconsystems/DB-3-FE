@@ -24,7 +24,7 @@ export default function SignInPage() {
         </div>
       )}
       <div className="auth_left">
-        <Image src="/images/signIn.jpg" alt="Sign In" width={500} height={700} style={{ width: '100%', height: 'auto' }} />
+        <Image src="/images/SignIn.jpg" alt="Sign In" width={500} height={700} style={{ width: '100%', height: 'auto' }} />
       </div>
       <div className="auth_right">
         <div className="auth_header">

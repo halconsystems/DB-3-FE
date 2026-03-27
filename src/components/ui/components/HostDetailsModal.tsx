@@ -25,7 +25,7 @@ const HostDetailsModal: React.FC<HostDetailsModalProps> = ({ open, onClose, host
         <div className={styles.imageWrapper}>
           <div className={styles.imageContainer}>
             <img
-              src={'/icons/hostImg.png'}
+              src={host.imageUrl || '/icons/hostImg.png'}
               alt="Host"
               className={styles.image}
             />
