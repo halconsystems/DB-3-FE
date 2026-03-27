@@ -3,7 +3,7 @@ name: Sync to dha-portal
 on:
   push:
     branches:
-      - main
+      - Scaffolding   # triggers only on this branch
 
 jobs:
   sync:
@@ -27,5 +27,5 @@ jobs:
           git config user.name "sync-bot"
           git config user.email "sync-bot@example.com"
           git add .
-          git commit -m "Auto sync from DB-3-FE" || echo "No changes"
+          git commit -m "Auto sync from DB-3-FE Scaffolding branch" || echo "No changes"
           git push
