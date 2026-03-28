@@ -52,12 +52,14 @@ const WarningModal: React.FC<WarningModalProps> = ({
 
         {/* Buttons */}
         <div className={styles.buttonRow}>
+        {cancelText && cancelText!='' && (
           <button
             onClick={onClose}
             className={styles.cancelButton}
           >
             {cancelText}
           </button>
+          )}
           <button
             onClick={onConfirm}
             className={styles.confirmButton}

@@ -66,7 +66,7 @@ export default function CommonEntityForm({
   
   const pathname = usePathname();
   const router = useRouter();
-  let pageName = pathname.split('/')[1] ?? '';
+  let pageName = pathname?.split('/')[1] ?? '';
   pageName = pageName.charAt(0).toUpperCase() + pageName.slice(1);
 
   if (pageName.includes('Residential')) {
@@ -123,7 +123,7 @@ export default function CommonEntityForm({
         (field) => field.required && (
           formData[field.name] === undefined ||
           formData[field.name] === null ||
-          (typeof formData[field.name] === 'string' && formData[field.name]?.trim() === '')
+          (typeof formData[field.name] === 'string' && (formData[field.name] as string).trim() === '')
         )
       );
       if (missingFields.length > 0) {
@@ -286,7 +286,7 @@ export default function CommonEntityForm({
             <label className={styles.statusToggle}>
               <button
                 type="button"
-                onClick={() => setIsActive((prev) => !prev)}
+                onClick={() => setIsActive((prev: boolean) => !prev)}
                 className={`${styles.toggleButton} ${isActive ? styles.toggleActive : styles.toggleInactive}`}
                 aria-pressed={isActive}
               >

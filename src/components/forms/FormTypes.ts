@@ -100,13 +100,13 @@ export interface ProfileFormData {
   phaseName?: string;
   description?: string;
   empty?: string | null;
-  tagId: string;
-  tagNumber: string;
-  tagType: string;
-  validFrom: string;
-  validTo: string;
-  entityType: string;
-  entityId: string;
+  tagId?: string;
+  tagNumber?: string;
+  tagType?: string;
+  validFrom?: string;
+  validTo?: string;
+  entityType?: string;
+  entityId?: string;
 }
 
 export interface ProfileField {

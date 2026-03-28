@@ -7,8 +7,8 @@ import { usePhaseById } from '../../../hooks/phase/usePhaseById';
 import { useUpdatePhase } from '../../../hooks/phase/useUpdatePhase';
 
 const phaseFields: ProfileField[] = [
-  { name: 'phaseName', label: 'Phase Name', type: 'text', required: true, placeholder: 'Phase Name here' },
-  { name: 'description', label: 'Description', type: 'text', required: true, placeholder: 'Description here' },
+  { name: 'phaseName' as keyof ProfileFormData, label: 'Phase Name', type: 'text', required: true, placeholder: 'Phase Name here' },
+  { name: 'description' as keyof ProfileFormData, label: 'Description', type: 'text', required: true, placeholder: 'Description here' },
 ];
 
 

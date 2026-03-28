@@ -1,18 +1,18 @@
 import { ProfileField, ProfileFormData } from '../../components/forms/CommonEntityForm';
 
 export const tagFields: ProfileField[] = [
-  { name: 'name', label: 'Name', type: 'text', required: true, placeholder: 'Name here' },
-  { name: 'entityId', label: 'Entity ID', type: 'text', required: true, placeholder: 'Entity ID here' },
-  { name: 'tagType', label: 'Tag Type', type: 'text', required: true, placeholder: 'Tag Type here' },
-  { name: 'tagNumber', label: 'Tag Number', type: 'text', required: true, placeholder: 'Tag Number here' },
-  { name: 'feeScaleId', label: 'Fee Scale ID', type: 'text', required: true, placeholder: 'Fee Scale ID here' },
-  { name: 'planType', label: 'Plan Type', type: 'text', required: true, placeholder: 'Plan Type here' },
-  { name: 'validFrom', label: 'Valid From', type: 'date', required: true, placeholder: 'Select start date' },
-  { name: 'validTo', label: 'Valid To', type: 'date', required: true, placeholder: 'Select end date' },
-  { name: 'zone', label: 'Zone', type: 'text', required: true, placeholder: 'Zone here' },
-  { name: 'device', label: 'Device', type: 'text', required: true, placeholder: 'Device here' },
-  { name: 'notes', label: 'Notes', type: 'text', required: false, placeholder: 'Notes here' },
-  { name: 'status', label: 'Status', type: 'text', required: true, placeholder: 'Status here' },
+  { name: 'name' as keyof ProfileFormData, label: 'Name', type: 'text', required: true, placeholder: 'Name here' },
+  { name: 'entityId' as keyof ProfileFormData, label: 'Entity ID', type: 'text', required: true, placeholder: 'Entity ID here' },
+  { name: 'tagType' as keyof ProfileFormData, label: 'Tag Type', type: 'text', required: true, placeholder: 'Tag Type here' },
+  { name: 'tagNumber' as keyof ProfileFormData, label: 'Tag Number', type: 'text', required: true, placeholder: 'Tag Number here' },
+  { name: 'feeScaleId' as keyof ProfileFormData, label: 'Fee Scale ID', type: 'text', required: true, placeholder: 'Fee Scale ID here' },
+  { name: 'planType' as keyof ProfileFormData, label: 'Plan Type', type: 'text', required: true, placeholder: 'Plan Type here' },
+  { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: true, placeholder: 'Select start date' },
+  { name: 'validTo' as keyof ProfileFormData, label: 'Valid To', type: 'date', required: true, placeholder: 'Select end date' },
+  { name: 'zone' as keyof ProfileFormData, label: 'Zone', type: 'text', required: true, placeholder: 'Zone here' },
+  { name: 'device' as keyof ProfileFormData, label: 'Device', type: 'text', required: true, placeholder: 'Device here' },
+  { name: 'notes' as keyof ProfileFormData, label: 'Notes', type: 'text', required: false, placeholder: 'Notes here' },
+  { name: 'status' as keyof ProfileFormData, label: 'Status', type: 'text', required: true, placeholder: 'Status here' },
 ];
 
 export const mockTagData: ProfileFormData = {

@@ -5,10 +5,10 @@ import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../compon
 import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
 
 const packageFields: ProfileField[] = [
-  { name: 'packageName', label: 'Package Name', type: 'text', required: true, placeholder: 'Package Name here' },
-  { name: 'packageId', label: 'Package ID', type: 'text', required: true, placeholder: 'Package ID here' },
-  { name: 'minCharges', label: 'Set Minimum Charges', type: 'text', required: true, placeholder: 'Type here' },
-  { name: 'minRenewalCharges', label: 'Set Minimum Renewal Charges', type: 'text', required: true, placeholder: '001' },
+  { name: 'packageName' as keyof ProfileFormData, label: 'Package Name', type: 'text', required: true, placeholder: 'Package Name here' },
+  { name: 'packageId' as keyof ProfileFormData, label: 'Package ID', type: 'text', required: true, placeholder: 'Package ID here' },
+  { name: 'minCharges' as keyof ProfileFormData, label: 'Set Minimum Charges', type: 'text', required: true, placeholder: 'Type here' },
+  { name: 'minRenewalCharges' as keyof ProfileFormData, label: 'Set Minimum Renewal Charges', type: 'text', required: true, placeholder: '001' },
 ];
 
 

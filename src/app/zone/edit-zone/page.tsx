@@ -57,8 +57,8 @@ export default function EditZone() {
 
   // Clone and inject dynamic options into zoneFields
   const dynamicZoneFields: ProfileField[] = [
-    { name: 'zoneName', label: 'Zone Name', type: 'text', required: true, placeholder: 'Zone Name here' },
-    { name: 'phase', label: 'Phase', type: 'select', required: true, options: phaseOptions },
+    { name: 'zoneName' as keyof ProfileFormData, label: 'Zone Name', type: 'text', required: true, placeholder: 'Zone Name here' },
+    { name: 'phase' as keyof ProfileFormData, label: 'Phase', type: 'select', required: true, options: phaseOptions },
   ];
 
   return (
