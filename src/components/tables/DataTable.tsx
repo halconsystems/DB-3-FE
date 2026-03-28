@@ -2,16 +2,19 @@
 import React, { useEffect, useState, ReactNode } from 'react';
 import styles from './DataTable.module.css';
 import Loader from '../ui/loader';
+import { usePathname } from 'next/navigation';
 
 export interface Column<T> {
   key: keyof T | string;
   header: string;
   render?: (value: any, row: T) => ReactNode;
 }
+
 export interface Tab {
   key: string;
   label: string;
 }
+
 export interface DataTableProps<T> {
   tabs?: Tab[];
   activeTab?: string;
@@ -30,6 +33,7 @@ export interface DataTableProps<T> {
   getRowStatus?: (row: T) => 'Active' | 'Inactive' | 'Pending' | undefined;
   headerContent?: React.ReactNode;
 }
+
 export function StatusBadge({ status }: { status: 'Active' | 'Inactive' | 'Pending' | string }) {
   const getStatusClass = () => {
     switch (status) {
@@ -69,6 +73,8 @@ export default function DataTable<T extends Record<string, any>>({
   const resolvedTotalPages = Math.max(calculatedTotalPages, Math.max(1, totalPages ?? 1));
 
   const [internalCurrentPage, setInternalCurrentPage] = useState(1);
+
+  const pathName = usePathname();
 
   useEffect(() => {
     if (isPaginationControlled) return;
@@ -201,6 +207,7 @@ export default function DataTable<T extends Record<string, any>>({
                       key={tab.key}
                       className={`
                         ${styles.tab}
+                        ${pathName?.includes('setup') ? styles.tabSetup : ''}
                         ${activeTab === tab.key ? styles.tabActive : ''}
                         ${ind === 0 ? styles.tabEdgeLeft : ''}
                         ${ind === chunk.length - 1 ? styles.tabEdgeRight : ''}

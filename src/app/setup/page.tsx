@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { Tab } from '../../components/tables/DataTable';
@@ -49,6 +49,15 @@ export default function ZonePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
 
+  useEffect(() => {
+    localStorage.getItem('activeTab') && setActiveTab(localStorage.getItem('activeTab')!);
+  },[])
+
+  function handleTabChange(tabKey: string) {
+    setActiveTab(tabKey);
+    localStorage.setItem('activeTab', tabKey);
+  }
+
   const handleAddNew = () => {
     if (activeTab === 'cp-agent') {
       router.push('/cp-agent/add-cp');
@@ -87,7 +96,7 @@ export default function ZonePage() {
           <CpAgentTable
             tabs={tabs}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             onAddNew={handleAddNew}
             addButtonLabel={getAddButtonLabel(activeTab)}
           />
@@ -97,7 +106,7 @@ export default function ZonePage() {
           <BankAccountTable
             tabs={tabs}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             onAddNew={handleAddNew}
             addButtonLabel={getAddButtonLabel(activeTab)}
           />
@@ -107,7 +116,7 @@ export default function ZonePage() {
           <EmployeeTable
             tabs={tabs}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             onAddNew={handleAddNew}
             addButtonLabel={getAddButtonLabel(activeTab)}
           />
@@ -117,7 +126,7 @@ export default function ZonePage() {
           <VendorTable
             tabs={tabs}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             onAddNew={handleAddNew}
             addButtonLabel={getAddButtonLabel(activeTab)}
           />
@@ -127,7 +136,7 @@ export default function ZonePage() {
           <PackageTable
             tabs={tabs}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             onAddNew={handleAddNew}
             addButtonLabel={getAddButtonLabel(activeTab)}
           />
@@ -137,7 +146,7 @@ export default function ZonePage() {
           <PhaseTable
             tabs={tabs}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             onAddNew={handleAddNew}
             addButtonLabel={getAddButtonLabel(activeTab)}
           />
@@ -147,7 +156,7 @@ export default function ZonePage() {
           <ZoneTable
             tabs={tabs}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             onAddNew={handleAddNew}
             addButtonLabel={getAddButtonLabel(activeTab)}
           />
@@ -157,7 +166,7 @@ export default function ZonePage() {
           <TagTable
             tabs={tabs}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             onAddNew={handleAddNew}
             addButtonLabel={getAddButtonLabel(activeTab)}
           />
@@ -167,7 +176,7 @@ case 'tag-approval':
           <TagApprovalTable
             tabs={tabs}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             onAddNew={handleAddNew}
             addButtonLabel={getAddButtonLabel(activeTab)}
           />
@@ -177,7 +186,7 @@ case 'tag-approval':
           <TagTypeTable
             tabs={tabs}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             onAddNew={handleAddNew}
             addButtonLabel={getAddButtonLabel(activeTab)}
           />
@@ -189,7 +198,7 @@ case 'tag-approval':
           <ZoneTable
             tabs={tabs}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             onAddNew={handleAddNew}
             addButtonLabel={getAddButtonLabel(activeTab)}
           />
