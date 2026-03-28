@@ -1,5 +1,5 @@
-
-'use client';
+"use client";
+import { useCreateTagType } from '../../../hooks/tagtype/useCreateTagType';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
 
@@ -8,9 +8,15 @@ const tagTypeFields: ProfileField[] = [
   { name: 'description' as keyof ProfileFormData, label: 'Description', type: 'text', required: true, placeholder: 'Enter Description here' },
 ];
 
+
 export default function AddNewTag() {
+  const createTagTypeMutation = useCreateTagType();
+
   const handleSave = (data: ProfileFormData) => {
-    console.log('Saved:', data);
+    createTagTypeMutation.mutate({
+      name: data.name as string,
+      description: data.description as string,
+    });
   };
 
   return (

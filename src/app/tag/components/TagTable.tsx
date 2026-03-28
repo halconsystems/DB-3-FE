@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
@@ -7,7 +7,12 @@ import { AddNewButton } from '../../../components/ui/ActionButton';
 import WarningModal from '../../../components/popup/WarningModal';
 import { saveTableRow } from '../../../lib/tableRowStorage';
 
-export interface Tag {
+
+import { useGetAllTags } from '../../../hooks/tag/useGetAllTags';
+
+
+// Tag type for table row (matches mapped API data)
+type Tag = {
   tagId: string;
   tagNumber: string;
   tagType: string;
@@ -17,15 +22,8 @@ export interface Tag {
   entityId: string;
   vendorId: string;
   status: 'Active' | 'Inactive';
-}
+};
 
-export const sampleTags: Tag[] = [
-  { tagId: '1', tagNumber: '1', tagType: 'King Bakers', validFrom: '26-Feb-2026', validTo: '28-Feb-2028', entityType: "Test", entityId: "ID", vendorId: "VEND-001", status: 'Active' },
-  { tagId: '2', tagNumber: '2', tagType: 'King Bakers', validFrom: '26-Feb-2026', validTo: '28-Feb-2028', entityType: "Test", entityId: "ID", vendorId: "VEND-001", status: 'Active' },
-  { tagId: '3', tagNumber: '3', tagType: 'King Bakers', validFrom: '26-Feb-2026', validTo: '28-Feb-2028', entityType: "Test", entityId: "ID", vendorId: "VEND-001", status: 'Active' },
-  { tagId: '4', tagNumber: '4', tagType: 'King Bakers', validFrom: '26-Feb-2026', validTo: '28-Feb-2028', entityType: "Test", entityId: "ID", vendorId: "VEND-001", status: 'Active' },
-  { tagId: '5', tagNumber: '5', tagType: 'King Bakers', validFrom: '26-Feb-2026', validTo: '28-Feb-2028', entityType: "Test", entityId: "ID", vendorId: "VEND-001", status: 'Active' },
-];
 
 const DeleteIcon = ({ onClick }: { onClick: () => void }) => (
   <button 
@@ -61,11 +59,30 @@ export default function TagTable({
   addButtonLabel
 }: TagTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [Tags, setTags] = useState(sampleTags);
+  const { data, isLoading, isError } = useGetAllTags();
+  const [Tags, setTags] = useState<Tag[]>([]);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
-
   const router = useRouter();
+  const removeTagMutation = useRemoveTag();
+  useEffect(() => {
+    if (data && data.data) {
+      const mapped = data.data.map((tag: any) => ({
+        tagId: tag.id,
+        tagNumber: tag.tagNumber,
+        tagType: tag.tagTypeId,
+        validFrom: tag.validFrom,
+        validTo: tag.validTo,
+        entityType: tag.assignedEntityType,
+        entityId: tag.assignedEntityId,
+        vendorId: '',
+        status: tag.isActive ? 'Active' as const : 'Inactive' as const,
+      }));
+      setTags(mapped);
+    }
+  }, [data]);
+
+
 
   const handleEdit = (item: Tag) => {
     saveTableRow('tag', item);
@@ -76,12 +93,11 @@ export default function TagTable({
     setDeleteModalOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!selectedTag) {
       return;
     }
-
-    setTags((prev) => prev.filter((Tag) => Tag.tagId !== selectedTag.tagId));
+    removeTagMutation.mutate(selectedTag.tagId);
     setDeleteModalOpen(false);
     setSelectedTag(null);
   };
@@ -109,31 +125,40 @@ export default function TagTable({
     },
   ];
 
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  if (isError) {
+    return <div>Failed to load tags.</div>;
+  }
+
   return (
     <>
-    <DataTable<Tag>
-      tabs={tabs}
-      activeTab={activeTab}
-      onTabChange={onTabChange}
-      columns={TagColumns}
-      data={Tags}
-      showAddButton={false}
-      currentPage={currentPage}
-      onPageChange={setCurrentPage}
-      getRowStatus={(row) => row.status}
-      headerContent={
-        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 0' }}>
-          <AddNewButton onClick={onAddNew} label={addButtonLabel} />
-        </div>
-      }
-    />
-    <WarningModal
-      isOpen={deleteModalOpen}
-      onClose={() => setDeleteModalOpen(false)}
-      onConfirm={handleConfirmDelete}
-      title="Delete Tag"
-      message="Are you sure you want to delete this Tag? This action cannot be undone."
-    />
+      <DataTable<Tag>
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        columns={TagColumns}
+        data={Tags}
+        showAddButton={false}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        getRowStatus={(row) => row.status}
+        headerContent={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 0' }}>
+            <AddNewButton onClick={onAddNew} label={addButtonLabel} />
+          </div>
+        }
+      />
+      <WarningModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Tag"
+        message="Are you sure you want to delete this Tag? This action cannot be undone."
+      />
     </>
   );
 }
+import { useRemoveTag } from '../../../hooks/tag/useRemoveTag';

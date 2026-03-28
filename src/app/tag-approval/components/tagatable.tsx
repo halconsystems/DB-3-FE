@@ -1,13 +1,10 @@
 'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
-import CircularButton from '../../../components/ui/CircularButton';
-import { AddNewButton } from '../../../components/ui/ActionButton';
-import WarningModal from '../../../components/popup/WarningModal';
+import { useState, useEffect } from 'react';
+import { useGetTagApprovalRequests } from '../../../hooks/tag-approval/useGetTagApprovalRequests';
 import { saveTableRow } from '../../../lib/tableRowStorage';
-
-export interface Tag {
+import WarningModal from '../../../components/popup/WarningModal';
+// Tag type for table row (matches mapped API data)
+type Tag = {
   tagId: string;
   name: string;
   entityId: string;
@@ -20,59 +17,15 @@ export interface Tag {
   zone: string;
   device: string;
   notes: string;
-  status: 'Active' | 'Inactive';
-}
+  status: 'Active' | 'Inactive' | string;
+};
+import { useRouter } from 'next/navigation';
+import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
+import CircularButton from '../../../components/ui/CircularButton';
+import { AddNewButton } from '../../../components/ui/ActionButton';
+// Removed duplicate top-level logic. All logic is inside TagTable function below.
 
-export const sampleTags: Tag[] = [
-  {
-    tagId: '1',
-    name: 'Shahid Husain',
-    entityId: '326523526',
-    tagType: 'QR Code',
-    tagNumber: '87253e23-B4df',
-    feeScaleId: 'Monthly Package',
-    planType: 'Monthly',
-    validFrom: '26-Feb-2026',
-    validTo: '12-Jun-2026',
-    zone: 'Zone A',
-    device: 'RFID',
-    notes: 'Lorem Ipsum',
-    status: 'Active',
-  },
-  {
-    tagId: '2',
-    name: 'Ahmed Faraz',
-    entityId: '326523526',
-    tagType: 'RFID',
-    tagNumber: '87253e23-B4df',
-    feeScaleId: 'Monthly Package',
-    planType: 'Monthly',
-    validFrom: '26-Feb-2026',
-    validTo: '12-Jun-2026',
-    zone: 'Zone B',
-    device: 'RFID',
-    notes: 'Lorem Ipsum',
-    status: 'Inactive',
-  },
-];
-
-const DeleteIcon = ({ onClick }: { onClick: () => void }) => (
-  <button 
-    onClick={onClick}
-    style={{ 
-      width: 32, 
-      height: 32, 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      border: 'none',
-      background: 'transparent',
-      cursor: 'pointer'
-    }}
-  >
-    <img src="/icons/DeleteButton.svg" alt="Delete" style={{ width: 18, height: 18, objectFit: 'contain' }} />
-  </button>
-);
+// Remove stray/invalid code block above
 
 interface TagTableProps {
   tabs: Tab[];
@@ -90,11 +43,41 @@ export default function TagTable({
   addButtonLabel
 }: TagTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [Tags, setTags] = useState(sampleTags);
+  const { data, isLoading, isError } = useGetTagApprovalRequests();
+  const [Tags, setTags] = useState<Tag[]>([]);
+
+
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
-
   const router = useRouter();
+
+  useEffect(() => {
+    if (data && data.data) {
+      const mapped = data.data.map((item: any) => ({
+        tagId: item.id,
+        name: item.entityName,
+        entityId: item.entityId,
+        tagType: item.tagTypeId, // You may want to resolve tagTypeId to a name if available
+        tagNumber: item.tagNumber,
+        feeScaleId: item.feeScaleId,
+        planType: String(item.planType),
+        validFrom: item.validFrom,
+        validTo: item.validTo,
+        zone: item.zoneId ?? '',
+        device: item.deviceId ?? '',
+        notes: item.notes,
+        status: item.status === 1 ? 'Active' as const : 'Inactive' as const,
+      }));
+      setTags(mapped);
+    }
+  }, [data]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  if (isError) {
+    return <div>Failed to load tag approval requests.</div>;
+  }
 
   const handleEdit = (item: Tag) => {
     saveTableRow('tag', item);
@@ -149,28 +132,7 @@ const TagColumns: Column<Tag>[] = [
       </div>
     ),
   },
-  {
-    key: 'action',
-    header: 'Action',
-    render: (_, row) => (
-      <div style={{ display: 'flex', gap: '4px' }}>
-        <CircularButton
-          imagePath="/icons/Edit Button.svg"
-          imageAlt="Edit"
-          width={32}
-          height={32}
-          onClick={() => handleEdit(row)}
-        />
-        <CircularButton
-          imagePath="/icons/DeleteButton.svg"
-          imageAlt="Delete"
-          width={32}
-          height={32}
-          onClick={() => handleDelete(row)}
-        />
-      </div>
-    ),
-  },
+  // Removed 'action' column (edit/delete) from the table
 ];
 
   return (
@@ -184,7 +146,7 @@ const TagColumns: Column<Tag>[] = [
       showAddButton={false}
       currentPage={currentPage}
       onPageChange={setCurrentPage}
-      getRowStatus={(row) => row.status}
+      getRowStatus={(row) => row.status as 'Active' | 'Inactive' | 'Pending' | undefined}
       headerContent={
         <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 0' }}>
           <AddNewButton onClick={onAddNew} label={addButtonLabel} />

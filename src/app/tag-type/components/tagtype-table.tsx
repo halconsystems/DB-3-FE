@@ -1,5 +1,7 @@
-'use client';
-import { useState } from 'react';
+"use client";
+import { useRemoveTagType } from '../../../hooks/tagtype/useRemoveTagType';
+import { useState, useEffect } from 'react';
+import { useGetAllTagTypes } from '../../../hooks/tagtype/useGetAllTagTypes';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
@@ -15,17 +17,6 @@ export interface Tag {
   createdOn: string;
   status: 'Active' | 'Inactive';
 }
-
-export const sampleTags: Tag[] = [
-  { tagId: '87253e23-B4df', name: 'Shahid Husain', description: 'Lorem Ipsum', createdOn: '12-Jun-2026', status: 'Active' },
-  { tagId: '87253e23-B4df', name: 'Ahmed Faraz', description: 'Lorem Ipsum', createdOn: '12-Jun-2026', status: 'Inactive' },
-  { tagId: '87253e23-B4df', name: 'Mustafa Javaid', description: 'Lorem Ipsum', createdOn: '12-Jun-2026', status: 'Active' },
-  { tagId: '87253e23-B4df', name: 'Arsalan Khan', description: 'Lorem Ipsum', createdOn: '12-Jun-2026', status: 'Inactive' },
-  { tagId: '87253e23-B4df', name: 'Shahid Husain', description: 'Lorem Ipsum', createdOn: '12-Jun-2026', status: 'Active' },
-  { tagId: '87253e23-B4df', name: 'Ahmed Faraz', description: 'Lorem Ipsum', createdOn: '12-Jun-2026', status: 'Inactive' },
-  { tagId: '87253e23-B4df', name: 'Mustafa Javaid', description: 'Lorem Ipsum', createdOn: '12-Jun-2026', status: 'Active' },
-  { tagId: '87253e23-B4df', name: 'Arsalan Khan', description: 'Lorem Ipsum', createdOn: '12-Jun-2026', status: 'Inactive' },
-];
 
 const DeleteIcon = ({ onClick }: { onClick: () => void }) => (
   <button 
@@ -60,28 +51,48 @@ export default function TagTable({
   onAddNew,
   addButtonLabel
 }: TagTableProps) {
+  const removeTagTypeMutation = useRemoveTagType();
   const [currentPage, setCurrentPage] = useState(1);
-  const [Tags, setTags] = useState(sampleTags);
+  const { data, isLoading, isError } = useGetAllTagTypes();
+  const [Tags, setTags] = useState<Tag[]>([]);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
-
   const router = useRouter();
 
+  useEffect(() => {
+    if (data && data.data) {
+      const mapped = data.data.map((item: any) => ({
+        tagId: item.id,
+        name: item.name,
+        description: item.description,
+        createdOn: item.created,
+        status: item.isActive ? 'Active' as const : 'Inactive' as const,
+      }));
+      setTags(mapped);
+    }
+  }, [data]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  if (isError) {
+    return <div>Failed to load tag types.</div>;
+  }
+
   const handleEdit = (item: Tag) => {
-    saveTableRow('tagtype', item);
+    // Ensure the saved object has an 'id' property for the edit form
+    saveTableRow('tagtype', { ...item, id: item.tagId });
     router.push('/tag-type/edit-tagtype');
   };
   const handleDelete = (item: Tag) => {
     setSelectedTag(item);
     setDeleteModalOpen(true);
   };
-
   const handleConfirmDelete = () => {
     if (!selectedTag) {
       return;
     }
-
-    setTags((prev) => prev.filter((Tag) => Tag.tagId !== selectedTag.tagId));
+    removeTagTypeMutation.mutate(selectedTag.tagId);
     setDeleteModalOpen(false);
     setSelectedTag(null);
   };
