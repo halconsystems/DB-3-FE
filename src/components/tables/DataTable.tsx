@@ -179,8 +179,10 @@ export default function DataTable<T extends Record<string, any>>({
       )}
       
       {tabs && tabs.length > 0 && (() => {
-        const chunkTabs = (tabs, size) => {
-          const chunks = [];
+
+
+        const chunkTabs = (tabs: Tab[], size: number): Tab[][] => {
+          const chunks: Tab[][] = [];
           for (let i = 0; i < tabs.length; i += size) {
             chunks.push(tabs.slice(i, i + size));
           }
@@ -191,10 +193,10 @@ export default function DataTable<T extends Record<string, any>>({
 
         return (
           <>
-            {tabChunks.map((chunk, rowIndex) => (
+            {tabChunks.map((chunk: Tab[], rowIndex: number) => (
               <div key={rowIndex} className={styles.tabsRow}>
                 <div className={styles.tabsContainer}>
-                  {chunk.map((tab, ind) => (
+                  {chunk.map((tab: Tab, ind: number) => (
                     <button
                       key={tab.key}
                       className={`
