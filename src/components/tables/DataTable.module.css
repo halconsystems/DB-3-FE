@@ -37,23 +37,24 @@
 .tabsContainer {
   display: flex;
   width: 100%;
-
+  margin-bottom: 10px;
 }
 
 .tab {
   flex: 1;
   padding: 14px 32px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: rgba(141, 141, 141, 1);
   background: rgba(243, 246, 249, 1);
   border: none;
-  border-bottom: 3px solid transparent;
   cursor: pointer;
   position: relative;
+  max-height: 50px;
   transition: all 0.2s ease;
   text-align: center;
   box-shadow: 0px 0px 20px 0px rgba(225, 227, 238, 0.95) inset;
+  max-width: 200px;
 }
 
 .tab:hover {
@@ -64,21 +65,17 @@
   color: var(--primary);
   background: rgba(243, 246, 249, 1);
   font-weight: 600;
-  box-shadow: 0px -5px 20px 0px rgba(225, 227, 238, 0.95);
-  border-radius: 15px 15px 0 0;
+  box-shadow: none
 }
 
 .tabEdgeLeft {
-  border-radius: 15px 0 0 0;
+  border-top-left-radius: 15px;
+  border-bottom-left-radius: 15px;
 }
 
 .tabEdgeRight {
-  border-radius: 0 15px 0 0;
-}
-
-.lastRow {
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
+  border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px;
 }
 
 .tableWrapper {

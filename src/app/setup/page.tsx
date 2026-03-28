@@ -10,6 +10,7 @@ import VendorTable from '../vendor-supplier/components/VendorTable';
 import PackageTable from '../package-type/components/PackageTable';
 import PhaseTable from '../phase/components/PhaseTable';
 import ZoneTable from '../zone/components/ZoneTable';
+import TagTable from '../tag/components/TagTable';
 
 const tabs: Tab[] = [
   { key: 'cp-agent', label: 'CP/Agent' },
@@ -19,6 +20,9 @@ const tabs: Tab[] = [
   { key: 'package-type', label: 'Package Type' },
   { key: 'phase', label: 'Phase' },
   { key: 'zone', label: 'Zone' },
+  { key: 'tag', label: 'Tag' },
+  { key: 'tag-approval', label: 'Tag Approval' },
+  { key: 'tag-type', label: 'Tag Type' },
 ];
 
 const getAddButtonLabel = (tab: string) => {
@@ -30,6 +34,9 @@ const getAddButtonLabel = (tab: string) => {
     case 'package-type': return 'Add Package Type';
     case 'phase': return 'Add Phase';
     case 'zone': return 'Add Zone';
+    case 'tag': return 'Create Tag';
+    case 'tag-approval': return 'Approve Tag';
+    case 'tag-type': return 'Add Tag Type';
     default: return 'Add New';
   }
 };
@@ -55,9 +62,16 @@ export default function ZonePage() {
       router.push('/phase/add-phase');
     } else if (activeTab === 'zone') {
       router.push('/zone/add-zone');
+    } else if (activeTab === 'tag') {
+      router.push('/tag/add-tag');
+    } else if (activeTab === 'tag-approval') {
+      router.push('/tag-approval');
+    } else if (activeTab === 'tag-type') {
+      router.push('/tag-type');
     } else {
       console.log(`Add new ${activeTab}`);
     }
+
   };
   const renderContent = () => {
     switch (activeTab) {
@@ -124,6 +138,16 @@ export default function ZonePage() {
       case 'zone':
         return (
           <ZoneTable
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onAddNew={handleAddNew}
+            addButtonLabel={getAddButtonLabel(activeTab)}
+          />
+        );
+      case 'tag':
+        return (
+          <TagTable
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={setActiveTab}

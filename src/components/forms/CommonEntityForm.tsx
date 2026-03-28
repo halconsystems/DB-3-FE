@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import styles from './ProfileForm.module.css';
 import SuccessModal from '../popup/SuccessModal';
+import WarningModal from '../popup/WarningModal';
 import Loader from '../ui/loader';
 import type { ProfileField, ProfileFormData } from './FormTypes';
 import {
@@ -19,7 +20,7 @@ export type { ProfileField, ProfileFormData } from './FormTypes';
 interface CommonEntityFormProps {
   onCancel?: () => void;
   onSave?: (data: ProfileFormData) => void | Promise<void>;
-  initialValues?: Partial<ProfileFormData>;
+  initialValues?: Partial<ProfileFormData> | any;
   title?: string;
   saveButtonText?: string;
   cancelButtonText?: string;
@@ -92,6 +93,8 @@ export default function CommonEntityForm({
   }, [JSON.stringify(initialValues)]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningMessage, setWarningMessage] = useState('');
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = event.target;
@@ -114,13 +117,26 @@ export default function CommonEntityForm({
   };
 
   const handleSubmit = async () => {
+    // Validate required fields
+    if (fields && fields.length > 0) {
+      const missingFields = fields.filter(
+        (field) => field.required && (
+          formData[field.name] === undefined ||
+          formData[field.name] === null ||
+          (typeof formData[field.name] === 'string' && formData[field.name]?.trim() === '')
+        )
+      );
+      if (missingFields.length > 0) {
+        setWarningMessage('Please fill all the required fields.');
+        setShowWarning(true);
+        return;
+      }
+    }
     setIsSubmitting(true);
-
     try {
       if (onSave) {
         await onSave(withDerivedVehicleLicensePlate({ ...formData, isActive }));
       }
-
       setShowSuccess(true);
     } finally {
       setIsSubmitting(false);
@@ -305,6 +321,15 @@ export default function CommonEntityForm({
       }}
       title={isEditMode ? 'Record Updated' : 'Record Added'}
       message={isEditMode ? 'The record has been updated successfully.' : 'The record has been added successfully.'}
+    />
+    <WarningModal
+      isOpen={showWarning}
+      onClose={() => setShowWarning(false)}
+      onConfirm={() => setShowWarning(false)}
+      title="Required Fields Missing"
+      message={warningMessage}
+      confirmText="OK"
+      cancelText=""
     />
     </>
   );

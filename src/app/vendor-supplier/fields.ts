@@ -2,7 +2,7 @@ import { ProfileField, ProfileFormData } from '../../components/forms/CommonEnti
 
 export const vendorFields: ProfileField[] = [
   { name: 'businessName', label: 'Business Name', type: 'text', required: true, placeholder: 'Business Name here' },
-  { name: 'city', label: 'City', type: 'select', required: true, options: [ { value: '', label: 'Select city' } ] },
+  { name: 'city', label: 'City', type: 'select', required: true, options: [ { value: '', label: 'Select city' }, { value: 'Karachi', label: 'Karachi' }, { value: 'Lahore', label: 'Lahore' } ] },
   { name: 'address', label: 'Address', type: 'text', required: true, placeholder: 'Address here' },
   { name: 'emailAddress', label: 'Email Address', type: 'email', required: true, placeholder: 'Email Address here' },
   { name: 'contactPerson', label: 'Contact Person', type: 'text', required: true, placeholder: 'Contact Person Name here' },

@@ -177,21 +177,43 @@ export default function DataTable<T extends Record<string, any>>({
           </button>
         </div>
       )}
-      {tabs && tabs.length > 0 && (
-        <div className={styles.tabsRow}>
-          <div className={styles.tabsContainer}>
-            {tabs.map((tab, ind) => (
-              <button
-                key={tab.key}
-                className={`${styles.tab} ${activeTab === tab.key ? styles.tabActive : ''} ${ind==0 ? styles.tabEdgeLeft : ''} ${ind === tabs.length - 1 ? styles.tabEdgeRight : ''}`}
-                onClick={() => onTabChange?.(tab.key)}
-              >
-                {tab.label}
-              </button>
+      
+      {tabs && tabs.length > 0 && (() => {
+        const chunkTabs = (tabs, size) => {
+          const chunks = [];
+          for (let i = 0; i < tabs.length; i += size) {
+            chunks.push(tabs.slice(i, i + size));
+          }
+          return chunks;
+        };
+
+        const tabChunks = chunkTabs(tabs, 7);
+
+        return (
+          <>
+            {tabChunks.map((chunk, rowIndex) => (
+              <div key={rowIndex} className={styles.tabsRow}>
+                <div className={styles.tabsContainer}>
+                  {chunk.map((tab, ind) => (
+                    <button
+                      key={tab.key}
+                      className={`
+                        ${styles.tab}
+                        ${activeTab === tab.key ? styles.tabActive : ''}
+                        ${ind === 0 ? styles.tabEdgeLeft : ''}
+                        ${ind === chunk.length - 1 ? styles.tabEdgeRight : ''}
+                      `}
+                      onClick={() => onTabChange?.(tab.key)}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
-          </div>
-        </div>
-      )}
+          </>
+        );
+      })()}
 
       {headerContent}
 
