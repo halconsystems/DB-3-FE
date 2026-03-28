@@ -76,6 +76,13 @@ export default function EditVisitor() {
         fromDate: toDateInputValue(data.data.validFrom),
         toDate: toDateInputValue(data.data.validTo),
         isActive: data.data.isActive,
+        tagId: '',
+        tagNumber: '',
+        tagType: '',
+        validFrom: '',
+        validTo: '',
+        entityType: '',
+        entityId: '',
       }
     : null;
 

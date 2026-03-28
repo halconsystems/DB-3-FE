@@ -11,6 +11,8 @@ import PackageTable from '../package-type/components/PackageTable';
 import PhaseTable from '../phase/components/PhaseTable';
 import ZoneTable from '../zone/components/ZoneTable';
 import TagTable from '../tag/components/TagTable';
+import TagApprovalTable from '../tag-approval/components/tagatable';
+import TagTypeTable from '../tag-type/components/tagtype-table';
 
 const tabs: Tab[] = [
   { key: 'cp-agent', label: 'CP/Agent' },
@@ -35,7 +37,7 @@ const getAddButtonLabel = (tab: string) => {
     case 'phase': return 'Add Phase';
     case 'zone': return 'Add Zone';
     case 'tag': return 'Create Tag';
-    case 'tag-approval': return 'Approve Tag';
+    case 'tag-approval': return 'Request Approval';
     case 'tag-type': return 'Add Tag Type';
     default: return 'Add New';
   }
@@ -64,7 +66,12 @@ export default function ZonePage() {
       router.push('/zone/add-zone');
     } else if (activeTab === 'tag') {
       router.push('/tag/add-tag');
+    } else if (activeTab === 'tag-type') {
+      router.push('/tag-type/add-tagtype');
     } else if (activeTab === 'tag-approval') {
+      router.push('/tag-approval/approval-request');
+    }
+    else if (activeTab === 'tag-approval') {
       router.push('/tag-approval');
     } else if (activeTab === 'tag-type') {
       router.push('/tag-type');
@@ -155,6 +162,28 @@ export default function ZonePage() {
             addButtonLabel={getAddButtonLabel(activeTab)}
           />
         );
+case 'tag-approval':
+        return (
+          <TagApprovalTable
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onAddNew={handleAddNew}
+            addButtonLabel={getAddButtonLabel(activeTab)}
+          />
+        );
+        case 'tag-type':
+        return (
+          <TagTypeTable
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onAddNew={handleAddNew}
+            addButtonLabel={getAddButtonLabel(activeTab)}
+          />
+        );
+        
+           
       default:
         return (
           <ZoneTable

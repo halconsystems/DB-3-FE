@@ -1,5 +1,10 @@
 export interface ProfileFormData {
   fullName?: string;
+  name?: string;
+  feeScaleId?: string;
+  planType?: string;
+  device?: string;
+  notes?: string;
   emailAddress?: string;
   password?: string;
   phoneNumber?: string;
