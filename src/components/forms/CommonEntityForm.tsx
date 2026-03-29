@@ -127,8 +127,8 @@ export default function CommonEntityForm({
         )
       );
       if (missingFields.length > 0) {
-        setWarningMessage('Please fill all the required fields.');
-        setShowWarning(true);
+        // setWarningMessage('Please fill all the required fields.');
+        // setShowWarning(true);
         return;
       }
     }

@@ -1,4 +1,3 @@
-
 'use client';
 import React from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
@@ -6,6 +5,8 @@ import CommonEntityForm, { ProfileFormData } from '../../../components/forms/Com
 import { cpAgentFields } from '../fields';
 import { useZones } from '../../../hooks/zone/useZones';
 import { useCreateCpAgent } from '../../../hooks/cp-agent/useCreateCpAgent';
+import { useGetAllControllers } from '../../../hooks/controller/useGetAllControllers';
+import { useGetAllSyncAgents } from '../../../hooks/agent/useGetAllSyncAgents';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -14,14 +15,18 @@ const isValidUuid = (value: string) => UUID_REGEX.test(value.trim());
 export default function AddNewCpAgent() {
   const { mutateAsync: createCpAgent, isPending } = useCreateCpAgent();
   const [formError, setFormError] = React.useState('');
-  const { data, isLoading } = useZones();
+  const { data: zonesData, isLoading: isZonesLoading } = useZones();
+  const { data: controllersData, isLoading: isControllersLoading } = useGetAllControllers();
+  const { data: syncAgentsData, isLoading: isSyncAgentsLoading } = useGetAllSyncAgents();
 
   const fields = React.useMemo(() => {
-    const zoneOptions = (data?.data || []).map((zone) => ({ value: zone.id, label: zone.name }));
+    const zoneOptions = (zonesData?.data || []).map((zone) => ({ value: zone.id, label: zone.name }));
+    const controllerOptions = (controllersData?.data || []).map((controller: any) => ({ value: controller.id, label: controller.name || controller.id }));
+    const syncAgentOptions = (syncAgentsData?.data || []).map((agent: any) => ({ value: agent.id, label: agent.name || agent.id }));
     return cpAgentFields.map(f =>
-      (String(f.name) === 'zone') ? { ...f, options: zoneOptions } : f
+      (String(f.name) === 'zone') ? { ...f, options: zoneOptions } : (String(f.name) === 'controller') ? { ...f, type: 'select' as const, options: controllerOptions } : (String(f.name) === 'syncAgentId') ? { ...f, type: 'select' as const, options: syncAgentOptions } : f
     );
-  }, [data]);
+  }, [zonesData, controllersData, syncAgentsData]);
 
   const handleSave = async (formData: ProfileFormData) => {
     setFormError('');
@@ -49,23 +54,25 @@ export default function AddNewCpAgent() {
       throw new Error('Sync Agent ID must be a valid GUID.');
     }
 
+    const payload = {
+      name: formData.cpAgentName,
+      agentNumber: formData.idNumber,
+      zoneId: formData.zone,
+      cpAgentType: cpTypeValue,
+      controllerId: formData.controller,
+      syncAgentId: formData.syncAgentId,
+      serverIp: formData.serverIp || '',
+      tagLimit: tagLimitValue,
+      isFixedTagIdentity: !!formData.tagIdentityFix,
+      isTempTagIdentity: !!formData.type,
+      interCommId: formData.interCommId || '',
+      interCommPassword: formData.interCommPassword || '',
+      interCommName: formData.interCommName || '',
+      isActive: formData.isActive ?? true,
+    };
+    console.log('CP Agent payload:', payload);
     try {
-      await createCpAgent({
-        name: formData.cpAgentName,
-        agentNumber: formData.idNumber,
-        zoneId: formData.zone,
-        cpAgentType: cpTypeValue,
-        controllerId: formData.controller,
-        syncAgentId: formData.syncAgentId,
-        serverIp: formData.serverIp || '',
-        tagLimit: tagLimitValue,
-        isFixedTagIdentity: !!formData.tagIdentityFix,
-        isTempTagIdentity: !!formData.type,
-        interCommId: formData.interCommId || '',
-        interCommPassword: formData.interCommPassword || '',
-        interCommName: formData.interCommName || '',
-        isActive: formData.isActive ?? true,
-      });
+      await createCpAgent(payload);
     } catch (err: any) {
       const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create CP Agent';
       setFormError(message);
@@ -82,7 +89,7 @@ export default function AddNewCpAgent() {
           onSave={handleSave}
           onCancel={() => window.history.back()}
           fields={fields}
-          loading={isLoading || isPending}
+          loading={isZonesLoading || isPending || isControllersLoading || isSyncAgentsLoading}
         />
       </div>
     </DashboardLayout>

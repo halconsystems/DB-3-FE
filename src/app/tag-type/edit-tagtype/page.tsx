@@ -5,7 +5,6 @@ import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../compon
 import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
 import { useGetTagTypeById } from '../../../hooks/tagtype/useGetTagTypeById';
 import { useUpdateTagType } from '../../../hooks/tagtype/useUpdateTagType';
-
 const tagTypeFields: ProfileField[] = [
   { name: 'name' as keyof ProfileFormData, label: 'Name', type: 'text', required: true, placeholder: 'Name here' },
   { name: 'description' as keyof ProfileFormData, label: 'Description', type: 'text', required: true, placeholder: 'Enter Description here' },

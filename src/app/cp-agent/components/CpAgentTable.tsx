@@ -2,6 +2,7 @@
 import { useState, useMemo } from 'react';
 import { useCpAgents } from '../../../hooks/cp-agent/useCpAgents';
 import { useRouter } from 'next/navigation';
+import { useDeleteCpAgent } from '../../../hooks/cp-agent/useDeleteCpAgent';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
@@ -18,9 +19,6 @@ export interface CpAgentTableRow {
   manufacturer: string;
   status: 'Active' | 'Inactive';
 }
-
-
-
 interface CpAgentTableProps {
   tabs: Tab[];
   activeTab: string;
@@ -40,10 +38,7 @@ export default function CpAgentTable({
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<CpAgentTableRow | null>(null);
-
   const { data, isLoading, isError, error } = useCpAgents();
-
-
   const cpAgents: CpAgentTableRow[] = useMemo(() => {
     if (!data) return [];
     return data.map((item) => ({
@@ -59,6 +54,7 @@ export default function CpAgentTable({
   }, [data]);
 
   const router = useRouter();
+  const deleteMutation = useDeleteCpAgent();
 
   const handleEdit = (item: CpAgentTableRow) => {
     saveTableRow('cp-agent', item);
@@ -71,7 +67,9 @@ export default function CpAgentTable({
   };
 
   const handleConfirmDelete = () => {
-    // Implement API delete logic here if needed
+    if (selectedAgent) {
+      deleteMutation.mutate({ id: selectedAgent.id });
+    }
     setDeleteModalOpen(false);
     setSelectedAgent(null);
   };

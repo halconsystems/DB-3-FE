@@ -3,30 +3,10 @@ import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
-
-
-const cpAgentFields: ProfileField[] = [
-  { name: 'cpAgentName' as keyof ProfileFormData, label: 'CP/Agent Name', type: 'text', required: true, placeholder: 'CP/Agent Name here' },
-  { name: 'idNumber' as keyof ProfileFormData, label: 'No. ID', type: 'text', required: true, placeholder: 'Type here' },
-  { name: 'serverIp' as keyof ProfileFormData, label: 'Server IP', type: 'text', required: true, placeholder: 'Server IP here' },
-  { name: 'controller' as keyof ProfileFormData, label: 'Controller', type: 'select', required: true, options: [ { value: '', label: 'Select Controller here' } ] },
-  { name: 'cpType' as keyof ProfileFormData, label: 'CP Type', type: 'select', required: true, options: [ { value: '', label: 'Select CP Type here' } ] },
-  { name: 'zone' as keyof ProfileFormData, label: 'Zone', type: 'select', required: true, options: [ { value: '', label: 'Select Zone here' } ] },
-  { name: 'tagLimit' as keyof ProfileFormData, label: 'Tag Limit', type: 'text', required: true, placeholder: 'Enter Tag Limit here' },
-  { name: 'tagIdentityFix' as keyof ProfileFormData, label: 'Tag Identity Fix.', type: 'text', required: true, placeholder: 'Enter here' },
-  { name: 'addPrinter' as keyof ProfileFormData, label: 'Add Printer', type: 'text', required: true, placeholder: 'Add Printer here' },
-  { name: 'printType' as keyof ProfileFormData, label: 'Print Type', type: 'select', required: true, options: [ { value: '', label: 'Select Print Type here' } ] },
-  { name: 'interCommId' as keyof ProfileFormData, label: 'Inter Comm ID', type: 'text', required: true, placeholder: 'Enter here' },
-  { name: 'interCommPassword' as keyof ProfileFormData, label: 'Inter Comm Password', type: 'text', required: true, placeholder: 'Enter here' },
-  { name: 'interCommName' as keyof ProfileFormData, label: 'Inter Comm Name', type: 'text', required: true, placeholder: 'Enter here' },
-  { name: 'laneType' as keyof ProfileFormData, label: 'Lane Type', type: 'select', required: true, options: [ { value: '', label: 'Select here' } ] },
-  { name: 'type' as keyof ProfileFormData, label: 'Type', type: 'select', required: true, options: [ { value: '', label: 'Select here' } ] },
-  { name: 'laneReader' as keyof ProfileFormData, label: 'Lane Reader', type: 'select', required: true, options: [ { value: '', label: 'Select here' } ] },
-  { name: 'readerSno' as keyof ProfileFormData, label: 'Reader S.No / IMEI', type: 'text', required: true, placeholder: 'Enter here' },
-  { name: 'manufacturer' as keyof ProfileFormData, label: 'Manufacturer', type: 'text', required: true, placeholder: 'Enter here' },
-  { name: 'timeOut' as keyof ProfileFormData, label: 'Time Out', type: 'text', required: true, placeholder: 'Enter here' },
-];
-
+import { cpAgentFields } from '../fields';
+import { useZones } from '../../../hooks/zone/useZones';
+import { useGetAllControllers } from '../../../hooks/controller/useGetAllControllers';
+import { useGetAllSyncAgents } from '../../../hooks/agent/useGetAllSyncAgents';
 
 const mockCpAgentData: ProfileFormData = {
   cpAgentName: 'Main Gate Agent',
@@ -52,6 +32,21 @@ const mockCpAgentData: ProfileFormData = {
 
 export default function EditCpAgent() {
   const [initialValues, setInitialValues] = useState<ProfileFormData | null>(null);
+  const { data: zonesData } = useZones();
+  const { data: controllersData } = useGetAllControllers();
+  const { data: syncAgentsData } = useGetAllSyncAgents();
+
+  const fields = React.useMemo(() => {
+    const zoneOptions = (zonesData?.data || []).map((zone) => ({ value: zone.id, label: zone.name }));
+    const controllerOptions = (controllersData?.data || []).map((controller: any) => ({ value: controller.id, label: controller.name || controller.id }));
+    const syncAgentOptions = (syncAgentsData?.data || []).map((agent: any) => ({ value: agent.id, label: agent.name || agent.id }));
+    return cpAgentFields.map(f => {
+      if (String(f.name) === 'zone') return { ...f, options: zoneOptions };
+      if (String(f.name) === 'controller') return { ...f, type: 'select' as const, options: controllerOptions };
+      if (String(f.name) === 'syncAgentId') return { ...f, type: 'select' as const, options: syncAgentOptions };
+      return f;
+    });
+  }, [zonesData, controllersData, syncAgentsData]);
 
   useEffect(() => {
     const selected = getTableRow<ProfileFormData>('cp-agent');
@@ -69,12 +64,12 @@ export default function EditCpAgent() {
       <div style={{ margin: '0 auto' }}>
         {initialValues && (
           <CommonEntityForm
-            title="Please update details below!"
+            title="Edit CP Agent"
             onSave={handleUpdate}
             onCancel={() => window.history.back()}
             saveButtonText='Edit'
-            fields={cpAgentFields}
-            initialValues={initialValues}
+            fields={fields}
+            initialValues={initialValues || {}}
           />
         )}
       </div>
