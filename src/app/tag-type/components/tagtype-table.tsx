@@ -72,9 +72,6 @@ export default function TagTable({
     }
   }, [data]);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
   if (isError) {
     return <div>Failed to load tag types.</div>;
   }
@@ -126,6 +123,7 @@ export default function TagTable({
       onTabChange={onTabChange}
       columns={TagColumns}
       data={Tags}
+      loading={isLoading}
       showAddButton={false}
       currentPage={currentPage}
       onPageChange={setCurrentPage}

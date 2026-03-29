@@ -126,9 +126,6 @@ export default function TagTable({
   ];
 
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
   if (isError) {
     return <div>Failed to load tags.</div>;
   }
@@ -144,6 +141,7 @@ export default function TagTable({
         showAddButton={false}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
+        loading={isLoading}
         getRowStatus={(row) => row.status}
         headerContent={
           <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 0' }}>
