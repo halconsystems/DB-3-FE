@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { removeTag } from "../../services/tag.service";
-export const useRemoveTag = () => {
+import { updateTag, UpdateTagRequest } from "../../services/tag.service";
+export const useUpdateTag = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => removeTag(id),
+    mutationFn: (payload: UpdateTagRequest) => updateTag(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tags"] });
     },

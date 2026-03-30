@@ -8,7 +8,6 @@ import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
 import WarningModal from '../../../components/popup/WarningModal';
 import { saveTableRow } from '../../../lib/tableRowStorage';
-
 export interface CpAgentTableRow {
   id: string;
   cpAgentName: string;
@@ -26,7 +25,6 @@ interface CpAgentTableProps {
   onAddNew: () => void;
   addButtonLabel: string;
 }
-
 export default function CpAgentTable({
   tabs,
   activeTab,
@@ -34,7 +32,6 @@ export default function CpAgentTable({
   onAddNew,
   addButtonLabel
 }: CpAgentTableProps) {
-
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<CpAgentTableRow | null>(null);
@@ -52,20 +49,16 @@ export default function CpAgentTable({
       status: item.isActive && !item.isDeleted ? 'Active' : 'Inactive',
     }));
   }, [data]);
-
   const router = useRouter();
   const deleteMutation = useDeleteCpAgent();
-
   const handleEdit = (item: CpAgentTableRow) => {
     saveTableRow('cp-agent', item);
     router.push('/cp-agent/edit-cp');
   };
-
   const handleDelete = (item: CpAgentTableRow) => {
     setSelectedAgent(item);
     setDeleteModalOpen(true);
   };
-
   const handleConfirmDelete = () => {
     if (selectedAgent) {
       deleteMutation.mutate({ id: selectedAgent.id });

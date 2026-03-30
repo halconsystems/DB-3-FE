@@ -7,7 +7,6 @@ import { useZones } from '../../../hooks/zone/useZones';
 import { useCreateCpAgent } from '../../../hooks/cp-agent/useCreateCpAgent';
 import { useGetAllControllers } from '../../../hooks/controller/useGetAllControllers';
 import { useGetAllSyncAgents } from '../../../hooks/agent/useGetAllSyncAgents';
-
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const isValidUuid = (value: string) => UUID_REGEX.test(value.trim());

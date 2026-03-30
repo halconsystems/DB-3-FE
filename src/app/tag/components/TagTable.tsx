@@ -6,12 +6,7 @@ import CircularButton from '../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../components/ui/ActionButton';
 import WarningModal from '../../../components/popup/WarningModal';
 import { saveTableRow } from '../../../lib/tableRowStorage';
-
-
 import { useGetAllTags } from '../../../hooks/tag/useGetAllTags';
-
-
-// Tag type for table row (matches mapped API data)
 type Tag = {
   tagId: string;
   tagNumber: string;
