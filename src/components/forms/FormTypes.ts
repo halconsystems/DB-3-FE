@@ -78,6 +78,10 @@ export interface ProfileFormData {
   timeOut?: string;
   bankName?: string;
   bankCode?: string;
+  rfidCardNo?: string;
+  userType?: string;
+  cardIssueDate?: string;
+  cardExpiryDate?: string;
   accountNo?: string;
   iban?: string;
   branchCode?: string;
@@ -107,6 +111,11 @@ export interface ProfileFormData {
   validTo?: string;
   entityType?: string;
   entityId?: string;
+  relationType?: string;
+  relation?: string;
+  fatherHusbandName?: string;
+  residentCardNo?: string;
+  readonly [key: string]: any;
 }
 
 export interface ProfileField {

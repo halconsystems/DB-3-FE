@@ -18,11 +18,12 @@ interface DashboardLayoutProps {
 const MENU_ICONS: Record<string, { active: string; inactive: string }> = {
   '/dashboard': { active: 'Dashboardgreen.svg', inactive: 'Dashboard.svg' },
   '/setup': { active: 'Setupgreen.svg', inactive: 'Setup.png' },
+  '/user': { active: 'Residentialgreen.svg', inactive: 'Residential.png' },
+  '/user-family': { active: 'Userfamilygreen.svg', inactive: 'Userfamily.svg' },
   '/vehicle': { active: 'Vehiclegreen.svg', inactive: 'Vehicle.png' },
   '/visitors': { active: 'Visitorgreen.svg', inactive: 'Visitor.png' },
   '/workers': { active: 'Workergreen.png', inactive: 'Worker.png' },
   '/luggage': { active: 'Luggagegreen.png', inactive: 'Luggage.png' },
-  '/residential': { active: 'Residentialgreen.svg', inactive: 'Residential.png' },
 };
 
 // Helper function to get icon based on active state
@@ -125,11 +126,18 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
           {memberTypeOpen && (
             <>
               <Link 
-                href="/residential" 
-                className={`${activeMenuItem === '/residential' ? styles.menuItemActive : ''} ${styles.menuItem}`}
+                href="/user" 
+                className={`${activeMenuItem === '/user' ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
-                <span>Residential/Commercial</span>
-                <img src={getMenuIcon('/residential', activeMenuItem === '/residential')} alt="" className={styles.menuIconImg} />
+                <span>User</span>
+                <img src={getMenuIcon('/user', activeMenuItem === '/user')} alt="" className={styles.menuIconImg} />
+              </Link>
+              <Link 
+                href="/user-family" 
+                className={`${activeMenuItem === '/user-family' ? styles.menuItemActive : ''} ${styles.menuItem}`}
+              >
+                <span>User Family</span>
+                <img src={getMenuIcon('/user-family', activeMenuItem === '/user-family')} alt="" className={styles.menuIconImg} />
               </Link>
               <Link 
                 href="/vehicle" 
