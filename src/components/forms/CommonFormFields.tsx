@@ -108,8 +108,8 @@ export function SelectInputField({ field, value, onChange, styles, wrapperClassN
       <div className={styles.selectWrapper}>
         <select
           ref={selectRef}
-          id={field.name}
-          name={field.name}
+          id={String(field.name)}
+          name={String(field.name)}
           className={styles.select}
           style={getInputStyle(field)}
           value={value}
