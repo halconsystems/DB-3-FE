@@ -19,11 +19,17 @@
   width: 100vw;
   /* height: 415px; */
   max-width: 924px;
+  max-height: 600px;
   /* padding: 32px; */
   position: relative;
   text-align: center;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: auto;
+
+}
+
+.modalContainer::-webkit-scrollbar {
+  display: none;
 }
 
 .closeButton {

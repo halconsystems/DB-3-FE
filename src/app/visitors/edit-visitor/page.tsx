@@ -145,7 +145,7 @@ export default function EditVisitor() {
   };
 
   return (
-    <DashboardLayout pageTitle="Edit Visitor">
+    // <DashboardLayout pageTitle="Edit Visitor">
       <div style={{ margin: '0 auto' }}>
         {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {!visitorId && <div style={{ color: 'red', marginBottom: 12 }}>No visitor id found for editing.</div>}
@@ -163,7 +163,7 @@ export default function EditVisitor() {
           />
         )}
       </div>
-    </DashboardLayout>
+    // </DashboardLayout> 
   );
 }
 

@@ -209,7 +209,7 @@ export default function EditWorker() {
   };
 
   return (
-    <DashboardLayout pageTitle="Edit Worker">
+    // <DashboardLayout pageTitle="Edit Worker">
       <div style={{ margin: '0 auto' }}>
         {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {!workerId && <div style={{ color: 'red', marginBottom: 12 }}>No worker id found for editing.</div>}
@@ -227,6 +227,6 @@ export default function EditWorker() {
           />
         )}
       </div>
-    </DashboardLayout>
+    // </DashboardLayout>
   );
 }

@@ -11,6 +11,9 @@ import { saveTableRow } from '../../lib/tableRowStorage';
 import { useVisitors } from '../../hooks/visitors/useVisitors';
 import { useDeleteVisitor } from '../../hooks/visitors/useDeleteVisitor';
 import type { ExternalVisitorPass } from '../../services/visitor.service';
+import ModalForm from '../../components/forms/ModalForm/ModalForm';
+import AddVisitor from './add-visitor/page';
+import EditVisitor from './edit-visitor/page';
 
 interface Visitor {
   id: string;
@@ -47,9 +50,14 @@ export default function VisitorsPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedVisitor, setSelectedVisitor] = useState<SelectedVisitorRow | null>(null);
   const [localRemovedIds, setLocalRemovedIds] = useState<string[]>([]);
+  const [formType, setFormType] = useState<'add' | 'edit' | null>(null);
 
   const { data, isLoading, isError, error } = useVisitors();
   const { mutateAsync: deleteVisitor, isPending: isDeleting } = useDeleteVisitor();
+
+  const closeButton = () => {
+    setFormType(null);
+  };
 
   const visitors: Visitor[] = (data?.data || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
@@ -67,12 +75,12 @@ export default function VisitorsPage() {
   const router = useRouter();
 
   const handleAddNew = () => {
-    router.push('/visitors/add-visitor');
+    setFormType('add');
   };
 
   const handleEdit = (visitor: Visitor) => {
     saveTableRow('visitors', { id: visitor.id });
-    router.push('/visitors/edit-visitor');
+    setFormType('edit');
   };
 
   const handleDelete = (visitor: SelectedVisitorRow) => {
@@ -142,6 +150,14 @@ export default function VisitorsPage() {
 
   return (
     <DashboardLayout pageTitle="Visitor">
+      {formType === 'add' && <ModalForm closeButton={closeButton} title="Add New Visitor">
+        <AddVisitor />
+      </ModalForm>}
+
+      {formType === 'edit' && <ModalForm closeButton={closeButton} title="Edit Visitor">
+        <EditVisitor />
+      </ModalForm>}
+
       {isError && (
         <div style={{ color: 'red', marginBottom: 12 }}>
           Failed to load visitors: {error instanceof Error ? error.message : 'Unknown error'}

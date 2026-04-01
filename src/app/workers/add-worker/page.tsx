@@ -117,7 +117,7 @@ export default function AddNewWorker() {
   };
 
   return (
-    <DashboardLayout pageTitle="Add New Worker">
+    // <DashboardLayout pageTitle="Add New Worker">
       <div style={{ margin: '0 auto' }}>
         {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         <CommonEntityForm
@@ -128,7 +128,7 @@ export default function AddNewWorker() {
           loading={isPending}
         />
       </div>
-    </DashboardLayout>
+   //  </DashboardLayout>
   );
 }
 
