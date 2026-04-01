@@ -159,7 +159,7 @@ export function DateInputField({ field, value, onChange, styles, wrapperClassNam
       <input
         ref={dateInputRef}
         type="date"
-        name={field.name}
+        name={String(field.name)}
         className={styles.input + " " + styles.dateInput}
         style={getInputStyle(field)}
         value={value}
