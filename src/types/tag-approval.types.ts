@@ -1,17 +1,17 @@
 export interface TagApprovalRequest {
   id: string;
-  entityName: string;
-  entityId: string;
-  tagTypeId: string;
+  subjectType: string;
+  subjectId: string;
+  subjectName: string;
+  tagType: string;
   tagNumber: string;
-  feeScaleId: string;
-  planType: number;
+  feeScale: string;
+  planType: string;
   validFrom: string;
   validTo: string;
-  zoneId: string | null;
-  deviceId: string | null;
   notes: string;
-  status: number;
+  status: string;
+  trialPeriod: string;
 }
 
 export interface GetTagApprovalRequestsResponse {

@@ -8,21 +8,7 @@ import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
 import { AddNewButton } from '../../../components/ui/ActionButton';
 import { useCancelTagApprovalRequest } from '../../../hooks/tag-approval/useCancelTagApprovalRequest';
-type Tag = {
-  tagId: string;
-  name: string;
-  entityId: string;
-  tagType: string;
-  tagNumber: string;
-  feeScaleId: string;
-  planType: string;
-  validFrom: string;
-  validTo: string;
-  zone: string;
-  device: string;
-  notes: string;
-  status: 'Active' | 'Inactive' | string;
-};
+import { TagApprovalRequest } from '../../../types/tag-approval.types';
 interface TagTableProps {
   tabs: Tab[];
   activeTab: string;
@@ -40,33 +26,18 @@ export default function TagTable({
 }: TagTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const { data, isLoading, isError } = useGetTagApprovalRequests();
-  const [Tags, setTags] = useState<Tag[]>([]);
+  const [Tags, setTags] = useState<TagApprovalRequest[]>([]);
   const rejectMutation = useRejectTagApprovalRequest();
   const cancelMutation = useCancelTagApprovalRequest();
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
-  const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
+  const [selectedTag, setSelectedTag] = useState<TagApprovalRequest | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     if (data && data.data) {
-      const mapped = data.data.map((item: any) => ({
-        tagId: item.id,
-        name: item.entityName,
-        entityId: item.entityId,
-        tagType: item.tagTypeId, 
-        tagNumber: item.tagNumber,
-        feeScaleId: item.feeScaleId,
-        planType: String(item.planType),
-        validFrom: item.validFrom,
-        validTo: item.validTo,
-        zone: item.zoneId ?? '',
-        device: item.deviceId ?? '',
-        notes: item.notes,
-        status: item.status === 1 ? 'Active' as const : 'Inactive' as const,
-      }));
-      setTags(mapped);
+      setTags(data.data);
     }
   }, [data]);
 
@@ -77,15 +48,15 @@ export default function TagTable({
     return <div>Failed to load tag approval requests.</div>;
   }
 
-  const handleEdit = (item: Tag) => {
+  const handleEdit = (item: TagApprovalRequest) => {
     saveTableRow('tag', item);
     router.push('/tag/edit-tag');
   };
-  const handleDelete = (item: Tag) => {
+  const handleDelete = (item: TagApprovalRequest) => {
     setSelectedTag(item);
     setDeleteModalOpen(true);
   };
-  const handleReject = (item: Tag) => {
+  const handleReject = (item: TagApprovalRequest) => {
     setSelectedTag(item);
     setDeleteModalOpen(true);
   };
@@ -93,11 +64,11 @@ export default function TagTable({
     if (!selectedTag) {
       return;
     }
-    rejectMutation.mutate(selectedTag.tagId);
+    rejectMutation.mutate(selectedTag.id);
     setDeleteModalOpen(false);
     setSelectedTag(null);
   };
-  const handleCancel = (item: Tag) => {
+  const handleCancel = (item: TagApprovalRequest) => {
     setSelectedTag(item);
     setCancelModalOpen(true);
   };
@@ -105,27 +76,25 @@ export default function TagTable({
     if (!selectedTag) {
       return;
     }
-    cancelMutation.mutate(selectedTag.tagId);
+    cancelMutation.mutate(selectedTag.id);
     setCancelModalOpen(false);
     setSelectedTag(null);
   };
 
-  const TagColumns: Column<Tag>[] = [
-    { key: 'name', header: 'Name' },
-    { key: 'entityId', header: 'Entity ID' },
+  const TagColumns: Column<TagApprovalRequest>[] = [
+    { key: 'subjectName', header: 'Name' },
+    { key: 'subjectId', header: 'Subject ID' },
     { key: 'tagType', header: 'Tag Type' },
     { key: 'tagNumber', header: 'Tag Number' },
-    { key: 'feeScaleId', header: 'Fee Scale ID' },
+    { key: 'feeScale', header: 'Fee Scale' },
     { key: 'planType', header: 'Plan Type' },
     { key: 'validFrom', header: 'Valid From' },
     { key: 'validTo', header: 'Valid To' },
-    { key: 'zone', header: 'Zone' },
-    { key: 'device', header: 'Device' },
     { key: 'notes', header: 'Notes' },
     {
       key: 'status',
       header: 'Status',
-      render: (value: 'Active' | 'Inactive') => (
+      render: (value: string) => (
         <StatusBadge status={value} />
       ),
     },
@@ -161,7 +130,7 @@ export default function TagTable({
 
   return (
     <>
-    <DataTable<Tag>
+    <DataTable<TagApprovalRequest>
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={onTabChange}
