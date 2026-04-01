@@ -5,7 +5,7 @@ import CommonEntityForm, { ProfileFormData } from '../../../components/forms/Com
 import { luggageFields } from '../fields';
 
 import { useCreateLuggage } from '../../../hooks/luggage/useCreateLuggage';
-import { getAllExternalUsers } from '../../../services/externalUser.service';
+import { getAllExternalUsers } from '../../../services/user.service';
 
 const toIsoDate = (value?: string) => {
   if (!value) return new Date().toISOString();

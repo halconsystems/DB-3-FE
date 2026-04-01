@@ -1,5 +1,8 @@
 'use client';
 import { useState } from 'react';
+import { useRemoveUser } from '../../hooks/user/useRemoveUser';
+import { useExternalUsers } from '../../hooks/user/useUsers';
+import { useUserById } from '../../hooks/user/useUserById';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
@@ -8,30 +11,30 @@ import CircularButton from '../../components/ui/CircularButton';
 import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
 
-interface User {
-  id: number;
-  name: string;
-  emailAddress: string;
-  cellNumber: string;
-  cnic: string;
-  userType: string;
-  rfidCardNo: string;
-  cardIssueDate?: string;
-  cardExpiryDate?: string;
-  cardStatus: 'Active' | 'Inactive';
-  status: 'Active' | 'Inactive';
-}
 
-const sampleData: User[] = [
-  { id: 1, name: 'Ahmed Faraz', emailAddress: 'ahmed@gmail.com', cellNumber: '0301-2346540', cnic: '12345-1234567-1', userType: 'Admin', rfidCardNo: '001234', cardIssueDate: '2024-01-01', cardExpiryDate: '2025-01-01', cardStatus: 'Active', status: 'Active' },
-  { id: 2, name: 'Shahid Husain', emailAddress: 'shahid@gmail.com', cellNumber: '0301-2346550', cnic: '23456-2345678-2', userType: 'User', rfidCardNo: '001235', cardIssueDate: '2023-06-01', cardExpiryDate: '2024-06-01', cardStatus: 'Inactive', status: 'Inactive' },
-  { id: 3, name: 'Mustafa Javaid', emailAddress: 'mustafa@gmail.com', cellNumber: '0301-2346530', cnic: '34567-3456789-3', userType: 'User', rfidCardNo: '001236', cardIssueDate: '2024-02-01', cardExpiryDate: '2025-02-01', cardStatus: 'Active', status: 'Active' },
-];
+// Map API user type and status to display values
+const mapUserType = (type: number | string) => {
+  if (typeof type === 'string') return type;
+  switch (type) {
+    case 1: return 'Admin';
+    case 2: return 'User';
+    default: return 'User';
+  }
+};
+
+const mapStatus = (isActive: boolean) => (isActive ? 'Active' : 'Inactive');
+const mapCardStatus = (status: number) => (status === 1 ? 'Active' : 'Inactive');
+
+
 
 export default function UserPage() {
+  const removeUserMutation = useRemoveUser();
+  const { data, isLoading } = useExternalUsers();
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  // Fetch full user details by ID when a user is selected (for details, edit, etc.)
+  const { data: selectedUserDetails, isLoading: isUserDetailsLoading } = useUserById(selectedUser ? String(selectedUser.id) : undefined);
   const [localRemovedIds, setLocalRemovedIds] = useState<number[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
@@ -40,12 +43,13 @@ export default function UserPage() {
     router.push('/user/add-user');
   };
 
-  const handleEdit = (user: User) => {
+  const handleEdit = (user: any) => {
+    // Optionally, you can use selectedUserDetails here for more complete info
     saveTableRow('user', user);
     router.push('/user/edit-user');
   };
 
-  const handleDelete = (user: User) => {
+  const handleDelete = (user: any) => {
     setSelectedUser(user);
     setDeleteModalOpen(true);
   };
@@ -54,24 +58,40 @@ export default function UserPage() {
     if (!selectedUser) {
       return;
     }
-
     setIsDeleting(true);
-    try {
-      // TODO: Call API to delete user
-      console.log('Delete User:', selectedUser);
-      setLocalRemovedIds((prev) => [...prev, selectedUser.id]);
-    } catch (error) {
-      console.error('Delete failed:', error);
-    } finally {
-      setIsDeleting(false);
-      setDeleteModalOpen(false);
-      setSelectedUser(null);
-    }
+    removeUserMutation.mutate(String(selectedUser.id), {
+      onSuccess: () => {
+        setDeleteModalOpen(false);
+        setSelectedUser(null);
+      },
+      onError: (error) => {
+        console.error('Delete failed:', error);
+      },
+      onSettled: () => {
+        setIsDeleting(false);
+      },
+    });
   };
 
-  const filteredData = sampleData.filter(user => !localRemovedIds.includes(user.id));
 
-  const columns: Column<User>[] = [
+  // Map API data to table data
+  const filteredData = (data || [])
+    .filter(user => !localRemovedIds.includes(Number(user.id)))
+    .map(user => ({
+      id: Number(user.id),
+      name: user.name,
+      emailAddress: user.email || '',
+      cellNumber: user.phoneNumber || '',
+      cnic: user.cnic || '',
+      userType: mapUserType(user.userType),
+      rfidCardNo: user.rfidCardNumber || '',
+      cardIssueDate: user.cardIssueDate || '',
+      cardExpiryDate: user.cardExpiryDate || '',
+      cardStatus: mapCardStatus(user.cardStatus),
+      status: mapStatus(user.isActive),
+    }));
+
+  const columns: Column<any>[] = [
     { key: 'name', header: 'Name' },
     { key: 'emailAddress', header: 'Email' },
     { key: 'cellNumber', header: 'Phone' },
@@ -109,14 +129,36 @@ export default function UserPage() {
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
         <AddNewButton onClick={handleAddNew} />
       </div>
-      <DataTable<User>
+      <DataTable
         columns={columns}
         data={filteredData}
         showAddButton={false}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
-        getRowStatus={(row) => row.status}
+        getRowStatus={(row) => {
+          if (row.status === 'Active' || row.status === 'Inactive' || row.status === 'Pending') {
+            return row.status;
+          }
+          return undefined;
+        }}
+        loading={isLoading}
+        emptyMessage={isLoading ? 'Loading users...' : 'No users found'}
       />
+
+      {/* Example usage of useUserById hook for selected user */}
+      {selectedUser && (
+        <div style={{ marginTop: 24 }}>
+          <h4>User Details (from useUserById):</h4>
+          {isUserDetailsLoading ? (
+            <div>Loading user details...</div>
+          ) : selectedUserDetails ? (
+            <pre style={{ background: '#f5f5f5', padding: 12, borderRadius: 4 }}>{JSON.stringify(selectedUserDetails, null, 2)}</pre>
+          ) : (
+            <div>No details found.</div>
+          )}
+        </div>
+      )}
+
       <WarningModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}

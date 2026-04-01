@@ -1,26 +1,34 @@
 "use client";
+
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm from '../../../components/forms/CommonEntityForm';
 import { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { userFields } from '../fields';
+import { useCreateUser } from '../../../hooks/user/useCreateUser';
+
 
 export default function AddNewUser() {
+  const createUserMutation = useCreateUser();
+
   const handleSave = (data: ProfileFormData) => {
-    const body = {
-      Name: data.name || '',
-      Email: data.emailAddress || '',
-      Phone: data.cellNumber || '',
-      CNIC: data.cnic || '',
-      UserType: data.userType || '',
-      RFIDCardNo: data.rfidCardNo || '',
-      CardIssueDate: data.cardIssueDate || null,
-      CardExpiryDate: data.cardExpiryDate || null,
-      CardStatus: data.cardStatus || '',
-      Status: data.status || '',
+    // Map form data to API shape
+    const user = {
+      name: data.name || '',
+      email: data.emailAddress || '',
+      phoneNumber: data.cellNumber || '',
+      cnic: data.cnic || '',
+      userType: data.userType === 'admin' ? 1 : 2, // adjust as needed
+      rfidCardNumber: data.rfidCardNo || '',
+      createdBy: 'admin', // or get from context/auth
+      cardIssueDate: data.cardIssueDate || '',
+      cardExpiryDate: data.cardExpiryDate || '',
+      cardStatus: data.cardStatus === 'active' ? 1 : 0,
     };
-    console.log('Save User:', body);
-    // TODO: Call API to save user
-    window.history.back();
+    createUserMutation.mutate(user, {
+      onSuccess: () => {
+        window.history.back();
+      },
+    });
   };
 
   const initVal = {

@@ -4,7 +4,7 @@ import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { visitorFields } from '../fields';
 import { useCreateVisitor } from '../../../hooks/visitors/useCreateVisitor';
-import { getAllExternalUsers } from '../../../services/externalUser.service';
+import { getAllExternalUsers } from '../../../services/user.service';
 
 const toIsoDate = (value?: string) => {
   if (!value) {

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAllExternalUsers } from "services/externalUser.service";
+import { getAllExternalUsers } from "services/user.service";
 
 export const useExternalUsers = () => {
   return useQuery({

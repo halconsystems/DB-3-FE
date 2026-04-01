@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import { useUserById } from '../../../hooks/user/useUserById';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
@@ -20,75 +21,53 @@ interface SelectedUserRow {
 }
 
 export default function EditUser() {
-  const [selectedRow, setSelectedRow] = useState<SelectedUserRow | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [initialValues, setInitialValues] = useState<ProfileFormData>({
-    name: '',
-    emailAddress: '',
-    cellNumber: '',
-    cnic: '',
-    userType: '',
-    rfidCardNo: '',
-    cardIssueDate: '',
-    cardExpiryDate: '',
-    cardStatus: 'active',
-    status: 'active',
-  });
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const selected = getTableRow<SelectedUserRow>('user');
-    if (selected) {
-      setSelectedRow(selected);
-      setInitialValues({
-        name: selected.name || '',
-        emailAddress: selected.emailAddress || '',
-        cellNumber: selected.cellNumber || '',
-        cnic: selected.cnic || '',
-        userType: selected.userType?.toLowerCase() || '',
-        rfidCardNo: selected.rfidCardNo || '',
-        cardIssueDate: selected.cardIssueDate || '',
-        cardExpiryDate: selected.cardExpiryDate || '',
-        cardStatus: selected.cardStatus?.toLowerCase() || 'active',
-        status: selected.status?.toLowerCase() || 'active',
-      });
+    const selected = getTableRow<any>('user');
+    if (selected && selected.id) {
+      setUserId(String(selected.id));
     }
-    setIsLoading(false);
-    return () => {
-      clearTableRow('user');
-    };
+    clearTableRow('user');
   }, []);
 
-  const handleUpdate = (data: ProfileFormData) => {
-    const body = {
-      Name: data.name || '',
-      Email: data.emailAddress || '',
-      Phone: data.cellNumber || '',
-      CNIC: data.cnic || '',
-      UserType: data.userType || '',
-      RFIDCardNo: data.rfidCardNo || '',
-      CardIssueDate: data.cardIssueDate || null,
-      CardExpiryDate: data.cardExpiryDate || null,
-      CardStatus: data.cardStatus || '',
-      Status: data.status || '',
+  const { data: userDetails, isLoading } = useUserById(userId || undefined);
+
+  let initialValues: ProfileFormData | undefined = undefined;
+  if (userDetails) {
+    initialValues = {
+      name: userDetails.name || '',
+      emailAddress: userDetails.email || '',
+      cellNumber: userDetails.phoneNumber || '',
+      cnic: userDetails.cnic || '',
+      userType: userDetails.userType === 1 ? 'admin' : userDetails.userType === 2 ? 'user' : '',
+      rfidCardNo: userDetails.rfidCardNumber || '',
+      cardIssueDate: userDetails.cardIssueDate || '',
+      cardExpiryDate: userDetails.cardExpiryDate || '',
+      cardStatus: userDetails.cardStatus === 1 ? 'active' : 'inactive',
+      status: userDetails.isActive ? 'active' : 'inactive',
     };
-    console.log('Update User:', body);
-    // TODO: Call API to update user
-    window.history.back();
+  }
+
+  const handleUpdate = (data: ProfileFormData) => {
+    // ... your update logic here
   };
 
   return (
     <DashboardLayout pageTitle="Edit User">
-          <CommonEntityForm
-            key={selectedRow?.id || 'new'}
-            title="Please update details below!"
-            onSave={handleUpdate}
-            onCancel={() => window.history.back()}
-            fields={userFields}
-            initialValues={initialValues}
-            saveButtonText='Edit'
-            loading={isLoading}
-            showStatusToggle={false}
-          />
+      <div style={{ margin: '0 auto' }}>
+        <CommonEntityForm
+          key={userId || 'new'}
+          title="Please update details below!"
+          onSave={handleUpdate}
+          onCancel={() => window.history.back()}
+          fields={userFields}
+          initialValues={initialValues}
+          saveButtonText="Edit"
+          loading={isLoading}
+          showStatusToggle={false}
+        />
+      </div>
     </DashboardLayout>
   );
 }

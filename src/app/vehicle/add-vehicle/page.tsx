@@ -5,7 +5,7 @@ import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { vehicleFields } from '../fields';
 import { useCreateVehicle } from '../../../hooks/vehicle/useCreateVehicle';
-import { getAllExternalUsers } from '../../../services/externalUser.service';
+import { getAllExternalUsers } from '../../../services/user.service';
 
 const toIsoDate = (value?: string) => {
   if (!value) {
