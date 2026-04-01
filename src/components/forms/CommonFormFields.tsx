@@ -178,7 +178,7 @@ export function ToggleInputField({ field, checked, onChange, styles, wrapperClas
       <label className={field.required ? styles.labelRed : styles.labelGreen}>{field.label}</label>
       <input
         type="checkbox"
-        name={field.name}
+        name={String(field.name)}
         checked={checked}
         onChange={onChange}
       />
