@@ -95,7 +95,7 @@ export default function AddNewVehicle() {
   };
 
   return (
-    // <DashboardLayout pageTitle="Add New Vehicle">
+    <DashboardLayout pageTitle="Add New Vehicle">
       <div style={{ margin: '0 auto' }}>
         {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         <CommonEntityForm
@@ -106,7 +106,7 @@ export default function AddNewVehicle() {
           loading={isPending}
         />
       </div>
-    // </DashboardLayout>
+    </DashboardLayout>
   );
 }
 

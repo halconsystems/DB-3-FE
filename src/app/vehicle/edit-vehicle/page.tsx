@@ -152,7 +152,7 @@ export default function EditVehicle() {
   };
 
   return (
-    // <DashboardLayout pageTitle="Edit Vehicle">
+    <DashboardLayout pageTitle="Edit Vehicle">
       <div style={{ margin: '0 auto' }}>
         {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {!vehicleId && <div style={{ color: 'red', marginBottom: 12 }}>No vehicle id found for editing.</div>}
@@ -170,7 +170,7 @@ export default function EditVehicle() {
           />
         )}
       </div>
-    // </DashboardLayout>
+    </DashboardLayout>
   );
 }
 
