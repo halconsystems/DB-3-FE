@@ -148,7 +148,7 @@ export default function EditLuggage() {
   };
 
   return (
-    // <DashboardLayout pageTitle="Edit Luggage">
+    <DashboardLayout pageTitle="Edit Luggage">
       <div style={{ margin: '0 auto' }}>
         {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {!luggageId && <div style={{ color: 'red', marginBottom: 12 }}>No luggage id found for editing.</div>}
@@ -167,7 +167,7 @@ export default function EditLuggage() {
           />
         )}
       </div>
-    // </DashboardLayout>
+    </DashboardLayout>
   );
 }
 

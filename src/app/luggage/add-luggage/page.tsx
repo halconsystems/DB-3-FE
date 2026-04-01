@@ -88,7 +88,7 @@ export default function AddNewLuggage() {
   // Removed handleConfirm and modal logic
 
   return (
-    // <DashboardLayout pageTitle="Add New Luggage">
+    <DashboardLayout pageTitle="Add New Luggage">
       <div style={{ margin: '0 auto' }}>
         {formError && (
           <div style={{ color: 'red', marginBottom: 12 }}>
@@ -107,7 +107,8 @@ export default function AddNewLuggage() {
         />
       </div>
 
-    // </DashboardLayout>
+      {/* Modal removed */}
+    </DashboardLayout>
   );
 }
 

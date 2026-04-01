@@ -10,9 +10,6 @@ import { useWorkers } from '../../hooks/workers/useWorkers';
 import { useDeleteWorker } from '../../hooks/workers/useDeleteWorker';
 import type { ExternalWorker } from '../../services/worker.service';
 import CircularButton from '../../components/ui/CircularButton';
-import ModalForm from '../../components/forms/ModalForm/ModalForm';
-import AddWorker from './add-worker/page';
-import EditWorker from './edit-worker/page';
 
 interface Worker {
   id: string;
@@ -90,14 +87,9 @@ export default function WorkersPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState<SelectedWorkerRow | null>(null);
   const [localRemovedIds, setLocalRemovedIds] = useState<string[]>([]);
-  const [formType, setFormType] = useState<'add' | 'edit' | null>(null);
 
   const { data, isLoading, isError, error } = useWorkers();
   const { mutateAsync: deleteWorker, isPending: isDeleting } = useDeleteWorker();
-
-  const closeButton = () => {
-    setFormType(null);
-  };
 
   const workers: Worker[] = (data?.data || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
@@ -121,12 +113,12 @@ export default function WorkersPage() {
   const router = useRouter();
 
   const handleAddNew = () => {
-    setFormType('add');
+    router.push('/workers/add-worker');
   };
 
   const handleEdit = (worker: Worker) => {
     saveTableRow('workers', { id: worker.id });
-    setFormType('edit');
+    router.push(`/workers/edit-worker?id=${encodeURIComponent(worker.id)}`);
   };
 
   const handleDelete = (worker: SelectedWorkerRow) => {
@@ -189,14 +181,6 @@ export default function WorkersPage() {
 
   return (
     <DashboardLayout pageTitle="Workers">
-      {formType === 'add' && <ModalForm closeButton={closeButton} title="Add New Worker">
-        <AddWorker />
-      </ModalForm>}
-
-      {formType === 'edit' && <ModalForm closeButton={closeButton} title="Edit Worker">
-        <EditWorker />
-      </ModalForm>}
-
       {isError && (
         <div style={{ color: 'red', marginBottom: 12 }}>
           Failed to load workers: {error instanceof Error ? error.message : 'Unknown error'}

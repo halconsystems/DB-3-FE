@@ -10,9 +10,6 @@ import { saveTableRow } from '../../lib/tableRowStorage';
 import { useLuggage } from '../../hooks/luggage/useLuggage';
 import { useDeleteLuggage } from '../../hooks/luggage/useDeleteLuggage';
 import type { Luggage } from '../../services/luggage.service';
-import ModalForm from '../../components/forms/ModalForm/ModalForm';
-import AddLuggage from './add-luggage/page';
-import EditLuggage from './edit-luggage/page';
 
 interface LuggagePass {
   id: string;
@@ -44,14 +41,9 @@ export default function LuggagePage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedLuggage, setSelectedLuggage] = useState<SelectedLuggageRow | null>(null);
   const [localRemovedIds, setLocalRemovedIds] = useState<string[]>([]);
-  const [formType, setFormType] = useState<'add' | 'edit' | null>(null);
 
   const { data, isLoading, isError, error } = useLuggage();
   const { mutateAsync: deleteLuggage, isPending: isDeleting } = useDeleteLuggage();
-
-  const closeButton = () => {
-    setFormType(null);
-  };
 
   const luggagePasses: LuggagePass[] = (data?.data || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
@@ -68,12 +60,12 @@ export default function LuggagePage() {
   const router = useRouter();
 
   const handleAddNew = () => {
-    setFormType('add');
+    router.push('/luggage/add-luggage');
   };
 
   const handleEdit = (luggage: LuggagePass) => {
-    saveTableRow('luggage', { id: luggage.id });
-    setFormType('edit');
+    saveTableRow('luggage', luggage);
+    router.push(`/luggage/edit-luggage?id=${encodeURIComponent(luggage.id)}`);
   };
 
   const handleDelete = (luggage: SelectedLuggageRow) => {
@@ -125,14 +117,6 @@ export default function LuggagePage() {
 
   return (
     <DashboardLayout pageTitle="Luggage">
-      {formType === 'add' && <ModalForm closeButton={closeButton} title="Add New Luggage">
-        <AddLuggage />
-      </ModalForm>}
-
-      {formType === 'edit' && <ModalForm closeButton={closeButton} title="Edit Luggage">
-        <EditLuggage />
-      </ModalForm>}
-
       {isError && (
         <div style={{ color: 'red', marginBottom: 12 }}>
           Failed to load luggage: {error instanceof Error ? error.message : 'Unknown error'}
