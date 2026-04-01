@@ -202,7 +202,7 @@ export function RadioCardInputField({ field, value, onChange, styles, wrapperCla
               <input
                 id={radioId}
                 type="radio"
-                name={field.name}
+                name={String(field.name)}
                 value={option.value}
                 checked={isChecked}
                 onChange={onChange}
