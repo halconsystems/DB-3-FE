@@ -14,6 +14,23 @@ interface DashboardLayoutProps {
   headerAction?: React.ReactNode;
 }
 
+// Icon mapping for menu items
+const MENU_ICONS: Record<string, { active: string; inactive: string }> = {
+  '/dashboard': { active: 'Dashboardgreen.svg', inactive: 'Dashboard.svg' },
+  '/setup': { active: 'Setupgreen.svg', inactive: 'Setup.png' },
+  '/vehicle': { active: 'Vehiclegreen.svg', inactive: 'Vehicle.png' },
+  '/visitors': { active: 'Visitorgreen.svg', inactive: 'Visitor.png' },
+  '/workers': { active: 'Workergreen.png', inactive: 'Worker.png' },
+  '/luggage': { active: 'Luggagegreen.png', inactive: 'Luggage.png' },
+  '/residential': { active: 'Residentialgreen.svg', inactive: 'Residential.png' },
+};
+
+// Helper function to get icon based on active state
+const getMenuIcon = (path: string, isActive: boolean): string => {
+  const icons = MENU_ICONS[path];
+  return icons ? `/icons/${icons[isActive ? 'active' : 'inactive']}` : '';
+};
+
 export default function DashboardLayout({ children, pageTitle = "Dashboard", userName = "Ahmed Faraz", userAvatarUrl, headerAction }: DashboardLayoutProps) {
   const [memberTypeOpen, setMemberTypeOpen] = useState(true);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -84,14 +101,14 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
             className={`${activeMenuItem === '/dashboard' ? styles.menuItemActive : ''} ${styles.menuItemGap} ${styles.menuItem}`}
           >
             <span>Dashboard</span>
-            <img src="/icons/Dashboard.svg" alt="" className={styles.menuIconImg} />
+            <img src={getMenuIcon('/dashboard', activeMenuItem === '/dashboard')} alt="" className={styles.menuIconImg} />
           </Link>
           <Link 
             href="/setup" 
             className={`${activeMenuItem === '/setup' ? styles.menuItemActive : ''} ${styles.menuItemGap} ${styles.menuItem}`}
           >
             <span>Setup</span>
-            <img src="/icons/Setup.png" alt="" className={styles.menuIconImg} />
+            <img src={getMenuIcon('/setup', activeMenuItem === '/setup')} alt="" className={styles.menuIconImg} />
           </Link>
           <div 
             className={styles.menuSectionTitle} 
@@ -112,35 +129,35 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
                 className={`${activeMenuItem === '/residential' ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
                 <span>Residential/Commercial</span>
-                <img src="/icons/Residential.png" alt="" className={styles.menuIconImg} />
+                <img src={getMenuIcon('/residential', activeMenuItem === '/residential')} alt="" className={styles.menuIconImg} />
               </Link>
               <Link 
                 href="/vehicle" 
                 className={`${activeMenuItem === '/vehicle' ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
                 <span>Vehicles</span>
-                <img src="/icons/Vehicle.png" alt="" className={styles.menuIconImg} />
+                <img src={getMenuIcon('/vehicle', activeMenuItem === '/vehicle')} alt="" className={styles.menuIconImg} />
               </Link>
               <Link 
                 href="/visitors" 
                 className={`${activeMenuItem === '/visitors' ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
                 <span>Visitor</span>
-                <img src="/icons/Visitor.png" alt="" className={styles.menuIconImg} />
+                <img src={getMenuIcon('/visitors', activeMenuItem === '/visitors')} alt="" className={styles.menuIconImg} />
               </Link>
               <Link 
                 href="/workers" 
                 className={`${activeMenuItem === '/workers' ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
                 <span>Workers</span>
-                <img src="/icons/Worker.png" alt="" className={styles.menuIconImg} />
+                <img src={getMenuIcon('/workers', activeMenuItem === '/workers')} alt="" className={styles.menuIconImg} />
               </Link>
               <Link 
                 href="/luggage" 
                 className={`${activeMenuItem === '/luggage' ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
                 <span>Luggage Pass</span>
-                <img src="/icons/Luggage.png" alt="" className={styles.menuIconImg} />
+                <img src={getMenuIcon('/luggage', activeMenuItem === '/luggage')} alt="" className={styles.menuIconImg} />
               </Link>
             </>
           )}
