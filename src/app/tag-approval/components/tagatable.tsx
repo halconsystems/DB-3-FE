@@ -105,7 +105,7 @@ export default function TagTable({
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
             style={{ background: '#4CAF50', color: 'white', border: 'none', borderRadius: 4, padding: '4px 12px', cursor: 'pointer' }}
-            onClick={() => router.push('/tag-approval/approve')}
+            onClick={() => router.push(`/tag-approval/approve?id=${row.id}`)}
           >
             Approve
           </button>

@@ -69,7 +69,7 @@ export function TextInputField({ field, value, onChange, styles, wrapperClassNam
       <label className={field.required ? styles.labelRed : styles.labelGreen}>{field.label}</label>
       <input
         type={field.type}
-        name={field.name}
+         name={String(field.name)}
         placeholder={field.placeholder}
         className={styles.input}
         style={getInputStyle(field)}

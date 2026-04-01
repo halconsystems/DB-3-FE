@@ -7,6 +7,7 @@ import { useGetTagById } from '../../../hooks/tag/useGetTagById';
 import { useUpdateTag } from '../../../hooks/tag/useUpdateTag';
 import { tagFields as baseTagFields, mockTagData } from '../fields';
 import { useGetAllTags } from '../../../hooks/tag/useGetAllTags';
+import { useGetAllTagTypes } from '../../../hooks/tagtype/useGetAllTagTypes';
 export default function EditTag() {
   const [tagId, setTagId] = useState<string | null>(null);
   const [initialValues, setInitialValues] = useState<ProfileFormData | null>(null);
@@ -15,11 +16,20 @@ export default function EditTag() {
     { value: '', label: 'Select Tag ID' },
     ...(tagsData?.data?.map((tag) => ({ value: tag.id, label: tag.id })) || [])
   ];
-  const tagFields = baseTagFields.map((field) =>
-    field.name === 'tagId'
-      ? { ...field, type: 'select' as const, options: tagIdOptions, placeholder: 'Select Tag ID' }
-      : field
-  );
+  const { data: tagTypesData, isLoading: tagTypesLoading } = useGetAllTagTypes();
+  const tagTypeOptions = [
+    { value: '', label: 'Select Tag Type' },
+    ...(tagTypesData?.data?.map((type) => ({ value: type.id, label: type.name })) || [])
+  ];
+  const tagFields = baseTagFields.map((field) => {
+    if (field.name === 'tagId') {
+      return { ...field, type: 'select' as const, options: tagIdOptions, placeholder: 'Select Tag ID' };
+    }
+    if (field.name === 'tagType') {
+      return { ...field, type: 'select' as const, options: tagTypeOptions, placeholder: 'Select Tag Type' };
+    }
+    return field;
+  });
   useEffect(() => {
     const selected = getTableRow<ProfileFormData>('tag');
     if (selected && selected.tagId) {
@@ -62,8 +72,8 @@ export default function EditTag() {
   return (
     <DashboardLayout pageTitle="Edit Tag">
       <div style={{ margin: '0 auto' }}>
-        {(isLoading || tagsLoading) && <div>Loading...</div>}
-        {initialValues && !(isLoading || tagsLoading) && (
+        {(isLoading || tagsLoading || tagTypesLoading) && <div>Loading...</div>}
+        {initialValues && !(isLoading || tagsLoading || tagTypesLoading) && (
           <CommonEntityForm
             title="Please update details below!"
             onSave={handleUpdate}
