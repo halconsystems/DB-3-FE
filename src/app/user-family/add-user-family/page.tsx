@@ -1,26 +1,38 @@
 "use client";
+
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm from '../../../components/forms/CommonEntityForm';
 import { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { userFamilyFields } from '../fields';
+import { useCreateUserFamily } from '../../../hooks/user-family/useCreateUserFamily';
+
 
 export default function AddNewUserFamily() {
+  const createUserFamilyMutation = useCreateUserFamily();
+
   const handleSave = (data: ProfileFormData) => {
     const body = {
-      Name: data.name || '',
-      Email: data.emailAddress || '',
-      Phone: data.cellNumber || '',
-      CNIC: data.cnic || '',
-      Relation: data.relation || '',
-      FatherHusbandName: data.fatherHusbandName || '',
-      ResidentCardNo: data.residentCardNo || '',
-      DOB: data.dob || null,
-      ValidFrom: data.validFrom || null,
-      ValidTo: data.validTo || null,
+      ser: 0,
+      name: data.name || '',
+      residentCardNumber: data.residentCardNo || null,
+      profilePicture: null, // handle file upload if needed
+      cnic: data.cnic || '',
+      phoneNumber: data.cellNumber || '',
+      fatherOrHusbandName: data.fatherHusbandName || '',
+      relation: Number(data.relation) || 0,
+      dateOfBirth: data.dob || '',
+      validTo: data.validTo || null,
+      validFrom: data.validFrom || null,
+      cardStatus: null,
+      externalUserId: '', // set as needed
+      createdBy: '', // set as needed
     };
-    console.log('Save User Family:', body);
-    // TODO: Call API to save user family
-    window.history.back();
+    createUserFamilyMutation.mutate(body, {
+      onError: (error) => {
+        // handle error (show toast, etc.)
+        console.error(error);
+      }
+    });
   };
 
   return (
@@ -42,7 +54,7 @@ export default function AddNewUserFamily() {
             validFrom: '',
             validTo: '',
           }}
-          loading={false}
+          loading={createUserFamilyMutation.isPending}
           showStatusToggle={false}
         />
     </DashboardLayout>

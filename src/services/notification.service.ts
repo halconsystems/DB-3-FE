@@ -14,16 +14,27 @@ export interface Notification {
   createdAt: string;
 }
 
+
 export interface UnreadNotificationsResponse {
   statusCode: number;
   successMessage: string;
   errorMessage: string | null;
-  data: Notification[];
+  data: {
+    items: Notification[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+  };
 }
 
-export const getUnreadNotifications = async (): Promise<UnreadNotificationsResponse> => {
+
+export const getUnreadNotifications = async (
+  pageNumber: number = 1,
+  pageSize: number = 10
+): Promise<UnreadNotificationsResponse> => {
   const response = await apiClient.get<UnreadNotificationsResponse>(
-    "/notifications/unread"
+    "/notifications/unread",
+    { params: { PageNumber: pageNumber, PageSize: pageSize } }
   );
   return response.data;
 };

@@ -8,43 +8,33 @@ import CircularButton from '../../components/ui/CircularButton';
 import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
 
-interface UserFamily {
-  id: number;
-  name: string;
-  emailAddress: string;
-  cellNumber: string;
-  cnic: string;
-  relation: string;
-  fatherHusbandName: string;
-  residentCardNo: string;
-  dob: string;
-  validFrom: string;
-  validTo: string;
-}
-
-const sampleData: UserFamily[] = [
-  { id: 1, name: 'Fatima Faraz', emailAddress: 'fatima@gmail.com', cellNumber: '0301-2346560', cnic: '12345-1234567-1', relation: 'Spouse', fatherHusbandName: 'Ahmed Faraz', residentCardNo: 'RC001', dob: '1990-05-15', validFrom: '2024-01-01', validTo: '2025-01-01' },
-  { id: 2, name: 'Ali Ahmed', emailAddress: 'ali@gmail.com', cellNumber: '0301-2346561', cnic: '23456-2345678-2', relation: 'Child', fatherHusbandName: 'Ahmed Faraz', residentCardNo: 'RC002', dob: '2010-08-20', validFrom: '2024-01-01', validTo: '2025-01-01' },
-  { id: 3, name: 'Ayesha Shahid', emailAddress: 'ayesha@gmail.com', cellNumber: '0301-2346580', cnic: '34567-3456789-3', relation: 'Spouse', fatherHusbandName: 'Shahid Husain', residentCardNo: 'RC003', dob: '1992-03-10', validFrom: '2024-06-01', validTo: '2025-06-01' },
-];
+import { useUserFamily } from '../../hooks/user-family/useUserFamily';
+import { useRemoveUserFamily } from '../../hooks/user-family/useRemoveUserFamily';
+import type { UserFamily } from '../../services/user-family.service';
 
 export default function UserFamilyPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedFamily, setSelectedFamily] = useState<UserFamily | null>(null);
-  const [localRemovedIds, setLocalRemovedIds] = useState<number[]>([]);
+  const [localRemovedIds, setLocalRemovedIds] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
+
   const router = useRouter();
+  const { data: userFamilyData = [], isLoading } = useUserFamily();
+  const removeUserFamilyMutation = useRemoveUserFamily();
+
 
   const handleAddNew = () => {
     router.push('/user-family/add-user-family');
   };
+
 
   const handleEdit = (family: UserFamily) => {
     saveTableRow('userFamily', family);
     console.log('Edit User Family:', family);
     router.push('/user-family/edit-user-family');
   };
+
 
   const handleDelete = (family: UserFamily) => {
     setSelectedFamily(family);
@@ -55,32 +45,31 @@ export default function UserFamilyPage() {
     if (!selectedFamily) {
       return;
     }
-
     setIsDeleting(true);
-    try {
-      // TODO: Call API to delete user family
-      console.log('Delete User Family:', selectedFamily);
-      setLocalRemovedIds((prev) => [...prev, selectedFamily.id]);
-    } catch (error) {
-      console.error('Delete failed:', error);
-    } finally {
-      setIsDeleting(false);
-      setDeleteModalOpen(false);
-      setSelectedFamily(null);
-    }
+    removeUserFamilyMutation.mutate(selectedFamily.id, {
+      onSuccess: () => {
+        setLocalRemovedIds((prev) => [...prev, selectedFamily.id]);
+      },
+      onError: (error) => {
+        console.error('Delete failed:', error);
+      },
+      onSettled: () => {
+        setIsDeleting(false);
+        setDeleteModalOpen(false);
+        setSelectedFamily(null);
+      },
+    });
   };
-
-  const filteredData = sampleData.filter(family => !localRemovedIds.includes(family.id));
+  const filteredData = userFamilyData.filter((family: UserFamily) => !localRemovedIds.includes(family.id));
 
   const columns: Column<UserFamily>[] = [
     { key: 'name', header: 'Name' },
-    { key: 'emailAddress', header: 'Email' },
-    { key: 'cellNumber', header: 'Phone' },
+    { key: 'phoneNumber', header: 'Phone' },
     { key: 'cnic', header: 'CNIC No' },
     { key: 'relation', header: 'Relation' },
-    { key: 'fatherHusbandName', header: 'Father/Husband Name' },
-    { key: 'residentCardNo', header: 'Resident Card No.' },
-    { key: 'dob', header: 'DOB' },
+    { key: 'fatherOrHusbandName', header: 'Father/Husband Name' },
+    { key: 'residentCardNumber', header: 'Resident Card No.' },
+    { key: 'dateOfBirth', header: 'DOB' },
     { key: 'validFrom', header: 'Valid From' },
     { key: 'validTo', header: 'Valid To' },
     {
@@ -107,6 +96,8 @@ export default function UserFamilyPage() {
         data={filteredData}
         showAddButton={false}
         currentPage={currentPage}
+        loading={isLoading}
+        emptyMessage={isLoading ? 'Loading...' : 'No user family data found.'}
         onPageChange={setCurrentPage}
       />
       <WarningModal
