@@ -10,6 +10,9 @@ import { saveTableRow } from '../../lib/tableRowStorage';
 import { useVehicles } from '../../hooks/vehicle/useVehicles';
 import { useDeleteVehicle } from '../../hooks/vehicle/useDeleteVehicle';
 import type { ExternalVehicle } from '../../services/vehicle.service';
+import AddVehicle from './add-vehicle/page';
+import EditVehicle from './edit-vehicle/page';
+import ModalForm from '../../components/forms/ModalForm/ModalForm';
 
 interface Vehicle {
   id: string;
@@ -66,7 +69,7 @@ export default function VehiclePage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<SelectedVehicleRow | null>(null);
   const [localRemovedIds, setLocalRemovedIds] = useState<string[]>([]);
-
+  const [formType, setFormType] = useState<'add' | 'edit' | null>(null);
   const { data, isLoading, isError, error } = useVehicles();
   const { mutateAsync: deleteVehicle, isPending: isDeleting } = useDeleteVehicle();
 
@@ -91,14 +94,19 @@ export default function VehiclePage() {
   const router = useRouter();
 
   const handleAddNew = () => {
-  router.push('/vehicle/add-vehicle');
+  // router.push('/vehicle/add-vehicle');
+    setFormType('add');
     
   };
 
   const handleEdit = (vehicle: Vehicle) => {
     saveTableRow('vehicle', { id: vehicle.id });
-    router.push(`/vehicle/edit-vehicle?id=${encodeURIComponent(vehicle.id)}`);
+    setFormType('edit');
   };
+
+  const closeButton = () => {
+    setFormType(null);
+  }
 
   const handleDelete = (vehicle: SelectedVehicleRow) => {
     setSelectedVehicle(vehicle);
@@ -159,6 +167,14 @@ export default function VehiclePage() {
 
   return (
     <DashboardLayout pageTitle="Vehicle">
+      {formType === 'add' && <ModalForm closeButton={closeButton} title="Add New Vehicle">
+        <AddVehicle />
+      </ModalForm>}
+
+      {formType === 'edit' && <ModalForm closeButton={closeButton} title="Edit Vehicle">
+        <EditVehicle />
+      </ModalForm>}
+
       {isError && (
         <div style={{ color: 'red', marginBottom: 12 }}>
           Failed to load vehicles: {error instanceof Error ? error.message : 'Unknown error'}
