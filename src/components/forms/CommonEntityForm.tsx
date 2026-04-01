@@ -14,6 +14,7 @@ import {
   SelectInputField,
   TextInputField,
   ToggleInputField,
+  StatusSwitchInputField,
 } from './CommonFormFields';
 export type { ProfileField, ProfileFormData } from './FormTypes';
 
@@ -209,6 +210,19 @@ export default function CommonEntityForm({
       );
     }
 
+    if (field.type === 'statusSwitch') {
+      return (
+        <StatusSwitchInputField
+          key={field.name}
+          field={field}
+          checked={!!formData[field.name]}
+          onChange={handleInputChange}
+          styles={styles}
+          wrapperClassName={wrapperClassName}
+        />
+      );
+    }
+
     return (
       <TextInputField
         key={field.name}
@@ -231,24 +245,22 @@ export default function CommonEntityForm({
     return [baseClassName, styles.hiddenCapsule].filter(Boolean).join(' ');
   };
 
+  // Separate statusSwitch fields for header, others for grid
+  const statusSwitchFields = fields.filter(f => f.type === 'statusSwitch');
   for (let index = 0; index < fields.length; index += 1) {
     const field = fields[index];
-
+    if (field.type === 'statusSwitch') continue; // skip from grid
     if (!field.sameCellKey) {
       renderedFields.push(renderField(field, getFieldClassName(undefined, field.isHidden)));
       continue;
     }
-
     const groupedFields: ProfileField[] = [field];
     let nextIndex = index + 1;
-
     while (nextIndex < fields.length && fields[nextIndex].sameCellKey === field.sameCellKey) {
       groupedFields.push(fields[nextIndex]);
       nextIndex += 1;
     }
-
     index = nextIndex - 1;
-
     renderedFields.push(
       <div
         key={`same-cell-${field.sameCellKey}-${field.name}`}
@@ -280,22 +292,18 @@ export default function CommonEntityForm({
     <div className={styles.formContainer}>
       <div className={styles.formHeader}>
         <h2 className={styles.formTitle}>{title}</h2>
-        {showStatusToggle && (
-          <div className={styles.statusWrapper}>
-            <span className={styles.statusLabel}>{pageName} Status</span>
-            <label className={styles.statusToggle}>
-              <button
-                type="button"
-                onClick={() => setIsActive((prev: boolean) => !prev)}
-                className={`${styles.toggleButton} ${isActive ? styles.toggleActive : styles.toggleInactive}`}
-                aria-pressed={isActive}
-              >
-                <span className={`${styles.toggleText} ${isActive ? styles.textActive : styles.textInactive}`}>
-                  {isActive ? 'Active' : 'Inactive'}
-                </span>
-                <span className={`${styles.toggleCircle} ${isActive ? styles.circleActive : styles.circleInactive}`} />
-              </button>
-            </label>
+        {statusSwitchFields.length > 0 && (
+          <div className={styles.statusWrapper} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            {statusSwitchFields.map(field => (
+              <StatusSwitchInputField
+                key={field.name as string}
+                field={field}
+                checked={!!formData[field.name]}
+                onChange={handleInputChange}
+                styles={styles}
+                wrapperClassName={styles.statusToggle}
+              />
+            ))}
           </div>
         )}
       </div>

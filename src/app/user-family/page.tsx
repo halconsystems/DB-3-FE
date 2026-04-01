@@ -42,6 +42,7 @@ export default function UserFamilyPage() {
 
   const handleEdit = (family: UserFamily) => {
     saveTableRow('userFamily', family);
+    console.log('Edit User Family:', family);
     router.push('/user-family/edit-user-family');
   };
 

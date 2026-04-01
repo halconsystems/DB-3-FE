@@ -4,6 +4,7 @@
   padding: 32px 40px 40px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   font-family: Inter, 'Noto Sans', sans-serif;
+  width: 100%;
 }
 
 
@@ -20,6 +21,8 @@
   color: #222;
   margin: 0;
   flex: 1;
+  white-space: nowrap;
+  margin-right: 5px;
 }
 
 .headerAvatar {
@@ -407,10 +410,15 @@
 }
 
 .fileSubtext {
+  color: #27ae60;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.fileSubtextInactive{
   font-size: 11px;
   color: #aaa;
 }
-
 
 .profilePreviewWrapper {
   display: flex;

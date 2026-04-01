@@ -121,7 +121,7 @@ export interface ProfileFormData {
 export interface ProfileField {
   name: keyof ProfileFormData;
   label: string;
-  type: 'text' | 'email' | 'password' | 'select' | 'date' | 'file' | 'toggle' | 'radio';
+  type: 'text' | 'email' | 'password' | 'select' | 'date' | 'file' | 'toggle' | 'radio' | 'statusSwitch';
   required?: boolean;
   readOnly?: boolean;
   placeholder?: string;

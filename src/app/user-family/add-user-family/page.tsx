@@ -25,7 +25,6 @@ export default function AddNewUserFamily() {
 
   return (
     <DashboardLayout pageTitle="Add New User Family">
-      <div style={{ margin: '0 auto', maxWidth: '1000px' }}>
         <CommonEntityForm
           title="Please provide details below!"
           onSave={handleSave}
@@ -46,7 +45,6 @@ export default function AddNewUserFamily() {
           loading={false}
           showStatusToggle={false}
         />
-      </div>
     </DashboardLayout>
   );
 }

@@ -224,7 +224,7 @@ export function FileInputField({ field, formData, onFileChange, styles, wrapperC
       <div className={styles.fileLabelRow}>
         <label className={field.required ? styles.labelRed : styles.labelGreen}>{field.label}</label>
         <label className={styles.plusButton}>
-          +
+          <img src="/icons/plus.svg" alt="" />
           <input
             type="file"
             accept={field.name === 'profilePicture' ? 'image/*' : undefined}
@@ -234,7 +234,7 @@ export function FileInputField({ field, formData, onFileChange, styles, wrapperC
       </div>
       <div className={styles.fileInfo}>
         <span className={styles.fileText}>Add Picture</span>
-        <span className={styles.fileSubtext}>{formData[field.name] ? 'File chosen' : 'No file chosen'}</span>
+        <span className={formData[field.name] ? styles.fileSubtext : styles.fileSubtextInactive}>{formData[field.name] ? 'File has been uploaded' : 'No file chosen'}</span>
       </div>
       {field.name === 'profilePicture' && formData.profilePicture && (
         <div className={styles.profilePreviewWrapper}>
@@ -248,3 +248,31 @@ export function FileInputField({ field, formData, onFileChange, styles, wrapperC
 }
 
 
+// StatusSwitch toggle button (styled like top-right status toggle)
+interface StatusSwitchFieldProps extends SharedFieldProps {
+  checked: boolean;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+export function StatusSwitchInputField({ field, checked, onChange, styles, wrapperClassName }: StatusSwitchFieldProps) {
+  return (<div>
+      <label className={styles.formTitle}>{field.label}</label>
+      <button
+        type="button"
+        onClick={() => {
+          // Simulate checkbox event for compatibility
+          const fakeEvent = {
+            target: { name: String(field.name), checked: !checked, type: 'checkbox' }
+          } as unknown as React.ChangeEvent<HTMLInputElement>;
+          onChange(fakeEvent);
+        }}
+        className={`${styles.toggleButton} ${checked ? styles.toggleActive : styles.toggleInactive}`}
+        aria-pressed={checked}
+      >
+        <span className={`${styles.toggleText} ${checked ? styles.textActive : styles.textInactive}`}>
+          {checked ? 'Active' : 'Inactive'}
+        </span>
+        <span className={`${styles.toggleCircle} ${checked ? styles.circleActive : styles.circleInactive}`} />
+      </button>
+  </div>);
+}

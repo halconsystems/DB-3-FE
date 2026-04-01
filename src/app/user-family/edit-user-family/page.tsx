@@ -78,8 +78,6 @@ export default function EditUserFamily() {
 
   return (
     <DashboardLayout pageTitle="Edit User Family">
-      <div style={{ margin: '0 auto', maxWidth: '1000px' }}>
-        {!isLoading && (
           <CommonEntityForm
             key={selectedRow?.id || 'new'}
             title="Please update details below!"
@@ -88,11 +86,9 @@ export default function EditUserFamily() {
             fields={userFamilyFields}
             initialValues={initialValues}
             saveButtonText='Edit'
-            loading={false}
+            loading={isLoading}
             showStatusToggle={false}
           />
-        )}
-      </div>
     </DashboardLayout>
   );
 }

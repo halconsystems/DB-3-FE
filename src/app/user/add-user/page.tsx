@@ -23,15 +23,7 @@ export default function AddNewUser() {
     window.history.back();
   };
 
-  return (
-    <DashboardLayout pageTitle="Add New User">
-      <div style={{ margin: '0 auto', maxWidth: '1000px' }}>
-        <CommonEntityForm
-          title="Please provide details below!"
-          onSave={handleSave}
-          onCancel={() => window.history.back()}
-          fields={userFields}
-          initialValues={{
+  const initVal = {
             name: '',
             emailAddress: '',
             cellNumber: '',
@@ -42,11 +34,19 @@ export default function AddNewUser() {
             cardExpiryDate: '',
             cardStatus: 'active',
             status: 'active',
-          }}
+          }
+
+  return (
+    <DashboardLayout pageTitle="Add New User">
+        <CommonEntityForm
+          title="Please provide details below!"
+          onSave={handleSave}
+          onCancel={() => window.history.back()}
+          fields={userFields}
+          initialValues={initVal}
           loading={false}
           showStatusToggle={false}
         />
-      </div>
     </DashboardLayout>
   );
 }
