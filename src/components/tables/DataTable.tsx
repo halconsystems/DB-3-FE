@@ -28,6 +28,7 @@ export interface DataTableProps<T> {
   onPageChange?: (page: number) => void;
   rowsPerPage?: number;
   loading?: boolean;
+  error?: string | Error;
   emptyMessage?: string;
   showAddButton?: boolean;
   getRowStatus?: (row: T) => 'Active' | 'Inactive' | 'Pending' | undefined;
@@ -62,6 +63,7 @@ export default function DataTable<T extends Record<string, any>>({
   onPageChange,
   rowsPerPage = 10,
   loading = false,
+  error,
   emptyMessage = 'No data available',
   showAddButton = true,
   getRowStatus,
@@ -227,7 +229,11 @@ export default function DataTable<T extends Record<string, any>>({
       {headerContent}
 
       <div className={styles.tableWrapper}>
-        {loading ? (
+        {error ? (
+          <div style={{ color: 'red', marginBottom: 12, padding: '12px', backgroundColor: '#ffe6e6', borderRadius: '4px' }}>
+            {error instanceof Error ? error.message : error}
+          </div>
+        ) : loading ? (
           <div className={styles.loading}><Loader variant="inline" /></div>
         ) : paginatedData.length === 0 ? (
           <div className={styles.emptyState}>{emptyMessage}</div>

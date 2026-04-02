@@ -1,9 +1,6 @@
-import React from 'react'
+'use client';
+import NotFound from '../components/NotFound/NotFound';
 
-function NotFound() {
-  return (
-    <div>not-found</div>
-  )
+export default function NotFoundPage() {
+  return <NotFound />;
 }
-
-export default NotFound

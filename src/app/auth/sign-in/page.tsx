@@ -24,12 +24,12 @@ export default function SignInPage() {
         </div>
       )}
       <div className="auth_left">
-        <Image src="/images/SignIn.jpg" alt="Sign In" width={500} height={700} style={{ width: '100%', height: 'auto' }} />
+        <Image loading="eager" src="/images/SignIn.jpg" alt="Sign In" width={500} height={700} style={{ width: '100%', height: 'auto' }} />
       </div>
       <div className="auth_right">
         <div className="auth_header">
           <div className="auth_logo">
-            <Image src="/images/PDOHA.png" alt="Logo of PDOHA" width={120} height={60} />
+            <Image loading="eager" src="/images/PDOHA.png" alt="Logo of PDOHA" width={120} height={60} />
           </div>
           <h1 className="auth_title">Welcome to DHA Karachi</h1>
           <h3 className="auth_subtitle">Smart Society . Home For Defenders</h3>

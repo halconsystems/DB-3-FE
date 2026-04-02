@@ -181,11 +181,6 @@ export default function WorkersPage() {
 
   return (
     <DashboardLayout pageTitle="Workers">
-      {isError && (
-        <div style={{ color: 'red', marginBottom: 12 }}>
-          Failed to load workers: {error instanceof Error ? error.message : 'Unknown error'}
-        </div>
-      )}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
         <AddNewButton onClick={handleAddNew} />
       </div>
@@ -197,6 +192,7 @@ export default function WorkersPage() {
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.workerStatus}
+        error={isError ? `Failed to load workers: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
       />
       <WarningModal
         isOpen={deleteModalOpen}

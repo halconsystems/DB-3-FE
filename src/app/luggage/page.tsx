@@ -117,11 +117,6 @@ export default function LuggagePage() {
 
   return (
     <DashboardLayout pageTitle="Luggage">
-      {isError && (
-        <div style={{ color: 'red', marginBottom: 12 }}>
-          Failed to load luggage: {error instanceof Error ? error.message : 'Unknown error'}
-        </div>
-      )}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
         <AddNewButton onClick={handleAddNew} />
       </div>
@@ -133,6 +128,7 @@ export default function LuggagePage() {
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status}
+        error={isError ? `Failed to load luggage: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
       />
       <WarningModal
         isOpen={deleteModalOpen}

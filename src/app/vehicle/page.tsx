@@ -159,11 +159,6 @@ export default function VehiclePage() {
 
   return (
     <DashboardLayout pageTitle="Vehicle">
-      {isError && (
-        <div style={{ color: 'red', marginBottom: 12 }}>
-          Failed to load vehicles: {error instanceof Error ? error.message : 'Unknown error'}
-        </div>
-      )}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
         <AddNewButton onClick={handleAddNew} />
       </div>
@@ -175,6 +170,7 @@ export default function VehiclePage() {
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status}
+        error={isError ? `Failed to load vehicles: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
       />
       <WarningModal
         isOpen={deleteModalOpen}

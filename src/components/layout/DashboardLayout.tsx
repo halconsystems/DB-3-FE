@@ -106,10 +106,10 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
           </Link>
           <Link 
             href="/setup" 
-            className={`${activeMenuItem === '/setup' ? styles.menuItemActive : ''} ${styles.menuItemGap} ${styles.menuItem}`}
+            className={`${activeMenuItem.includes('/setup') ? styles.menuItemActive : ''} ${styles.menuItemGap} ${styles.menuItem}`}
           >
             <span>Setup</span>
-            <img src={getMenuIcon('/setup', activeMenuItem === '/setup')} alt="" className={styles.menuIconImg} />
+            <img src={getMenuIcon('/setup', activeMenuItem.includes('/setup'))} alt="" className={styles.menuIconImg} />
           </Link>
           <div 
             className={styles.menuSectionTitle} 
