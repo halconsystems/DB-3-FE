@@ -1,8 +1,10 @@
 export interface ProfileFormData {
   fullName?: string;
   name?: string;
+  entityName?: string;
   feeScaleId?: string;
   planType?: string;
+  trialPeriod?: string;
   device?: string;
   notes?: string;
   emailAddress?: string;

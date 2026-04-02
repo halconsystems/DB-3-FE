@@ -28,6 +28,8 @@ interface CommonEntityFormProps {
   loading?: boolean;
   showStatusToggle?: boolean;
   fields?: ProfileField[];
+  successTitle?: string;
+  successMessage?: string;
 }
 
 const toVehicleLicensePlate = (vehicleNo?: string, vehicleNo2?: string) => {
@@ -63,6 +65,8 @@ export default function CommonEntityForm({
   loading = false,
   showStatusToggle = true,
   fields = [],
+  successTitle,
+  successMessage,
 }: CommonEntityFormProps) {
   
   const pathname = usePathname();
@@ -100,6 +104,10 @@ export default function CommonEntityForm({
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = event.target;
 
+    if (name === 'feeScaleId') {
+      console.log('[CommonEntityForm] feeScaleId change', value);
+    }
+
     if (name === 'licensePlate') {
       return;
     }
@@ -118,6 +126,7 @@ export default function CommonEntityForm({
   };
 
   const handleSubmit = async () => {
+    console.log('[CommonEntityForm] submit clicked', formData);
     // Validate required fields
     if (fields && fields.length > 0) {
       const missingFields = fields.filter(
@@ -128,6 +137,7 @@ export default function CommonEntityForm({
         )
       );
       if (missingFields.length > 0) {
+        console.warn('[CommonEntityForm] missing required fields', missingFields.map((field) => field.name));
         // setWarningMessage('Please fill all the required fields.');
         // setShowWarning(true);
         return;
@@ -327,8 +337,8 @@ export default function CommonEntityForm({
         setShowSuccess(false);
         router.back();
       }}
-      title={isEditMode ? 'Record Updated' : 'Record Added'}
-      message={isEditMode ? 'The record has been updated successfully.' : 'The record has been added successfully.'}
+      title={successTitle || (isEditMode ? 'Record Updated' : 'Record Added')}
+      message={successMessage || (isEditMode ? 'The record has been updated successfully.' : 'The record has been added successfully.')}
     />
     <WarningModal
       isOpen={showWarning}

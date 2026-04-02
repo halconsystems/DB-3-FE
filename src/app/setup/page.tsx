@@ -23,7 +23,7 @@ const tabs: Tab[] = [
   { key: 'phase', label: 'Phase' },
   { key: 'zone', label: 'Zone' },
   { key: 'tag', label: 'Tag' },
-  { key: 'tag-approval', label: 'Tag Approval' },
+  { key: 'tag-approval', label: 'Approve' },
   { key: 'tag-type', label: 'Tag Type' },
 ];
 

@@ -82,8 +82,8 @@ export default function TagTable({
   };
 
   const TagColumns: Column<TagApprovalRequest>[] = [
-    { key: 'subjectName', header: 'Name' },
-    { key: 'subjectId', header: 'Entity ID' },
+    { key: 'subjectName', header: 'Subject Name' },
+    { key: 'subjectType', header: 'Subject Type' },
     { key: 'tagType', header: 'Tag Type' },
     { key: 'tagNumber', header: 'Tag Number' },
     { key: 'feeScale', header: 'Fee Scale' },
