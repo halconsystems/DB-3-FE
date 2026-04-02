@@ -118,7 +118,8 @@ export interface ProfileFormData {
   fatherHusbandName?: string;
   residentCardNo?: string;
   feeCategory?: string;
-  taxPercentage?: number;
+  amount?: string | number;
+  taxPercentage?: string | number;
   invoiceNumber?: string;
   invoiceDate?: string;
   paymentMethod?: string;

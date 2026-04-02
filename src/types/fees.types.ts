@@ -23,3 +23,9 @@ export interface GetAllFeeScaleResponse {
   errorMessage: string;
   data: FeeScale[];
 }
+
+export interface RemoveFeeScaleResponse {
+  statusCode: number;
+  successMessage: string;
+  errorMessage: string | null;
+}

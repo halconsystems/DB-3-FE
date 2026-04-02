@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useInvoices } from '../../../../hooks/invoice/useInvoices';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import CircularButton from '../../../../components/ui/CircularButton';
@@ -9,7 +10,6 @@ import { saveTableRow } from '../../../../lib/tableRowStorage';
 interface Invoice {
   id: string;
   invoiceNumber: string;
-  date: string;
   userId: string;
   name: string;
   serviceType: string;
@@ -18,6 +18,7 @@ interface Invoice {
   bankCharges: number;
   totalAmount: number;
   paymentMethod: string;
+  trialPeriodDays: number;
   transactionId: string;
   status: 'Paid' | 'Pending' | 'Failed';
 }
@@ -30,39 +31,8 @@ interface InvoiceTableProps {
   addButtonLabel: string;
 }
 
-// Demo data
-const demoInvoices: Invoice[] = [
-  {
-    id: '1',
-    invoiceNumber: 'INV-001',
-    date: '2026-04-02',
-    userId: 'U123',
-    name: 'John Doe',
-    serviceType: 'Parking',
-    amount: 200,
-    taxAmount: 10,
-    bankCharges: 5,
-    totalAmount: 215,
-    paymentMethod: 'Credit Card',
-    transactionId: 'TXN12345',
-    status: 'Paid'
-  },
-  {
-    id: '2',
-    invoiceNumber: 'INV-002',
-    date: '2026-04-01',
-    userId: 'U124',
-    name: 'Jane Smith',
-    serviceType: 'Registration',
-    amount: 150,
-    taxAmount: 7.5,
-    bankCharges: 3,
-    totalAmount: 160.5,
-    paymentMethod: 'Bank Transfer',
-    transactionId: 'TXN12346',
-    status: 'Pending'
-  }
-];
+
+
 
 export default function InvoiceTable({
   tabs,
@@ -73,7 +43,23 @@ export default function InvoiceTable({
 }: InvoiceTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
-  const [invoices] = useState<Invoice[]>(demoInvoices);
+  const { data, isLoading } = useInvoices();
+  // Map InvoiceRecord to Invoice for DataTable
+  const invoices: Invoice[] = (data?.data || []).map((inv) => ({
+    id: inv.id,
+    invoiceNumber: inv.invoiceNumber,
+    userId: inv.entityId || '',
+    name: inv.entityType || '', // Placeholder, adjust if you have user name
+    serviceType: inv.entityType || '', // Show entityType instead of serviceType
+    amount: inv.amount,
+    taxAmount: inv.taxAmount,
+    bankCharges: 0, // Not present in InvoiceRecord, set to 0 or fetch if available
+    totalAmount: inv.totalAmount,
+    paymentMethod: inv.paymentMethod || '',
+    trialPeriodDays: inv.trialPeriodDays ?? 15,
+    transactionId: inv.transactionId || '',
+    status: (inv.status === 'Paid' || inv.status === 'Pending' || inv.status === 'Failed') ? inv.status : 'Pending',
+  }));
 
   const handleEdit = (item: Invoice) => {
     saveTableRow('invoice', item);
@@ -87,15 +73,14 @@ export default function InvoiceTable({
 
   const columns: Column<Invoice>[] = [
     { key: 'invoiceNumber', header: 'Invoice Number' },
-    { key: 'date', header: 'Date' },
-    { key: 'userId', header: 'User ID' },
     { key: 'name', header: 'Name' },
-    { key: 'serviceType', header: 'Service Type' },
+    { key: 'serviceType', header: 'Entity Type' },
     { key: 'amount', header: 'Amount' },
     { key: 'taxAmount', header: 'Tax Amount' },
     { key: 'bankCharges', header: 'Bank Charges' },
     { key: 'totalAmount', header: 'Total Amount' },
     { key: 'paymentMethod', header: 'Payment Method' },
+    { key: 'trialPeriodDays', header: 'Trial Period (Days)' },
     { key: 'transactionId', header: 'Transaction ID' },
     { 
       key: 'status', 
@@ -121,7 +106,7 @@ export default function InvoiceTable({
       onTabChange={onTabChange}
       columns={columns}
       data={invoices}
-      loading={false}
+      loading={isLoading}
       showAddButton={false}
       currentPage={currentPage}
       onPageChange={setCurrentPage}
