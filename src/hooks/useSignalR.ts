@@ -25,7 +25,7 @@ export const useSignalR = () => {
       .withAutomaticReconnect()
       .build();
 
-    connection.on("notification.created", (payload) => {
+    connection.on("notification.created", (payload: any) => {
       // Show toast popup for new notification
       toast(
         payload?.title
@@ -37,19 +37,19 @@ export const useSignalR = () => {
       queryClient.invalidateQueries({ queryKey: ["unread-notifications"] });
     });
 
-    connection.on("tagApproval.request.created", (payload) => {
+    connection.on("tagApproval.request.created", (payload: any) => {
       // Invalidate or update tag approval queries
       queryClient.invalidateQueries({ queryKey: ["tag-approval-pending"] });
     });
 
-    connection.on("tagApproval.request.statusChanged", (payload) => {
+    connection.on("tagApproval.request.statusChanged", (payload: any) => {
       // Invalidate or update tag approval status queries
       queryClient.invalidateQueries({ queryKey: ["tag-approval-status"] });
     });
 
     connection.start()
       .then(() => console.log("SignalR connected"))
-      .catch(err => console.error("SignalR connection error:", err));
+      .catch((err: Error) => console.error("SignalR connection error:", err));
 
     connectionRef.current = connection;
 

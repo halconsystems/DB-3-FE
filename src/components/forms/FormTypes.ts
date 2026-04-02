@@ -117,7 +117,6 @@ export interface ProfileFormData {
   relation?: string;
   fatherHusbandName?: string;
   residentCardNo?: string;
-  feeScaleId?: string;
   feeCategory?: string;
   taxPercentage?: number;
   invoiceNumber?: string;
