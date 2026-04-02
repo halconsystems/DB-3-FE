@@ -68,13 +68,23 @@ const toJobTypeFormValue = (value?: number): string => {
   }
 };
 
-const toCardStatus = (value?: string): number => {
-  if (value === 'active') {
-    return 1;
-  }
-  if (value === 'inactive') {
+const toCardStatus = (value?: string | number | boolean): number => {
+  if (value === undefined || value === null) {
     return 0;
   }
+
+  if (typeof value === 'boolean') {
+    return value ? 1 : 0;
+  }
+
+  if (typeof value === 'number') {
+    return value === 1 ? 1 : 0;
+  }
+
+  if (value === 'active' || value === '1') {
+    return 1;
+  }
+
   return 0;
 };
 
