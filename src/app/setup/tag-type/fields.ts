@@ -1,4 +1,4 @@
-import { ProfileField } from '../../../../types';
+import { ProfileField } from '../../../components/forms/CommonEntityForm';
 
 export const tagTypeFields: ProfileField[] = [
   {
@@ -7,16 +7,14 @@ export const tagTypeFields: ProfileField[] = [
     type: 'text',
     required: true,
     placeholder: 'e.g., Residential',
-    disabled: false,
     readOnly: false,
   },
   {
     name: 'description',
     label: 'Description',
-    type: 'textarea',
+    type: 'text',
     required: false,
     placeholder: 'Enter description',
-    disabled: false,
     readOnly: false,
   },
   {
@@ -29,7 +27,6 @@ export const tagTypeFields: ProfileField[] = [
       { value: 'Inactive', label: 'Inactive' },
     ],
     placeholder: 'Select status',
-    disabled: false,
     readOnly: false,
   },
 ];
