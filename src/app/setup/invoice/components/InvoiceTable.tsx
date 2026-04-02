@@ -49,11 +49,11 @@ export default function InvoiceTable({
     id: inv.id,
     invoiceNumber: inv.invoiceNumber,
     userId: inv.entityId || '',
-    name: inv.entityType || '', // Placeholder, adjust if you have user name
-    serviceType: inv.entityType || '', // Show entityType instead of serviceType
+    name: inv.entityType || '', 
+    serviceType: inv.entityType || '', 
     amount: inv.amount,
     taxAmount: inv.taxAmount,
-    bankCharges: 0, // Not present in InvoiceRecord, set to 0 or fetch if available
+    bankCharges: 0, 
     totalAmount: inv.totalAmount,
     paymentMethod: inv.paymentMethod || '',
     trialPeriodDays: inv.trialPeriodDays ?? 15,
@@ -71,17 +71,19 @@ export default function InvoiceTable({
     // Handle delete if needed
   };
 
+  const dashIfEmpty = (value: any) =>
+    value === null || value === undefined || value === '' ? '-' : value;
+
   const columns: Column<Invoice>[] = [
-    { key: 'invoiceNumber', header: 'Invoice Number' },
-    { key: 'name', header: 'Name' },
-    { key: 'serviceType', header: 'Entity Type' },
-    { key: 'amount', header: 'Amount' },
-    { key: 'taxAmount', header: 'Tax Amount' },
-    { key: 'bankCharges', header: 'Bank Charges' },
-    { key: 'totalAmount', header: 'Total Amount' },
-    { key: 'paymentMethod', header: 'Payment Method' },
-    { key: 'trialPeriodDays', header: 'Trial Period (Days)' },
-    { key: 'transactionId', header: 'Transaction ID' },
+    { key: 'invoiceNumber', header: 'Invoice Number', render: dashIfEmpty },
+    { key: 'name', header: 'Name', render: dashIfEmpty },
+    { key: 'serviceType', header: 'Entity Type', render: dashIfEmpty },
+    { key: 'amount', header: 'Amount', render: dashIfEmpty },
+    { key: 'taxAmount', header: 'Tax Amount', render: dashIfEmpty },
+    { key: 'totalAmount', header: 'Total Amount', render: dashIfEmpty },
+    { key: 'paymentMethod', header: 'Payment Method', render: dashIfEmpty },
+    { key: 'trialPeriodDays', header: 'Trial Period (Days)', render: dashIfEmpty },
+    { key: 'transactionId', header: 'Transaction ID', render: dashIfEmpty },
     { 
       key: 'status', 
       header: 'Status',
