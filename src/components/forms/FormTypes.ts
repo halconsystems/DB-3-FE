@@ -22,7 +22,7 @@ export interface ProfileFormData {
   cardNo?: string;
   issueDate?: string;
   expiryDate?: string;
-  cardStatus?: string;
+  cardStatus?: string | boolean;
   profilePicture?: File | null;
   proofOfPossession?: File | null;
   isActive?: boolean;
@@ -36,7 +36,7 @@ export interface ProfileFormData {
   vehicleNo2?: string;
   licensePlate?: string;
   qrReference?: string;
-  status?: string;
+  status?: string | boolean;
   quickPick?: string;
   fromDate?: string;
   toDate?: string;

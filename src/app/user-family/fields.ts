@@ -2,7 +2,6 @@ import { ProfileField, ProfileFormData } from '../../components/forms/CommonEnti
 
 export const userFamilyFields: ProfileField[] = [
   { name: 'name' as keyof ProfileFormData, label: 'Name', type: 'text', required: true, placeholder: 'Full Name here' },
-  { name: 'emailAddress' as keyof ProfileFormData, label: 'Email', type: 'email', required: true, placeholder: 'Email Address here' },
   { name: 'cellNumber' as keyof ProfileFormData, label: 'Phone', type: 'text', required: true, placeholder: '0300-1234567' },
   { name: 'cnic' as keyof ProfileFormData, label: 'CNIC No.', type: 'text', required: true, placeholder: '(12345-1234567-1)' },
   { name: 'relation' as keyof ProfileFormData, label: 'Relation', type: 'select', required: true, placeholder: 'Select Relation', options: [{ value: '', label: 'Select Relation' }, { value: 'spouse', label: 'Spouse' }, { value: 'child', label: 'Child' }, { value: 'parent', label: 'Parent' }, { value: 'sibling', label: 'Sibling' }] },

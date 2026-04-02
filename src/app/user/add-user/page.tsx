@@ -11,6 +11,10 @@ export default function AddNewUser() {
   const createUserMutation = useCreateUser();
 
   const handleSave = (data: ProfileFormData) => {
+    const cardStatus = typeof data.cardStatus === 'string'
+      ? data.cardStatus === 'active'
+      : !!data.cardStatus;
+
     // Map form data to API shape
     const user = {
       name: data.name || '',
@@ -22,7 +26,7 @@ export default function AddNewUser() {
       createdBy: 'admin', // or get from context/auth
       cardIssueDate: data.cardIssueDate || '',
       cardExpiryDate: data.cardExpiryDate || '',
-      cardStatus: data.cardStatus === 'active' ? 1 : 0,
+      cardStatus: cardStatus ? 1 : 0,
     };
     createUserMutation.mutate(user, {
       onSuccess: () => {
@@ -40,8 +44,8 @@ export default function AddNewUser() {
             rfidCardNo: '',
             cardIssueDate: '',
             cardExpiryDate: '',
-            cardStatus: 'active',
-            status: 'active',
+            cardStatus: true,
+            status: true,
           }
 
   return (

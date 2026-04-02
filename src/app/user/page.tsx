@@ -35,7 +35,7 @@ export default function UserPage() {
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   // Fetch full user details by ID when a user is selected (for details, edit, etc.)
   const { data: selectedUserDetails, isLoading: isUserDetailsLoading } = useUserById(selectedUser ? String(selectedUser.id) : undefined);
-  const [localRemovedIds, setLocalRemovedIds] = useState<number[]>([]);
+  const [localRemovedIds, setLocalRemovedIds] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
 
@@ -46,7 +46,7 @@ export default function UserPage() {
   const handleEdit = (user: any) => {
     // Optionally, you can use selectedUserDetails here for more complete info
     saveTableRow('user', user);
-    router.push('/user/edit-user');
+    router.push(`/user/edit-user?id=${encodeURIComponent(user.id)}`);
   };
 
   const handleDelete = (user: any) => {
@@ -76,9 +76,9 @@ export default function UserPage() {
 
   // Map API data to table data
   const filteredData = (data || [])
-    .filter(user => !localRemovedIds.includes(Number(user.id)))
+    .filter(user => !localRemovedIds.includes(String(user.id)))
     .map(user => ({
-      id: Number(user.id),
+      id: String(user.id),
       name: user.name,
       emailAddress: user.email || '',
       cellNumber: user.phoneNumber || '',
