@@ -1,6 +1,8 @@
 'use client';
 import { useState } from 'react';
+import WarningModal from '../../../../components/popup/WarningModal';
 import { useInvoices } from '../../../../hooks/invoice/useInvoices';
+import { useRemoveInvoice } from '../../../../hooks/invoice/useRemoveInvoice';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import CircularButton from '../../../../components/ui/CircularButton';
@@ -30,10 +32,6 @@ interface InvoiceTableProps {
   onAddNew: () => void;
   addButtonLabel: string;
 }
-
-
-
-
 export default function InvoiceTable({
   tabs,
   activeTab,
@@ -44,6 +42,9 @@ export default function InvoiceTable({
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
   const { data, isLoading } = useInvoices();
+  const removeInvoiceMutation = useRemoveInvoice();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   // Map InvoiceRecord to Invoice for DataTable
   const invoices: Invoice[] = (data?.data || []).map((inv) => ({
     id: inv.id,
@@ -67,8 +68,22 @@ export default function InvoiceTable({
   };
 
   const handleDelete = (id: string) => {
-    console.log('Delete Invoice:', id);
-    // Handle delete if needed
+    const invoice = invoices.find((inv) => inv.id === id) || null;
+    setSelectedInvoice(invoice);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedInvoice) {
+      removeInvoiceMutation.mutate({ id: selectedInvoice.id });
+    }
+    setDeleteModalOpen(false);
+    setSelectedInvoice(null);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setSelectedInvoice(null);
   };
 
   const dashIfEmpty = (value: any) =>
@@ -102,21 +117,32 @@ export default function InvoiceTable({
   ];
 
   return (
-    <DataTable<Invoice>
-      tabs={tabs}
-      activeTab={activeTab}
-      onTabChange={onTabChange}
-      columns={columns}
-      data={invoices}
-      loading={isLoading}
-      showAddButton={false}
-      currentPage={currentPage}
-      onPageChange={setCurrentPage}
-      headerContent={
-        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 0' }}>
-          <AddNewButton onClick={onAddNew} label={addButtonLabel} />
-        </div>
-      }
-    />
+    <>
+      <DataTable<Invoice>
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        columns={columns}
+        data={invoices}
+        loading={isLoading || removeInvoiceMutation.isPending}
+        showAddButton={false}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        headerContent={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 0' }}>
+            <AddNewButton onClick={onAddNew} label={addButtonLabel} />
+          </div>
+        }
+      />
+      <WarningModal
+        isOpen={deleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Delete Invoice"
+        message={`Are you sure you want to delete the invoice "${selectedInvoice?.invoiceNumber ?? ''}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+    </>
   );
 }
