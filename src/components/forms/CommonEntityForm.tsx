@@ -152,12 +152,31 @@ export default function CommonEntityForm({
         )
       );
       if (missingFields.length > 0) {
-        console.warn('[CommonEntityForm] missing required fields', missingFields.map((field) => field.name));
-        // setWarningMessage('Please fill all the required fields.');
-        // setShowWarning(true);
+        setWarningMessage('Please fill all the required fields.');
+        setShowWarning(true);
         return;
       }
     }
+
+    // Custom validations
+    // Contact No: 11 digits (phoneNumber or cellNumber)
+    if (formData.phoneNumber && !/^\d{11}$/.test(formData.phoneNumber)) {
+      setWarningMessage('Contact Number must be exactly 11 digits.');
+      setShowWarning(true);
+      return;
+    }
+    if (formData.cellNumber && !/^\d{11}$/.test(formData.cellNumber)) {
+      setWarningMessage('Contact Number must be exactly 11 digits.');
+      setShowWarning(true);
+      return;
+    }
+    // CNIC: 13 digits
+    if (formData.cnic && !/^\d{13}$/.test(formData.cnic)) {
+      setWarningMessage('CNIC must be exactly 13 digits.');
+      setShowWarning(true);
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       if (onSave) {

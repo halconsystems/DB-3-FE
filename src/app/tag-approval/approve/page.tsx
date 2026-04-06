@@ -132,14 +132,14 @@ export default function AddNewTag() {
       name: 'planType' as keyof ProfileFormData,
       label: 'Plan Type',
       type: 'select',
-      required: false,
+      required: true,
       placeholder: 'Select Plan Type',
       options: [
         { value: '', label: 'Select Plan Type' },
-        { value: 'Yearly', label: 'Yearly' },
-        { value: 'Monthly', label: 'Monthly' },
-        { value: 'Weekly', label: 'Weekly' },
-        { value: 'Pass', label: 'Pass' },
+        { value: 'Day', label: 'Day' },
+        { value: 'Week', label: 'Week' },
+        { value: 'Month', label: 'Month' },
+        { value: 'Year', label: 'Year' },
       ],
     },
     { name: 'status' as keyof ProfileFormData, label: 'Status', type: 'statusSwitch', required: false, placeholder: 'Status' },
@@ -182,6 +182,10 @@ export default function AddNewTag() {
 
     const tag = data.data;
 
+    // Map planType string to backend enum (default to 'Unknown' if not matched)
+    const allowedPlanTypes = ['Day', 'Week', 'Month', 'Year'];
+    const planType = allowedPlanTypes.includes(formData.planType || '') ? formData.planType : 'Unknown';
+
     const payload = {
       tagApprovalRequestId: String(formData.tagApprovalRequestId || tag.id),
       entityName: String(formData.name || tag.subjectName || ''),
@@ -192,12 +196,13 @@ export default function AddNewTag() {
       validTo: toIsoDate(String(formData.validTo || tag.validTo || '')),
       status: toStatusValue(formData.status),
       feeScaleId: String(formData.feeScaleId || tag.feeScale || ''),
-      planType: formData.planType || 'Unknown',
+      planType,
       zoneId: String(formData.zone || ''),
       deviceId: String(formData.device || ''),
       zoneIds: formData.zone ? [String(formData.zone)] : [],
       trialPeriod: Number(formData.trialPeriod || 0),
       notes: String(formData.notes || ''),
+      command: 'Approve', // Add required command field
     };
 
     console.log('approveTagApprovalRequest payload:', payload);
