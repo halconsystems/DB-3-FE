@@ -18,6 +18,7 @@ export const cpAgentFields: ProfileField[] = [
   { name: 'interCommId' as keyof ProfileFormData, label: 'Inter Comm ID', type: 'text', required: true, placeholder: 'Enter Inter Comm ID' },
   { name: 'interCommPassword' as keyof ProfileFormData, label: 'Inter Comm Password', type: 'text', required: true, placeholder: 'Enter Inter Comm Password' },
   { name: 'interCommName' as keyof ProfileFormData, label: 'Inter Comm Name', type: 'text', required: true, placeholder: 'Enter Inter Comm Name' },
+  { name: 'status' as keyof ProfileFormData, label: 'CP/Agent Status', type: 'statusSwitch', required: false },
 ];
 
 export const mockCpAgentData: ProfileFormData = {};

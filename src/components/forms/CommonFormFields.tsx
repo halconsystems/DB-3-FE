@@ -66,7 +66,10 @@ const getInputStyle = (field: ProfileField): React.CSSProperties => ({
 export function TextInputField({ field, value, onChange, styles, wrapperClassName }: InputFieldProps) {
   return (
     <div className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()} style={getWrapperStyle(field)}>
-      <label className={styles.labelGreen}>{field.label}</label>
+      <label className={styles.labelGreen}>
+        {field.label}
+        {field.required && <span style={{ color: '#ff1744', marginLeft: '4px' }}>*</span>}
+      </label>
       <input
         type={field.type}
         name={String(field.name)}
@@ -104,7 +107,10 @@ export function SelectInputField({ field, value, onChange, styles, wrapperClassN
 
   return (
     <div className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()} style={getWrapperStyle(field)}>
-      <label className={styles.labelGreen}>{field.label}</label>
+      <label className={styles.labelGreen}>
+        {field.label}
+        {field.required && <span style={{ color: '#ff1744', marginLeft: '4px' }}>*</span>}
+      </label>
       <div className={styles.selectWrapper}>
         <select
           ref={selectRef}
@@ -155,7 +161,10 @@ export function DateInputField({ field, value, onChange, styles, wrapperClassNam
       className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()}
       style={{ ...getWrapperStyle(field), position: 'relative' }}
     >
-      <label className={field.required ? styles.labelRed : styles.labelGreen}>{field.label}</label>
+      <label className={styles.labelGreen}>
+        {field.label}
+        {field.required && <span style={{ color: '#ff1744', marginLeft: '4px' }}>*</span>}
+      </label>
       <input
         ref={dateInputRef}
         type="date"
@@ -175,7 +184,10 @@ export function DateInputField({ field, value, onChange, styles, wrapperClassNam
 export function ToggleInputField({ field, checked, onChange, styles, wrapperClassName }: ToggleFieldProps) {
   return (
     <div className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()} style={getWrapperStyle(field)}>
-      <label className={field.required ? styles.labelRed : styles.labelGreen}>{field.label}</label>
+      <label className={styles.labelGreen}>
+        {field.label}
+        {field.required && <span style={{ color: '#ff1744', marginLeft: '4px' }}>*</span>}
+      </label>
       <input
         type="checkbox"
         name={String(field.name)}
@@ -191,7 +203,10 @@ export function RadioCardInputField({ field, value, onChange, styles, wrapperCla
 
   return (
     <div className={`${styles.capsule} ${styles.radioCapsule} ${wrapperClassName ?? ''}`.trim()} style={getWrapperStyle(field)}>
-      <label className={styles.formTitle + " " + (field.required ? styles.radioRed : '')}>{field.label}</label>
+      <label className={styles.formTitle}>
+        {field.label}
+        {field.required && <span style={{ color: '#ff1744', marginLeft: '4px' }}>*</span>}
+      </label>
       <div className={styles.radioCards}>
         {options.map((option) => {
           const radioId = `${field.name}-${option.value}`;
@@ -222,7 +237,10 @@ export function FileInputField({ field, formData, onFileChange, styles, wrapperC
   return (
     <div className={`${styles.capsuleFileWithPreview} ${wrapperClassName ?? ''}`.trim()} style={getWrapperStyle(field)}>
       <div className={styles.fileLabelRow}>
-        <label className={field.required ? styles.labelRed : styles.labelGreen}>{field.label}</label>
+        <label className={styles.labelGreen}>
+          {field.label}
+          {field.required && <span style={{ color: '#ff1744', marginLeft: '4px' }}>*</span>}
+        </label>
         <label className={styles.plusButton}>
           <img src="/icons/plus.svg" alt="" />
           <input
@@ -256,7 +274,10 @@ interface StatusSwitchFieldProps extends SharedFieldProps {
 
 export function StatusSwitchInputField({ field, checked, onChange, styles, wrapperClassName }: StatusSwitchFieldProps) {
   return (<div>
-      <label className={styles.formTitle}>{field.label}</label>
+      <label className={styles.formTitle}>
+        {field.label}
+        {field.required && <span style={{ color: '#ff1744', marginLeft: '4px' }}>*</span>}
+      </label>
       <button
         type="button"
         onClick={() => {

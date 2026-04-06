@@ -9,6 +9,7 @@ export const vendorFields: ProfileField[] = [
   { name: 'cellNumber1' as keyof ProfileFormData, label: 'Add Cell Number 1', type: 'text', required: true, placeholder: '0300-1234567' },
   { name: 'cellNumber2' as keyof ProfileFormData, label: 'Add Cell Number 2', type: 'text', required: true, placeholder: '0300-1234567' },
   { name: 'vendorId' as keyof ProfileFormData, label: 'Vendor ID', type: 'text', required: true, placeholder: 'Auto generated (1055)' },
+  { name: 'status' as keyof ProfileFormData, label: 'Status', type: 'statusSwitch', required: false },
 ];
 
 export const mockVendorData: ProfileFormData = {};

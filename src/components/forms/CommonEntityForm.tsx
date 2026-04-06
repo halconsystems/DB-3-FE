@@ -6,6 +6,7 @@ import styles from './ProfileForm.module.css';
 import SuccessModal from '../popup/SuccessModal';
 import WarningModal from '../popup/WarningModal';
 import Loader from '../ui/loader';
+import { normalizeFormStatuses } from '../../lib/statusUtils';
 import type { ProfileField, ProfileFormData } from './FormTypes';
 import {
   DateInputField,
@@ -79,7 +80,9 @@ export default function CommonEntityForm({
   }
   else pageName = ''
 
-  const [formData, setFormData] = useState<ProfileFormData>(withDerivedVehicleLicensePlate({ ...initialValues }));
+  const [formData, setFormData] = useState<ProfileFormData>(
+    withDerivedVehicleLicensePlate(normalizeFormStatuses({ ...initialValues }))
+  );
   const [isActive, setIsActive] = useState(initialValues.isActive ?? true);
   React.useEffect(() => {
     // Only update if initialValues actually changed (shallow compare)
@@ -90,7 +93,7 @@ export default function CommonEntityForm({
         prevKeys.length !== initKeys.length ||
         prevKeys.some((k) => prev[k as keyof ProfileFormData] !== initialValues[k as keyof ProfileFormData])
       ) {
-        return withDerivedVehicleLicensePlate({ ...initialValues });
+        return withDerivedVehicleLicensePlate(normalizeFormStatuses({ ...initialValues }));
       }
       return prev;
     });

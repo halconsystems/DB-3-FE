@@ -9,7 +9,8 @@ export const employeeFields: ProfileField[] = [
   { name: 'tempPassword' as keyof ProfileFormData, label: 'Temporary Password', type: 'text', required: true, placeholder: 'Temporary Password here' },
   { name: 'profilePicture' as keyof ProfileFormData, label: 'Profile Picture', type: 'file', required: false },
   { name: 'cnicFront' as keyof ProfileFormData, label: 'CNIC Front Image', type: 'file', required: false },
-  { name: 'cnicBack' as keyof ProfileFormData , label: 'CNIC Back Image', type: 'file', required: false }
+  { name: 'cnicBack' as keyof ProfileFormData , label: 'CNIC Back Image', type: 'file', required: false },
+  { name: 'status' as keyof ProfileFormData, label: 'Employee Status', type: 'statusSwitch', required: false }
 ];
 
 export const mockEmployeeData: ProfileFormData = {

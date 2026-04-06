@@ -25,7 +25,7 @@ export default function TagApprovalTable({
   onAddNew,
   addButtonLabel
 }: TagTableProps) {
-  useSignalR(); // Enable SignalR real-time updates for tag approval
+  useSignalR(); 
   const [currentPage, setCurrentPage] = useState(1);
   const { data, isLoading, isError } = useGetTagApprovalRequests();
   const [Tags, setTags] = useState<TagApprovalRequest[]>([]);
@@ -42,15 +42,7 @@ export default function TagApprovalTable({
       setTags(data.data);
     }
   }, [data]);
-
-  const handleEdit = (item: TagApprovalRequest) => {
-    saveTableRow('tag-approval', item);
-    router.push('/setup/tag-approval/edit-approval');
-  };
-  const handleDelete = (item: TagApprovalRequest) => {
-    setSelectedTag(item);
-    setDeleteModalOpen(true);
-  };
+  
   const handleReject = (item: TagApprovalRequest) => {
     setSelectedTag(item);
     setDeleteModalOpen(true);

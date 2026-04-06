@@ -24,7 +24,6 @@ interface Vehicle {
   model: string;
   year: string;
   color: string;
-  status: 'Active' | 'Inactive';
 }
 
 type SelectedVehicleRow = Pick<ExternalVehicle, 'id'>;
@@ -85,7 +84,6 @@ export default function VehiclePage() {
       model: item.model || '-',
       year: item.year || '-',
       color: item.color || '-',
-      status: item.isActive && !item.isDeleted ? 'Active' : 'Inactive',
     }));
 
   const router = useRouter();
@@ -141,11 +139,6 @@ export default function VehiclePage() {
     { key: 'year', header: 'Year' },
     { key: 'color', header: 'Color' },
     { 
-      key: 'status', 
-      header: 'Status',
-      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
-    },
-    { 
       key: 'action', 
       header: 'Action',
       render: (_, row) => (
@@ -169,7 +162,6 @@ export default function VehiclePage() {
         showAddButton={false}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
-        getRowStatus={(row) => row.status}
         error={isError ? `Failed to load vehicles: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
       />
       <WarningModal

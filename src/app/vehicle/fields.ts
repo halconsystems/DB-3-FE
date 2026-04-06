@@ -9,9 +9,9 @@ export const vehicleFields: ProfileField[] = [
   { name: 'color' as keyof ProfileFormData, label: 'Color', type: 'text', required: true, placeholder: 'White' },
   { name: 'year' as keyof ProfileFormData, label: 'Year', type: 'select', required: true, options: [ { value: '2020', label: '2020' }, { value: '2021', label: '2021' }, { value: '2022', label: '2022' }, { value: '2023', label: '2023' }, { value: '2024', label: '2024' } ] },
   { name: 'eTagId' as keyof ProfileFormData, label: 'Vehicle E-Tag ID', type: 'text', required: true, placeholder: '996952346550' },
-  { name: 'issueDate' as keyof ProfileFormData, label: 'Issue Date', type: 'date', required: false, placeholder: 'Select Date' },
-  { name: 'expiryDate' as keyof ProfileFormData, label: 'Expiry Date', type: 'date', required: false, placeholder: 'Select Date' },
-  { name: 'tagStatus' as keyof ProfileFormData, label: 'Tag Status', type: 'select', required: true, options: [ { value: '', label: 'Select here' }, { value: 'active', label: 'Active' }, { value: 'inactive', label: 'Inactive' } ]},
+  { name: 'issueDate' as keyof ProfileFormData, label: 'Issue Date', type: 'date', required: true, placeholder: 'Select Date' },
+  { name: 'expiryDate' as keyof ProfileFormData, label: 'Expiry Date', type: 'date', required: true, placeholder: 'Select Date' },
+  { name: 'tagStatus' as keyof ProfileFormData, label: 'Tag Status', type: 'statusSwitch', required: false },
   { name: 'empty' as keyof ProfileFormData, label: '', type: 'text', required: false, placeholder: '', isHidden: true},
   { name: 'attachment' as keyof ProfileFormData, label: 'Attachment', type: 'file', required: false},
 ];

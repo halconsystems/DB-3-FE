@@ -13,7 +13,8 @@ export const tagApprovalFields: ProfileField[] = [
   { name: 'device' as keyof ProfileFormData, label: 'Device', type: 'text', required: false, placeholder: 'Device here' },
   { name: 'notes' as keyof ProfileFormData, label: 'Notes', type: 'text', required: false, placeholder: 'Notes here' },
   { name: 'planType' as keyof ProfileFormData, label: 'Plan Type', type: 'text', required: false, placeholder: 'Plan Type here' },
-  { name: 'status' as keyof ProfileFormData, label: 'Status', type: 'text', required: true, placeholder: 'Status here' },
+  { name: 'status' as keyof ProfileFormData, label: 'Status', type: 'statusSwitch', required: false },
+
 ];
 
 export const mockTagData: ProfileFormData = {

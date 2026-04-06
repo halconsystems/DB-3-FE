@@ -5,7 +5,8 @@ export const tagFields: ProfileField[] = [
   { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: true, placeholder: 'Select start date' },
   { name: 'validTo' as keyof ProfileFormData, label: 'Valid To', type: 'date', required: true, placeholder: 'Select end date' },
   { name: 'entityType' as keyof ProfileFormData, label: 'Entity Type', type: 'text', required: true, placeholder: 'Entity Type here' },
-  { name: 'entityId' as keyof ProfileFormData, label: 'Entity ID', type: 'text', required: true, placeholder: 'Entity ID here' }
+  { name: 'entityId' as keyof ProfileFormData, label: 'Entity ID', type: 'text', required: true, placeholder: 'Entity ID here' },
+  { name: 'status' as keyof ProfileFormData, label: 'Status', type: 'statusSwitch', required: false }
 ];
 export const mockTagData: ProfileFormData = {
   tagId: '1',

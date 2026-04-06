@@ -55,12 +55,13 @@ export default function TagLogTable({
         columns={TagColumns}
         data={Tags}
         loading={isLoading}
-        showAddButton={true}
-        addButtonLabel={addButtonLabel}
-        onAddClick={onAddNew}
+        showAddButton={false}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status as 'Active' | 'Inactive' | 'Pending' | undefined}
+        headerContent={
+          <div style={{height:'40px'}}></div>
+        }
       />
     </>
   );

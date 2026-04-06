@@ -5,6 +5,7 @@ export const packageFields: ProfileField[] = [
   { name: 'packageId' as keyof ProfileFormData, label: 'Package ID', type: 'text', required: true, placeholder: 'Package ID here' },
   { name: 'minCharges' as keyof ProfileFormData, label: 'Set Minimum Charges', type: 'text', required: true, placeholder: 'Type here' },
   { name: 'minRenewalCharges' as keyof ProfileFormData, label: 'Set Minimum Renewal Charges', type: 'text', required: true, placeholder: '001' },
+  { name: 'status' as keyof ProfileFormData, label: 'Status', type: 'statusSwitch', required: false },
 ];
 
 export const mockPackageData: ProfileFormData = {};

@@ -20,13 +20,8 @@ export const tagTypeFields: ProfileField[] = [
   {
     name: 'status',
     label: 'Status',
-    type: 'select',
-    required: true,
-    options: [
-      { value: 'Active', label: 'Active' },
-      { value: 'Inactive', label: 'Inactive' },
-    ],
-    placeholder: 'Select status',
+    type: 'statusSwitch',
+    required: false,
     readOnly: false,
   },
 ];

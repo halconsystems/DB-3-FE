@@ -10,6 +10,7 @@ export const luggageFields: ProfileField[] = [
   { name: 'quickPick' as keyof ProfileFormData, label: 'Quick Pick', type: 'radio', required: true, colSpan: 2, options: [ { value: 'dayPass', label: 'Day Pass' }, { value: 'longStay', label: 'Long Stay' } ] },
   { name: 'fromDate' as keyof ProfileFormData, label: 'From Date', type: 'date', required: false, placeholder: 'Select Date' },
   { name: 'toDate' as keyof ProfileFormData, label: 'To Date', type: 'date', required: false, placeholder: 'Select Date' },
+  { name: 'status' as keyof ProfileFormData, label: 'Status', type: 'statusSwitch', required: false },
 ];
 
 export const mockLuggageData: ProfileFormData = {};

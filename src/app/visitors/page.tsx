@@ -10,6 +10,7 @@ import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
 import { useVisitors } from '../../hooks/visitors/useVisitors';
 import { useDeleteVisitor } from '../../hooks/visitors/useDeleteVisitor';
+import { useUserById } from '../../hooks/user/useUserById';
 import type { ExternalVisitorPass } from '../../services/visitor.service';
 
 interface Visitor {
@@ -21,6 +22,7 @@ interface Visitor {
   cnicNicopNo: string;
   hostDetails: string;
   status: 'Active' | 'Inactive';
+  externalUserId: string;
 }
 
 type SelectedVisitorRow = Pick<ExternalVisitorPass, 'id'>;
@@ -44,12 +46,14 @@ export default function VisitorsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hostModalOpen, setHostModalOpen] = useState(false);
   const [selectedHost, setSelectedHost] = useState<any>(null);
+  const [selectedExternalUserId, setSelectedExternalUserId] = useState<string | undefined>(undefined);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedVisitor, setSelectedVisitor] = useState<SelectedVisitorRow | null>(null);
   const [localRemovedIds, setLocalRemovedIds] = useState<string[]>([]);
 
   const { data, isLoading, isError, error } = useVisitors();
   const { mutateAsync: deleteVisitor, isPending: isDeleting } = useDeleteVisitor();
+  const { data: externalUser, isLoading: isLoadingUser } = useUserById(selectedExternalUserId);
 
   const visitors: Visitor[] = (data?.data || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
@@ -62,6 +66,7 @@ export default function VisitorsPage() {
       cnicNicopNo: item.cnic,
       hostDetails: item.externalUserName || 'host',
       status: item.isActive && !item.isDeleted ? 'Active' : 'Inactive',
+      externalUserId: item.externalUserId,
     }));
 
   const router = useRouter();
@@ -100,13 +105,7 @@ export default function VisitorsPage() {
   };
 
   const handleHostClick = (row: Visitor) => {
-    setSelectedHost({
-      id: row.id,
-      name: row.name,
-      phone: '0321-4239813', 
-      address: row.visitDetail,
-      imageUrl: '/images/avatar-placeholder.png',
-    });
+    setSelectedExternalUserId(row.externalUserId);
     setHostModalOpen(true);
   };
 

@@ -12,9 +12,6 @@ export default function StatsCards() {
     { title: "Total Pending Retry", value: data?.data.totalPendingRetry ?? "-", iconPath: "/icons/Stats/Stats.Employees.svg", iconAlt: "Total Pending Retry" },
   ];
 
-  // You can combine with your existing stats if needed
-
-  if (isLoading) return <div>Loading sync summary...</div>;
   if (isError) return <div>Failed to load sync summary.</div>;
 
   return (
