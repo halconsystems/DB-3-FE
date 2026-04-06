@@ -10,6 +10,7 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "module": "esnext",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
@@ -17,6 +18,7 @@
     "incremental": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "baseUrl": "src",
     "types": [
       "node",
       "jest",
@@ -26,8 +28,7 @@
       {
         "name": "next"
       }
-    ],
-    "ignoreDeprecations": "6.0"
+    ]
   },
   "include": [
     "next-env.d.ts",

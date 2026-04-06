@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useSignalR } from 'hooks/useSignalR';
 import { useGetTagApprovalRequests } from '../../../../hooks/tag-approval/useGetTagApprovalRequests';
 import { saveTableRow } from '../../../../lib/tableRowStorage';
 import WarningModal from '../../../../components/popup/WarningModal';
@@ -25,6 +26,7 @@ export default function TagApprovalTable({
   onAddNew,
   addButtonLabel
 }: TagTableProps) {
+  useSignalR(); // Enable SignalR real-time updates for tag approval
   const [currentPage, setCurrentPage] = useState(1);
   const { data, isLoading, isError } = useGetTagApprovalRequests();
   const [Tags, setTags] = useState<TagApprovalRequest[]>([]);

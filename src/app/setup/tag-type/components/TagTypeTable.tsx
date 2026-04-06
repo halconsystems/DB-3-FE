@@ -1,13 +1,14 @@
 'use client';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import CircularButton from '../../../../components/ui/CircularButton';
 import { AddNewButton } from '../../../../components/ui/ActionButton';
 import WarningModal from '../../../../components/popup/WarningModal';
 import { saveTableRow } from '../../../../lib/tableRowStorage';
+import { useGetAllTagTypes } from '../../../../hooks/tagtype/useGetAllTagTypes';
 
-export interface TagType {
+export interface TableTagType {
   id: string;
   tagTypeName: string;
   description: string;
@@ -22,21 +23,6 @@ interface TagTypeTableProps {
   addButtonLabel: string;
 }
 
-const sampleTagTypes: TagType[] = [
-  {
-    id: '1',
-    tagTypeName: 'Residential',
-    description: 'Tags for residential vehicles',
-    status: 'Active'
-  },
-  {
-    id: '2',
-    tagTypeName: 'Commercial',
-    description: 'Tags for commercial vehicles',
-    status: 'Active'
-  }
-];
-
 export default function TagTypeTable({
   tabs,
   activeTab,
@@ -45,31 +31,41 @@ export default function TagTypeTable({
   addButtonLabel
 }: TagTypeTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [tagTypes, setTagTypes] = useState<TagType[]>(sampleTagTypes);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedTagType, setSelectedTagType] = useState<TagType | null>(null);
+  const [selectedTagType, setSelectedTagType] = useState<TableTagType | null>(null);
   const router = useRouter();
 
-  const handleEdit = (item: TagType) => {
+  // Fetch TagTypes from API
+  const { data, isLoading } = useGetAllTagTypes();
+
+  // Map API data to table format
+  const tagTypes: TableTagType[] = useMemo(() => {
+    if (!data?.data) return [];
+    return data.data.map((item) => ({
+      id: item.id,
+      tagTypeName: item.name,
+      description: item.description,
+      status: item.isActive ? 'Active' : 'Inactive',
+    }));
+  }, [data]);
+
+  const handleEdit = (item: TableTagType) => {
     saveTableRow('tag-type', item);
     router.push('/setup/tag-type/edit-tagtype');
   };
 
-  const handleDelete = (item: TagType) => {
+  const handleDelete = (item: TableTagType) => {
     setSelectedTagType(item);
     setDeleteModalOpen(true);
   };
 
+  // Note: Actual delete should call API and refetch, this only closes modal for now
   const handleConfirmDelete = () => {
-    if (!selectedTagType) {
-      return;
-    }
-    setTagTypes((prev) => prev.filter((tagType) => tagType.id !== selectedTagType.id));
     setDeleteModalOpen(false);
     setSelectedTagType(null);
   };
 
-  const tagTypeColumns: Column<TagType>[] = [
+  const tagTypeColumns: Column<TableTagType>[] = [
     { key: 'tagTypeName', header: 'Tag Type Name' },
     { key: 'description', header: 'Description' },
     { 
@@ -91,13 +87,13 @@ export default function TagTypeTable({
 
   return (
     <>
-      <DataTable<TagType>
+      <DataTable<TableTagType>
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={onTabChange}
         columns={tagTypeColumns}
         data={tagTypes}
-        loading={false}
+        loading={isLoading}
         showAddButton={false}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
