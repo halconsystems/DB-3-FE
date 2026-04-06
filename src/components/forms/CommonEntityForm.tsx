@@ -137,9 +137,34 @@ export default function CommonEntityForm({
         )
       );
       if (missingFields.length > 0) {
-        console.warn('[CommonEntityForm] missing required fields', missingFields.map((field) => field.name));
-        // setWarningMessage('Please fill all the required fields.');
-        // setShowWarning(true);
+        setWarningMessage('Please fill all the required fields.');
+        setShowWarning(true);
+        return;
+      }
+    }
+
+    // Phone number validation (for fields named 'cellNumber' or 'phoneNumber')
+    const phoneField = fields.find(f => f.name === 'cellNumber' || f.name === 'phoneNumber');
+    if (phoneField) {
+      const phoneValue = formData[phoneField.name] || '';
+      // Accepts 0300-1234567 or 03001234567
+      const phoneRegex = /^(03[0-9]{2}-?[0-9]{7})$/;
+      if (!phoneRegex.test(phoneValue)) {
+        setWarningMessage('Please enter a valid phone number (e.g., 0300-1234567).');
+        setShowWarning(true);
+        return;
+      }
+    }
+
+    // CNIC validation (for fields named 'cnic')
+    const cnicField = fields.find(f => f.name === 'cnic');
+    if (cnicField) {
+      const cnicValue = formData[cnicField.name] || '';
+      // Accepts 12345-1234567-1 or 1234512345671
+      const cnicRegex = /^\d{5}-?\d{7}-?\d{1}$/;
+      if (!cnicRegex.test(cnicValue)) {
+        setWarningMessage('Please enter a valid CNIC number (e.g., 12345-1234567-1).');
+        setShowWarning(true);
         return;
       }
     }

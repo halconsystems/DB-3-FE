@@ -77,6 +77,7 @@ export default function UserPage() {
   // Map API data to table data
   const filteredData = (data || [])
     .filter(user => !localRemovedIds.includes(String(user.id)))
+    .filter(user => user.isActive) // Only show users whose status is active
     .map(user => ({
       id: String(user.id),
       name: user.name,

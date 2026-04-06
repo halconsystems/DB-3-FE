@@ -116,7 +116,7 @@ export default function DataTable<T extends Record<string, any>>({
     if (column.render) {
       return column.render(value, row);
     }
-    return value ?? 'N/A';
+    return value ?? 'show';
   };
 
   const renderPagination = () => {
