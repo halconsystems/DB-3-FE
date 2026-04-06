@@ -7,7 +7,6 @@ import WarningModal from '../../../../components/popup/WarningModal';
 import { useRejectTagApprovalRequest } from '../../../../hooks/tag-approval/useRejectTagApprovalRequest';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
-import { AddNewButton } from '../../../../components/ui/ActionButton';
 import { useCancelTagApprovalRequest } from '../../../../hooks/tag-approval/useCancelTagApprovalRequest';
 import { TagApprovalRequest } from '../../../../types/tag-approval.types';
 
@@ -101,7 +100,7 @@ export default function TagApprovalTable({
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
             style={{ background: '#4CAF50', color: 'white', border: 'none', borderRadius: 4, padding: '4px 12px', cursor: 'pointer' }}
-            onClick={() => router.push(`/tag-approval/approve?id=${row.id}`)}
+            onClick={() => router.push(`tag-approval/approve?id=${row.id}`)}
           >
             Approve
           </button>
@@ -133,17 +132,12 @@ export default function TagApprovalTable({
         columns={TagColumns}
         data={Tags}
         loading={isLoading}
-        showAddButton={false}
+        showAddButton={true}
+        addButtonLabel={addButtonLabel}
+        onAddClick={onAddNew}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status as 'Active' | 'Inactive' | 'Pending' | undefined}
-        headerContent={
-          activeTab === 'tag-approval' ? null : (
-            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 0' }}>
-              <AddNewButton onClick={onAddNew} label={addButtonLabel} />
-            </div>
-          )
-        }
       />
       <WarningModal
         isOpen={deleteModalOpen}

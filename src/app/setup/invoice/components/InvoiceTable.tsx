@@ -4,7 +4,6 @@ import { useInvoices } from '../../../../hooks/invoice/useInvoices';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import CircularButton from '../../../../components/ui/CircularButton';
-import { AddNewButton } from '../../../../components/ui/ActionButton';
 import { saveTableRow } from '../../../../lib/tableRowStorage';
 
 interface Invoice {
@@ -109,14 +108,11 @@ export default function InvoiceTable({
       columns={columns}
       data={invoices}
       loading={isLoading}
-      showAddButton={false}
+      showAddButton={true}
+      addButtonLabel={addButtonLabel}
+      onAddClick={onAddNew}
       currentPage={currentPage}
       onPageChange={setCurrentPage}
-      headerContent={
-        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 0' }}>
-          <AddNewButton onClick={onAddNew} label={addButtonLabel} />
-        </div>
-      }
     />
   );
 }

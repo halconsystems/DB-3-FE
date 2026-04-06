@@ -1,16 +1,16 @@
 
 'use client';
-import DashboardLayout from '../../../components/layout/DashboardLayout';
-import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../components/forms/CommonEntityForm';
+import DashboardLayout from '../../../../components/layout/DashboardLayout';
+import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../../components/forms/CommonEntityForm';
 import { useSearchParams } from 'next/navigation';
-import { useGetTagApprovalRequestById } from '../../../hooks/tag-approval/useGetTagApprovalRequestById';
+import { useGetTagApprovalRequestById } from '../../../../hooks/tag-approval/useGetTagApprovalRequestById';
 
-import { useFeeScales } from '../../../hooks/fees/useFeeScales';
-import type { FeeScale } from '../../../types/fees.types';
-import { useDevices } from '../../../hooks/device/useDevices';
-import { useZones } from '../../../hooks/zone/useZones';
-import { useGetAllTagTypes } from '../../../hooks/tagtype/useGetAllTagTypes';
-import { useApproveTagApprovalRequest } from '../../../hooks/tag-approval/useApproveTagApprovalRequest';
+import { useFeeScales } from '../../../../hooks/fees/useFeeScales';
+import type { FeeScale } from '../../../../types/fees.types';
+import { useDevices } from '../../../../hooks/device/useDevices';
+import { useZones } from '../../../../hooks/zone/useZones';
+import { useGetAllTagTypes } from '../../../../hooks/tagtype/useGetAllTagTypes';
+import { useApproveTagApprovalRequest } from '../../../../hooks/tag-approval/useApproveTagApprovalRequest';
 
 export default function AddNewTag() {
   const searchParams = useSearchParams();

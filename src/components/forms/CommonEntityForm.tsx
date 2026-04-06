@@ -329,8 +329,6 @@ export default function CommonEntityForm({
     return <Loader />;
   }
 
-
-
     return (
     <>
     <div className={styles.formContainer}>

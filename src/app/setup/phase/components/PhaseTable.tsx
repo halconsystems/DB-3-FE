@@ -5,7 +5,6 @@ import { useRemovePhase } from '../../../../hooks/phase/useRemovePhase';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import CircularButton from '../../../../components/ui/CircularButton';
-import { AddNewButton } from '../../../../components/ui/ActionButton';
 import WarningModal from '../../../../components/popup/WarningModal';
 import { saveTableRow } from '../../../../lib/tableRowStorage';
 
@@ -91,7 +90,9 @@ export default function PhaseTable({
         columns={phaseColumns}
         data={phases}
         loading={isLoading}
-        showAddButton={false}
+        showAddButton={true}
+        addButtonLabel={addButtonLabel}
+        onAddClick={onAddNew}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         error={isError ? 'Failed to load phases.' : undefined}
@@ -101,11 +102,6 @@ export default function PhaseTable({
           }
           return undefined;
         }}
-        headerContent={
-          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 0' }}>
-            <AddNewButton onClick={onAddNew} label={addButtonLabel} />
-          </div>
-        }
       />
       <WarningModal
         isOpen={deleteModalOpen}

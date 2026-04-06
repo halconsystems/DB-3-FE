@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import CircularButton from '../../../../components/ui/CircularButton';
-import { AddNewButton } from '../../../../components/ui/ActionButton';
 import WarningModal from '../../../../components/popup/WarningModal';
 import { saveTableRow } from '../../../../lib/tableRowStorage';
 import { useGetAllTags } from '../../../../hooks/tag/useGetAllTags';
@@ -112,17 +111,14 @@ export default function TagTable({
         onTabChange={onTabChange}
         columns={TagColumns}
         data={Tags}
-        showAddButton={false}
+        showAddButton={true}
+        addButtonLabel={addButtonLabel}
+        onAddClick={onAddNew}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         loading={isLoading}
         error={isError ? 'Failed to load tags.' : undefined}
         getRowStatus={(row) => row.status}
-        headerContent={
-          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 0' }}>
-            <AddNewButton onClick={onAddNew} label={addButtonLabel} />
-          </div>
-        }
       />
       <WarningModal
         isOpen={deleteModalOpen}

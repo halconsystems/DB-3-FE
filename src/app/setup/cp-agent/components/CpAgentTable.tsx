@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useDeleteCpAgent } from '../../../../hooks/cp-agent/useDeleteCpAgent';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import CircularButton from '../../../../components/ui/CircularButton';
-import { AddNewButton } from '../../../../components/ui/ActionButton';
 import WarningModal from '../../../../components/popup/WarningModal';
 import { saveTableRow } from '../../../../lib/tableRowStorage';
 
@@ -37,19 +36,19 @@ export default function CpAgentTable({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<CpAgentTableRow | null>(null);
   const { data, isLoading, isError, error } = useCpAgents();
-  const cpAgents: CpAgentTableRow[] = useMemo(() => {
-    if (!data) return [];
-    return data.map((item) => ({
-      id: item.id,
-      cpAgentName: item.name,
-      controller: item.controllerId,
-      zone: item.zoneId,
-      interCommName: item.interCommName,
-      laneType: String(item.cpAgentType),
-      manufacturer: item.serverIp,
-      status: item.isActive && !item.isDeleted ? 'Active' : 'Inactive',
-    }));
-  }, [data]);
+    const cpAgents: CpAgentTableRow[] = useMemo(() => {
+      if (!data) return [];
+      return data.map((item) => ({
+        id: item.id,
+        cpAgentName: item.name,
+        controller: item.controllerId,
+        zone: item.zoneId,
+        interCommName: item.interCommName,
+        laneType: String(item.cpAgentType),
+        manufacturer: item.serverIp,
+        status: item.isActive && !item.isDeleted ? 'Active' : 'Inactive',
+      }));
+    }, [data]);
   const router = useRouter();
   const deleteMutation = useDeleteCpAgent();
   const handleEdit = (item: CpAgentTableRow) => {
@@ -94,31 +93,28 @@ export default function CpAgentTable({
 
   return (
     <>
-    <DataTable<CpAgentTableRow>
-      tabs={tabs}
-      activeTab={activeTab}
-      onTabChange={onTabChange}
-      columns={cpAgentColumns}
-      data={cpAgents}
-      showAddButton={false}
-      currentPage={currentPage}
-      onPageChange={setCurrentPage}
-      getRowStatus={(row) => row.status}
-      loading={isLoading}
-      error={isError ? `Failed to load CP Agents: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
-      headerContent={
-        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 0' }}>
-          <AddNewButton onClick={onAddNew} label={addButtonLabel} />
-        </div>
-      }
-    />
-    <WarningModal
-      isOpen={deleteModalOpen}
-      onClose={() => setDeleteModalOpen(false)}
-      onConfirm={handleConfirmDelete}
-      title="Delete CP Agent"
-      message="Are you sure you want to delete this CP agent? This action cannot be undone."
-    />
+      <DataTable<CpAgentTableRow>
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        columns={cpAgentColumns}
+        data={cpAgents}
+        showAddButton={true}
+        addButtonLabel={addButtonLabel}
+        onAddClick={onAddNew}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        getRowStatus={(row) => row.status}
+        loading={isLoading}
+        error={isError ? `Failed to load CP Agents: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
+      />
+      <WarningModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete CP Agent"
+        message="Are you sure you want to delete this CP agent? This action cannot be undone."
+      />
     </>
   );
 }

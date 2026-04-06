@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import CircularButton from '../../../../components/ui/CircularButton';
-import { AddNewButton } from '../../../../components/ui/ActionButton';
 import WarningModal from '../../../../components/popup/WarningModal';
 import { saveTableRow } from '../../../../lib/tableRowStorage';
 
@@ -102,29 +101,26 @@ export default function VendorTable({
 
   return (
     <>
-    <DataTable<Vendor>
-      tabs={tabs}
-      activeTab={activeTab}
-      onTabChange={onTabChange}
-      columns={vendorColumns}
-      data={vendors}
-      showAddButton={false}
-      currentPage={currentPage}
-      onPageChange={setCurrentPage}
-      getRowStatus={(row) => row.status}
-      headerContent={
-        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 0' }}>
-          <AddNewButton onClick={onAddNew} label={addButtonLabel} />
-        </div>
-      }
-    />
-    <WarningModal
-      isOpen={deleteModalOpen}
-      onClose={() => setDeleteModalOpen(false)}
-      onConfirm={handleConfirmDelete}
-      title="Delete Vendor"
-      message="Are you sure you want to delete this vendor? This action cannot be undone."
-    />
+      <DataTable<Vendor>
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        columns={vendorColumns}
+        data={vendors}
+        showAddButton={true}
+        addButtonLabel={addButtonLabel}
+        onAddClick={onAddNew}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        getRowStatus={(row) => row.status}
+      />
+      <WarningModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Vendor"
+        message="Are you sure you want to delete this vendor? This action cannot be undone."
+      />
     </>
   );
 }

@@ -5,7 +5,6 @@ import { useDeleteZone } from '../../../../hooks/zone/useDeleteZone';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import CircularButton from '../../../../components/ui/CircularButton';
-import { AddNewButton } from '../../../../components/ui/ActionButton';
 import WarningModal from '../../../../components/popup/WarningModal';
 import { saveTableRow } from '../../../../lib/tableRowStorage';
 import type { Zone as BaseZone } from '../../../../services/zone.service';
@@ -107,30 +106,27 @@ export default function ZoneTable({
   ];
   return (
     <>
-    <DataTable<Zone & { phaseName?: string; status: 'Active' | 'Inactive' }>
-      tabs={tabs}
-      activeTab={activeTab}
-      onTabChange={onTabChange}
-      columns={zoneColumns}
-      data={zones}
-      showAddButton={false}
-      currentPage={currentPage}
-      onPageChange={setCurrentPage}
-      getRowStatus={(row) => row.status}
-      headerContent={
-        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 0' }}>
-          <AddNewButton onClick={onAddNew} label={addButtonLabel} />
-        </div>
-      }
-      loading={isLoading}
-    />
-    <WarningModal
-      isOpen={deleteModalOpen}
-      onClose={() => setDeleteModalOpen(false)}
-      onConfirm={handleConfirmDelete}
-      title="Delete Zone"
-      message={isDeleting ? 'Deleting...' : 'Are you sure you want to delete this zone? This action cannot be undone.'}
-    />
+      <DataTable<Zone & { phaseName?: string; status: 'Active' | 'Inactive' }>
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        columns={zoneColumns}
+        data={zones}
+        showAddButton={true}
+        addButtonLabel={addButtonLabel}
+        onAddClick={onAddNew}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        getRowStatus={(row) => row.status}
+        loading={isLoading}
+      />
+      <WarningModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Zone"
+        message={isDeleting ? 'Deleting...' : 'Are you sure you want to delete this zone? This action cannot be undone.'}
+      />
     </>
   );
 }

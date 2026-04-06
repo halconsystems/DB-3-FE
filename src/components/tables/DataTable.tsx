@@ -191,13 +191,6 @@ export default function DataTable<T extends Record<string, any>>({
 
   return (
     <div className={styles.container}>
-      {showAddButton && (
-        <div className={styles.addButtonWrapper}>
-          <button className={styles.addButton} onClick={onAddClick}>
-            {addButtonLabel}
-          </button>
-        </div>
-      )}
       
       {tabs && tabs.length > 0 && (() => {
 
@@ -240,6 +233,13 @@ export default function DataTable<T extends Record<string, any>>({
       })()}
 
       {headerContent}
+       {showAddButton && (
+        <div className={styles.addButtonWrapper}>
+          <button className={styles.addButton} onClick={onAddClick}>
+            {addButtonLabel}
+          </button>
+        </div>
+      )}
 
       <div className={styles.tableWrapper}>
         {error ? (

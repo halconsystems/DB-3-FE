@@ -19,6 +19,9 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "baseUrl": "src",
+    "paths": {
+      "@/*": ["./*"] // Map @ to the root directory
+    }
     "types": [
       "node",
       "jest",

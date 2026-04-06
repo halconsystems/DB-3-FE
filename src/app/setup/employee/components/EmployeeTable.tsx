@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import CircularButton from '../../../../components/ui/CircularButton';
-import { AddNewButton } from '../../../../components/ui/ActionButton';
 import WarningModal from '../../../../components/popup/WarningModal';
 import { saveTableRow } from '../../../../lib/tableRowStorage';
 import { useEmployees } from '../../../../hooks/employee/useEmployees';
@@ -121,31 +120,28 @@ export default function EmployeeTable({
 
   return (
     <>
-    <DataTable<Employee>
-      tabs={tabs}
-      activeTab={activeTab}
-      onTabChange={onTabChange}
-      columns={employeeColumns}
-      data={employees}
-      loading={isLoading}
-      showAddButton={false}
-      currentPage={currentPage}
-      totalPages={totalPages}
-      onPageChange={setCurrentPage}
-      getRowStatus={(row) => row.status}
-      headerContent={
-        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 0' }}>
-          <AddNewButton onClick={onAddNew} label={addButtonLabel} />
-        </div>
-      }
-    />
-    <WarningModal
-      isOpen={deleteModalOpen}
-      onClose={() => setDeleteModalOpen(false)}
-      onConfirm={handleConfirmDelete}
-      title="Delete Employee"
-      message="Are you sure you want to delete this employee? This action cannot be undone."
-    />
+      <DataTable<Employee>
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        columns={employeeColumns}
+        data={employees}
+        loading={isLoading}
+        showAddButton={true}
+        addButtonLabel={addButtonLabel}
+        onAddClick={onAddNew}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        getRowStatus={(row) => row.status}
+      />
+      <WarningModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Employee"
+        message="Are you sure you want to delete this employee? This action cannot be undone."
+      />
     </>
   );
 }
