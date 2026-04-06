@@ -174,8 +174,20 @@ export default function CommonEntityForm({
       return;
     }
     // CNIC: 13 digits
-    if (formData.cnic && !/^\d{13}$/.test(formData.cnic)) {
+    if (formData.cnic && (!/^\d{13}$/.test(formData.cnic) || !/^\d{5}-\d{7}-\d{1}$/.test(formData.cnic))) {
       setWarningMessage('CNIC must be exactly 13 digits.');
+      setShowWarning(true);
+      return;
+    }
+
+    if(formData.emailAddress && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailAddress)) {
+      setWarningMessage('Please enter a valid email address.');
+      setShowWarning(true);
+      return;
+    }
+
+    if(formData.licensePlate && !/^[A-Za-z]+-\d+$/.test(formData.licensePlate)) {
+      setWarningMessage('License Plate must be in format ABC-123.');
       setShowWarning(true);
       return;
     }
