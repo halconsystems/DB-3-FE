@@ -1,16 +1,14 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useSignalR } from 'hooks/useSignalR';
-import { useGetTagApprovalRequests } from '../../../../hooks/tag-approval/useGetTagApprovalRequests';
-import { saveTableRow } from '../../../../lib/tableRowStorage';
-import WarningModal from '../../../../components/popup/WarningModal';
-import { useRejectTagApprovalRequest } from '../../../../hooks/tag-approval/useRejectTagApprovalRequest';
+import { useGetTagApprovalRequests } from '../../../hooks/tag-approval/useGetTagApprovalRequests';
+import { saveTableRow } from '../../../lib/tableRowStorage';
+import WarningModal from '../../../components/popup/WarningModal';
+import { useRejectTagApprovalRequest } from '../../../hooks/tag-approval/useRejectTagApprovalRequest';
 import { useRouter } from 'next/navigation';
-import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
-import { AddNewButton } from '../../../../components/ui/ActionButton';
-import { useCancelTagApprovalRequest } from '../../../../hooks/tag-approval/useCancelTagApprovalRequest';
-import { TagApprovalRequest } from '../../../../types/tag-approval.types';
-
+import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
+import { AddNewButton } from '../../../components/ui/ActionButton';
+import { useCancelTagApprovalRequest } from '../../../hooks/tag-approval/useCancelTagApprovalRequest';
+import { TagApprovalRequest } from '../../../types/tag-approval.types';
 interface TagTableProps {
   tabs: Tab[];
   activeTab: string;
@@ -19,14 +17,13 @@ interface TagTableProps {
   addButtonLabel: string;
 }
 
-export default function TagApprovalTable({
+export default function TagTable({
   tabs,
   activeTab,
   onTabChange,
   onAddNew,
   addButtonLabel
 }: TagTableProps) {
-  useSignalR(); // Enable SignalR real-time updates for tag approval
   const [currentPage, setCurrentPage] = useState(1);
   const { data, isLoading, isError } = useGetTagApprovalRequests();
   const [Tags, setTags] = useState<TagApprovalRequest[]>([]);
@@ -44,9 +41,16 @@ export default function TagApprovalTable({
     }
   }, [data]);
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  if (isError) {
+    return <div>Failed to load tag approval requests.</div>;
+  }
+
   const handleEdit = (item: TagApprovalRequest) => {
-    saveTableRow('tag-approval', item);
-    router.push('/setup/tag-approval/edit-approval');
+    saveTableRow('tag', item);
+    router.push('/tag/edit-tag');
   };
   const handleDelete = (item: TagApprovalRequest) => {
     setSelectedTag(item);
@@ -126,39 +130,38 @@ export default function TagApprovalTable({
 
   return (
     <>
-      <DataTable<TagApprovalRequest>
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={onTabChange}
-        columns={TagColumns}
-        data={Tags}
-        loading={isLoading}
-        showAddButton={false}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-        getRowStatus={(row) => row.status as 'Active' | 'Inactive' | 'Pending' | undefined}
-        headerContent={
-          activeTab === 'tag-approval' ? null : (
-            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 0' }}>
-              <AddNewButton onClick={onAddNew} label={addButtonLabel} />
-            </div>
-          )
-        }
-      />
-      <WarningModal
-        isOpen={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        onConfirm={handleConfirmDelete}
-        title="Reject Tag Approval"
-        message="Are you sure you want to reject this tag approval request?"
-      />
-      <WarningModal
-        isOpen={cancelModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        onConfirm={handleConfirmCancel}
-        title="Cancel Tag Approval"
-        message="Are you sure you want to cancel this tag approval request?"
-      />
+    <DataTable<TagApprovalRequest>
+      tabs={tabs}
+      activeTab={activeTab}
+      onTabChange={onTabChange}
+      columns={TagColumns}
+      data={Tags}
+      showAddButton={false}
+      currentPage={currentPage}
+      onPageChange={setCurrentPage}
+      getRowStatus={(row) => row.status as 'Active' | 'Inactive' | 'Pending' | undefined}
+      headerContent={
+        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 0' }}>
+          <AddNewButton onClick={onAddNew} label={addButtonLabel} />
+        </div>
+      }
+    />
+    <WarningModal
+      isOpen={deleteModalOpen}
+      onClose={() => setDeleteModalOpen(false)}
+      onConfirm={handleConfirmDelete}
+      title="Reject Tag Approval Request"
+      message="Are you sure you want to reject this tag approval request? This action cannot be undone."
+      confirmText="Reject"
+    />
+    <WarningModal
+      isOpen={cancelModalOpen}
+      onClose={() => setCancelModalOpen(false)}
+      onConfirm={handleConfirmCancel}
+      title="Cancel Tag Approval Request"
+      message="Are you sure you want to cancel this tag approval request? This action cannot be undone."
+      confirmText="Cancel"
+    />
     </>
   );
 }

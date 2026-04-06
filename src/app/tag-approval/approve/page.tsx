@@ -128,6 +128,20 @@ export default function AddNewTag() {
       placeholder: 'Select Fee Scale',
       options: feeScaleOptions,
     },
+    {
+      name: 'planType' as keyof ProfileFormData,
+      label: 'Plan Type',
+      type: 'select',
+      required: false,
+      placeholder: 'Select Plan Type',
+      options: [
+        { value: '', label: 'Select Plan Type' },
+        { value: 'Yearly', label: 'Yearly' },
+        { value: 'Monthly', label: 'Monthly' },
+        { value: 'Weekly', label: 'Weekly' },
+        { value: 'Pass', label: 'Pass' },
+      ],
+    },
     { name: 'status' as keyof ProfileFormData, label: 'Status', type: 'statusSwitch', required: false, placeholder: 'Status' },
     {
       name: 'trialPeriod' as keyof ProfileFormData,
@@ -178,10 +192,12 @@ export default function AddNewTag() {
       validTo: toIsoDate(String(formData.validTo || tag.validTo || '')),
       status: toStatusValue(formData.status),
       feeScaleId: String(formData.feeScaleId || tag.feeScale || ''),
+      planType: formData.planType || 'Unknown',
       zoneId: String(formData.zone || ''),
       deviceId: String(formData.device || ''),
       zoneIds: formData.zone ? [String(formData.zone)] : [],
       trialPeriod: Number(formData.trialPeriod || 0),
+      notes: String(formData.notes || ''),
     };
 
     console.log('approveTagApprovalRequest payload:', payload);
@@ -206,7 +222,8 @@ export default function AddNewTag() {
       validFrom: toDateInputValue(tag.validFrom),
       validTo: toDateInputValue(tag.validTo),
       feeScaleId: tag.feeScale,
-      status: toStatusFlag(tag.status),
+      status: true, // status toggle default ON
+      planType: '',
       trialPeriod: '',
       zone: '',
       device: '',

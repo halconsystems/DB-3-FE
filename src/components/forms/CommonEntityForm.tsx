@@ -112,6 +112,21 @@ export default function CommonEntityForm({
       return;
     }
 
+    // Autofill validFrom and validTo when trialPeriod changes
+    if (name === 'trialPeriod') {
+      const today = new Date();
+      const validFrom = today.toISOString().split('T')[0];
+      let validTo = validFrom;
+      const days = Number(value);
+      if (!isNaN(days) && days > 0) {
+        const toDate = new Date(today);
+        toDate.setDate(toDate.getDate() + days);
+        validTo = toDate.toISOString().split('T')[0];
+      }
+      setFormData((prev) => withDerivedVehicleLicensePlate({ ...prev, [name]: value, validFrom, validTo }));
+      return;
+    }
+
     if (type === 'checkbox') {
       setFormData((prev) => ({ ...prev, [name]: (event.target as HTMLInputElement).checked }));
       return;
