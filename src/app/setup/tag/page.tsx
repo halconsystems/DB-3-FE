@@ -18,6 +18,7 @@ const tabs: Tab[] = [
   { key: 'tag', label: 'Tag' },
   { key: 'tag-approval', label: 'Approve' },
   { key: 'tag-type', label: 'Tag Type' },
+  { key: 'tag-log', label: 'Approved tags' },
 ];
 
 const getAddButtonLabel = (tab: string) => {

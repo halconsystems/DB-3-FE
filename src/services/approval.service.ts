@@ -1,3 +1,21 @@
+// Get all requested tags (paginated)
+export interface GetAllRequestedTagsParams {
+  PageNumber?: number;
+  PageSize?: number;
+}
+
+export const getAllRequestedTags = async (
+  PageNumber?: number,
+  PageSize?: number
+): Promise<any> => {
+  const response = await apiClient.get("/tag-approval/GetAllRequestedTags", {
+    params: {
+      PageNumber,
+      PageSize,
+    },
+  });
+  return response.data;
+};
 import { TagApprovalRequest } from "../types/tag-approval.types";
 import apiClient from "../lib/apiClient";
 import { GetTagApprovalRequestsResponse } from "../types/tag-approval.types";

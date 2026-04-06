@@ -35,13 +35,24 @@ export interface DataTableProps<T> {
   headerContent?: React.ReactNode;
 }
 
-export function StatusBadge({ status }: { status: 'Active' | 'Inactive' | 'Pending' | string }) {
+export function StatusBadge({ status }: { status: string }) {
   const getStatusClass = () => {
-    switch (status) {
-      case 'Active': return styles.statusActive;
-      case 'Inactive': return styles.statusInactive;
-      case 'Pending': case 'Blocked': return styles.statusPending;
-      default: return styles.statusInactive;
+    switch (status.toLowerCase()) {
+      case 'approved':
+        return styles.statusApproved;
+      case 'rejected':
+        return styles.statusRejected;
+      case 'cancelled':
+        return styles.statusCancelled;
+      case 'active':
+        return styles.statusActive;
+      case 'inactive':
+        return styles.statusInactive;
+      case 'pending':
+      case 'blocked':
+        return styles.statusPending;
+      default:
+        return styles.statusInactive;
     }
   };
   return (

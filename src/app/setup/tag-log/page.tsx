@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import DataTable, { Tab } from '../../../components/tables/DataTable';
-import ZoneTable from './components/ZoneTable';
+import TagLogTable from './components/TagLogTable';
 
 const tabs: Tab[] = [
   { key: 'cp-agent', label: 'CP/Agent' },
@@ -39,8 +39,8 @@ const getAddButtonLabel = (tab: string) => {
   }
 };
 
-export default function ZonePage() {
-  const [activeTab, setActiveTab] = useState('zone');
+export default function TagLogPage() {
+  const [activeTab, setActiveTab] = useState('tag-approval');
   const router = useRouter();
 
   useEffect(() => {
@@ -73,7 +73,7 @@ export default function ZonePage() {
 
   return (
     <DashboardLayout pageTitle="Setup">
-      <ZoneTable
+      <TagLogTable
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={handleTabChange}

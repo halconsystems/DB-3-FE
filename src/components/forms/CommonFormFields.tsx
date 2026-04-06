@@ -66,10 +66,10 @@ const getInputStyle = (field: ProfileField): React.CSSProperties => ({
 export function TextInputField({ field, value, onChange, styles, wrapperClassName }: InputFieldProps) {
   return (
     <div className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()} style={getWrapperStyle(field)}>
-      <label className={field.required ? styles.labelRed : styles.labelGreen}>{field.label}</label>
+      <label className={styles.labelGreen}>{field.label}</label>
       <input
         type={field.type}
-         name={String(field.name)}
+        name={String(field.name)}
         placeholder={field.placeholder}
         className={styles.input}
         style={getInputStyle(field)}
@@ -104,7 +104,7 @@ export function SelectInputField({ field, value, onChange, styles, wrapperClassN
 
   return (
     <div className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()} style={getWrapperStyle(field)}>
-      <label className={field.required ? styles.labelRed : styles.labelGreen}>{field.label}</label>
+      <label className={styles.labelGreen}>{field.label}</label>
       <div className={styles.selectWrapper}>
         <select
           ref={selectRef}

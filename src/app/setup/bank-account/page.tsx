@@ -18,6 +18,7 @@ const tabs: Tab[] = [
   { key: 'tag', label: 'Tag' },
   { key: 'tag-approval', label: 'Approve' },
   { key: 'tag-type', label: 'Tag Type' },
+  { key: 'tag-log', label: 'Approved tags' },
 ];
 
 const getAddButtonLabel = (tab: string) => {
@@ -66,6 +67,7 @@ export default function BankAccountPage() {
       'tag': '/setup/tag/add-tag',
       'tag-type': '/setup/tag-type/add-tagtype',
       'tag-approval': '/setup/tag-approval/approval-request',
+      
     };
     router.push(routeMap[activeTab] || '/setup');
   };
