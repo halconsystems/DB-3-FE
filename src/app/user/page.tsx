@@ -76,7 +76,7 @@ export default function UserPage() {
 
   // Map API data to table data
   const filteredData = (data || [])
-    .filter(user => !localRemovedIds.includes(String(user.id)))
+    .filter(user => !localRemovedIds.includes(String(user.id)) && user.isActive)
     .map(user => ({
       id: String(user.id),
       name: user.name,

@@ -116,7 +116,9 @@ export default function DataTable<T extends Record<string, any>>({
     if (column.render) {
       return column.render(value, row);
     }
-    return value ?? 'N/A';
+    // Show '-' if value is null, undefined, or empty string
+    if (value === null) return '-';
+    return value ?? '-';
   };
 
   const renderPagination = () => {
