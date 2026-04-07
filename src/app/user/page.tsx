@@ -6,13 +6,12 @@ import { useUserById } from '../../hooks/user/useUserById';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
-import { AddNewButton } from '../../components/ui/ActionButton';
 import CircularButton from '../../components/ui/CircularButton';
 import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
 
 
-// Map API user type and status to display values
+// Map API user type to display values
 const mapUserType = (type: number | string) => {
   if (typeof type === 'string') return type;
   switch (type) {
@@ -21,9 +20,6 @@ const mapUserType = (type: number | string) => {
     default: return 'User';
   }
 };
-
-const mapStatus = (isActive: boolean) => (isActive ? 'Active' : 'Inactive');
-const mapCardStatus = (status: number) => (status === 1 ? 'Active' : 'Inactive');
 
 
 
@@ -77,9 +73,9 @@ export default function UserPage() {
   // Map API data to table data
   const filteredData = (data || [])
     .filter(user => !localRemovedIds.includes(String(user.id)) && user.isActive)
-    .map(user => ({
+    .map((user) => ({
       id: String(user.id),
-      name: user.name,
+      name: user.externalUserName || '',
       emailAddress: user.email || '',
       cellNumber: user.phoneNumber || '',
       cnic: user.cnic || '',
@@ -87,8 +83,8 @@ export default function UserPage() {
       rfidCardNo: user.rfidCardNumber || '',
       cardIssueDate: user.cardIssueDate || '',
       cardExpiryDate: user.cardExpiryDate || '',
-      cardStatus: mapCardStatus(user.cardStatus),
-      status: mapStatus(user.isActive),
+      cardStatus: user.cardStatus,
+      status: user.isActive,
     }));
 
   const columns: Column<any>[] = [
@@ -103,12 +99,12 @@ export default function UserPage() {
     {
       key: 'cardStatus',
       header: 'Card Status',
-      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
+      render: (value: number) => <StatusBadge type="cardStatus" value={value} />
     },
     {
       key: 'status',
       header: 'Status',
-      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
+      render: (value: boolean) => <StatusBadge type="activeInactive" value={value} />
     },
     {
       key: 'action',
@@ -126,21 +122,14 @@ export default function UserPage() {
 
   return (
     <DashboardLayout pageTitle="User">
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
-        <AddNewButton onClick={handleAddNew} />
-      </div>
       <DataTable
         columns={columns}
         data={filteredData}
-        showAddButton={false}
+        onAddClick={handleAddNew}
+        addButtonLabel="Add New"
         currentPage={currentPage}
         onPageChange={setCurrentPage}
-        getRowStatus={(row) => {
-          if (row.status === 'Active' || row.status === 'Inactive' || row.status === 'Pending') {
-            return row.status;
-          }
-          return undefined;
-        }}
+        getRowStatus={(row) => row.status ? 'Active' : 'Inactive'}
         loading={isLoading}
         emptyMessage={isLoading ? 'Loading users...' : 'No users found'}
       />

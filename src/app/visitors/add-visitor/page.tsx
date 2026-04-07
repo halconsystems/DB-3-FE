@@ -30,12 +30,12 @@ const toVehicleLicensePlate = (vehicleNo?: string, vehicleNo2?: string) => {
 };
 
 const toVisitorPassType = (quickPick?: string): number | null => {
-  if (quickPick === 'long') {
-    return 1;
+  if (quickPick === 'LongStay') {
+    return 2;
   }
 
-  if (quickPick === 'day') {
-    return 0;
+  if (quickPick === 'DayPass') {
+    return 1;
   }
 
   return null;
@@ -72,7 +72,7 @@ export default function AddNewVisitor() {
       cnic: data.cnic || '',
       vehicleLicensePlate: toVehicleLicensePlate(data.vehicleNo, data.vehicleNo2),
       vehicleLicenseNo: Number(data.vehicleNo2 || 0),
-      visitorPassType,
+      visitorPassType: visitorPassType || 1,
       validFrom: toIsoDate(data.fromDate),
       validTo: toIsoDate(data.toDate),
       externalUserId,

@@ -46,12 +46,12 @@ const toVehicleLicensePlate = (vehicleNo?: string, vehicleNo2?: string) => {
 };
 
 const toLuggagePassType = (quickPick?: string): number | null => {
-  if (quickPick === 'longStay') {
-    return 1;
+  if (quickPick === 'LongStay') {
+    return 2;
   }
 
-  if (quickPick === 'dayPass') {
-    return 0;
+  if (quickPick === 'DayPass') {
+    return 1;
   }
 
   return null;
@@ -76,7 +76,7 @@ export default function EditLuggage() {
         licensePlate: data.data.vehicleLicensePlate,
         qrReference: data.data.qrCode,
         status: data.data.isActive ? 'active' : 'inactive',
-        quickPick: data.data.luggagePassType === 1 ? 'longStay' : 'dayPass',
+        quickPick: data.data.luggagePassType === 2 || data.data.luggagePassType === 'LongStay' ? 'LongStay' : 'DayPass',
         fromDate: toDateInputValue(data.data.validFrom),
         toDate: toDateInputValue(data.data.validTo),
         description: data.data.description,
@@ -133,7 +133,7 @@ export default function EditLuggage() {
         vehicleLicensePlate: toVehicleLicensePlate(formData.vehicleNo, formData.vehicleNo2),
         vehicleLicenseNo: Number(formData.vehicleNo2 || 0),
         description: formData.description || data.data.description || '',
-        luggagePassType,
+        luggagePassType: luggagePassType || 1,
         validFrom: toIsoDate(formData.fromDate),
         validTo: toIsoDate(formData.toDate),
         lastModifiedBy,

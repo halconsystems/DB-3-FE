@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
 import CircularButton from '../../components/ui/CircularButton';
-import { AddNewButton } from '../../components/ui/ActionButton';
 import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
 import { useLuggage } from '../../hooks/luggage/useLuggage';
@@ -14,11 +13,13 @@ import type { Luggage } from '../../services/luggage.service';
 interface LuggagePass {
   id: string;
   name: string;
+  userName?: string;
   vehicleInfo: string;
   visitDetail: string;
   validity: string;
   cnicNicopNo: string;
-  status: 'Active' | 'Inactive' | 'Pending';
+  status: boolean;
+  sno?: number;
 }
 
 type SelectedLuggageRow = Pick<Luggage, 'id'>;
@@ -36,6 +37,12 @@ const formatDate = (value: string) => {
   return date.toLocaleDateString();
 };
 
+const toLuggagePassTypeLabel = (passType?: string | number): string => {
+  if (passType === 'DayPass' || passType === 1) return 'Day Pass';
+  if (passType === 'LongStay' || passType === 2) return 'Long Stay';
+  return '-';
+};
+
 export default function LuggagePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -47,14 +54,16 @@ export default function LuggagePage() {
 
   const luggagePasses: LuggagePass[] = (data?.data || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
-    .map((item) => ({
+    .map((item, idx) => ({
+      sno: idx + 1,
       id: item.id,
       name: item.name,
+      userName: item.externalUserName || '-',
       vehicleInfo: item.vehicleLicensePlate || '-',
-      visitDetail: item.luggagePassType === 1 ? 'Long Stay' : 'Day Pass',
+      visitDetail: toLuggagePassTypeLabel(item.luggagePassType),
       validity: `${formatDate(item.validFrom)} - ${formatDate(item.validTo)}`,
       cnicNicopNo: item.cnic,
-      status: item.isActive && !item.isDeleted ? 'Active' : 'Inactive',
+      status: item.isActive && !item.isDeleted,
     }));
 
   const router = useRouter();
@@ -93,6 +102,7 @@ export default function LuggagePage() {
   };
 
   const columns: Column<LuggagePass>[] = [
+    { key: 'sno', header: 'S.No' },
     { key: 'name', header: 'Name' },
     { key: 'vehicleInfo', header: 'Vehicle Info' },
     { key: 'visitDetail', header: 'Visit Detail' },
@@ -101,7 +111,7 @@ export default function LuggagePage() {
     { 
       key: 'status', 
       header: 'Status',
-      render: (value: 'Active' | 'Inactive' | 'Pending') => <StatusBadge status={value} />
+      render: (value: boolean) => <StatusBadge type="activeInactive" value={value} />
     },
     { 
       key: 'action', 
@@ -117,17 +127,15 @@ export default function LuggagePage() {
 
   return (
     <DashboardLayout pageTitle="Luggage">
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
-        <AddNewButton onClick={handleAddNew} />
-      </div>
       <DataTable<LuggagePass>
         columns={columns}
         data={luggagePasses}
         loading={isLoading}
-        showAddButton={false}
+        onAddClick={handleAddNew}
+        addButtonLabel="Add New"
         currentPage={currentPage}
         onPageChange={setCurrentPage}
-        getRowStatus={(row) => row.status}
+        getRowStatus={(row) => row.status ? 'Active' : 'Inactive'}
         error={isError ? `Failed to load luggage: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
       />
       <WarningModal

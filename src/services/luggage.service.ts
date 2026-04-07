@@ -8,7 +8,7 @@ export interface Luggage {
   vehicleLicensePlate: string;
   vehicleLicenseNo: number;
   description: string;
-  luggagePassType: number;
+  luggagePassType: string | number;
   validFrom: string;
   validTo: string;
   qrCode: string;

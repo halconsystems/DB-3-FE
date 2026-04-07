@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
 import CircularButton from '../../components/ui/CircularButton';
-import { AddNewButton } from '../../components/ui/ActionButton';
 import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
 import { useVehicles } from '../../hooks/vehicle/useVehicles';
@@ -23,12 +22,14 @@ interface Vehicle {
   eTagType: string;
   issueDate: string;
   expiryDate: string;
-  tagStatus: 'Private' | 'Official' | 'Service' | 'Commercial' | '-';
+  tagStatus: number | null;
   ownership: string;
   make: string;
   model: string;
   year: string;
   color: string;
+  externalUserName?: string;
+  sno?: number;
 }
 
 type SelectedVehicleRow = Pick<ExternalVehicle, 'id'>;
@@ -74,37 +75,24 @@ export default function VehiclePage() {
   const { data, isLoading, isError, error } = useVehicles();
   const { mutateAsync: deleteVehicle, isPending: isDeleting } = useDeleteVehicle();
 
-  // Vehicle category enum mapping
-  const vehicleCategoryEnum: Record<number, string> = {
-    0: 'Private',
-    1: 'Official',
-    2: 'Service',
-    3: 'Commercial',
-  };
-
-  const vehicles: (Vehicle & { externalUserName?: string; tagStatusRaw?: number })[] = (data?.data || [])
+  const vehicles: Vehicle[] = (data?.data || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
-    .map((item: ExternalVehicle, idx) => {
-      // Only allow tagStatusRaw to be number or undefined, never null
-      const tagStatusRaw = typeof item.tagStatus === 'number' ? item.tagStatus : undefined;
-      return {
-        sno: idx + 1,
-        id: item.id,
-        licensePlate: formatLicensePlate(item.license, item.licenseNo),
-        vehicleETagId: item.eTagId || '-',
-        eTagType: item.eTagId || '-',
-        issueDate: formatDate(item.validFrom),
-        expiryDate: formatDate(item.validTo),
-        ownership: item.externalUserId || '-',
-        externalUserName: item.externalUserName || '-',
-        make: item.make || '-',
-        model: item.model || '-',
-        year: item.year || '-',
-        color: item.color || '-',
-        tagStatus: (tagStatusRaw !== undefined ? vehicleCategoryEnum[tagStatusRaw] || '-' : '-') as Vehicle['tagStatus'],
-        tagStatusRaw: tagStatusRaw,
-      };
-    });
+    .map((item: ExternalVehicle, idx) => ({
+      sno: idx + 1,
+      id: item.id,
+      licensePlate: formatLicensePlate(item.license, item.licenseNo),
+      vehicleETagId: item.eTagId || '-',
+      eTagType: item.eTagId || '-',
+      issueDate: formatDate(item.validFrom),
+      expiryDate: formatDate(item.validTo),
+      ownership: item.externalUserId || '-',
+      externalUserName: item.externalUserName || '-',
+      make: item.make || '-',
+      model: item.model || '-',
+      year: item.year || '-',
+      color: item.color || '-',
+      tagStatus: item.tagStatus,
+    }));
 
   const router = useRouter();
 
@@ -142,7 +130,7 @@ export default function VehiclePage() {
     setSelectedVehicle(null);
   };
 
-  const columns: Column<Vehicle & { externalUserName?: string }>[] = [
+  const columns: Column<Vehicle>[] = [
     { key: 'sno', header: 'S.No' },
     {
       key: 'externalUserName',
@@ -167,7 +155,7 @@ export default function VehiclePage() {
     {
       key: 'tagStatus',
       header: 'Tag Status',
-      render: (value: string, row) => <StatusBadge status={value} />,
+      render: (value: number | null) => <StatusBadge type="vehicleCategory" value={value} />,
     },
     { 
       key: 'action', 
@@ -183,14 +171,12 @@ export default function VehiclePage() {
 
   return (
     <DashboardLayout pageTitle="Vehicle">
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
-        <AddNewButton onClick={handleAddNew} />
-      </div>
       <DataTable<Vehicle>
         columns={columns}
         data={vehicles}
         loading={isLoading}
-        showAddButton={false}
+        onAddClick={handleAddNew}
+        addButtonLabel="Add New"
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         error={isError ? `Failed to load vehicles: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}

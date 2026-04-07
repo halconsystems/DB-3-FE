@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
-import { AddNewButton } from '../../components/ui/ActionButton';
 import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
 import { useWorkers } from '../../hooks/workers/useWorkers';
@@ -13,19 +12,21 @@ import CircularButton from '../../components/ui/CircularButton';
 
 interface Worker {
   id: string;
-  name: string;
+  workerName: string;
+  userName: string;
   jobType: string;
   phone: string;
   dob: string;
   cnicNicopNo: string;
   policeVerification: 'Yes' | 'No';
   workerCardDelivery: string;
-  address: string;
-  workerStatus: 'Active' | 'Inactive';
+  fatherOrHusbandName?: string;
+  workerStatus: boolean;
   workerCard: string;
   issuedDate?: string;
   expiryDate?: string;
-  cardStatus?: 'Active' | 'Expire' | 'Blocked';
+  cardStatus?: number;
+  sno?: number;
 }
 
 type SelectedWorkerRow = Pick<ExternalWorker, 'id'>;
@@ -60,28 +61,6 @@ const toJobTypeLabel = (jobType?: number) => {
   }
 };
 
-const toWorkerCardDeliveryLabel = (deliveryType?: number) => {
-  switch (deliveryType) {
-    case 0:
-      return 'Owner Address';
-    case 1:
-      return 'Self Pickup';
-    default:
-      return '-';
-  }
-};
-
-const toCardStatusLabel = (cardStatus?: number): 'Active' | 'Expire' | 'Blocked' => {
-  switch (cardStatus) {
-    case 2:
-      return 'Blocked';
-    case 3:
-      return 'Expire';
-    default:
-      return 'Active';
-  }
-};
-
 export default function WorkersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -93,21 +72,23 @@ export default function WorkersPage() {
 
   const workers: Worker[] = (data?.data || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
-    .map((item) => ({
+    .map((item, idx) => ({
+      sno: idx + 1,
       id: item.id,
-      name: item.name || '-',
+      workerName: item.name || '-',
+      userName: item.externalUserName || '-',
+      fatherOrHusbandName: item.fatherOrHusbandName || '-',
       jobType: toJobTypeLabel(item.jobType),
       phone: item.phoneNumber || '-',
       dob: formatDate(item.dateOfBirth),
       cnicNicopNo: item.cnic || '-',
       policeVerification: item.policeVerification ? 'Yes' : 'No',
-      workerCardDelivery: toWorkerCardDeliveryLabel(item.workerCardDeliveryType),
-      address: '-',
-      workerStatus: item.isActive && !item.isDeleted ? 'Active' : 'Inactive',
+      workerCardDelivery: item.workerCardDeliveryType?.toString() || '-',
+      workerStatus: !!(item.isActive && !item.isDeleted),
       workerCard: item.workerCardNumber || '-',
       issuedDate: formatDate(item.validFrom),
       expiryDate: formatDate(item.validTo),
-      cardStatus: toCardStatusLabel(item.cardStatus),
+      cardStatus: item.cardStatus,
     }));
 
   const router = useRouter();
@@ -146,18 +127,23 @@ export default function WorkersPage() {
   };
 
   const columns: Column<Worker>[] = [
-    { key: 'name', header: 'Name' },
+     {
+      key: 'sno',
+      header: 'S.No',
+    },
+    { key: 'workerName', header: 'Worker Name' },
+    { key: 'userName', header: 'User Name' },
     { key: 'jobType', header: 'Job Type' },
     { key: 'phone', header: 'Phone' },
     { key: 'dob', header: 'DOB' },
     { key: 'cnicNicopNo', header: 'CNIC/NICOP No.' },
+    { key: 'fatherOrHusbandName', header: 'Father/Husband Name' },
     { key: 'policeVerification', header: 'Police Verification' },
     { key: 'workerCardDelivery', header: 'Worker Card Delivery' },
-    { key: 'address', header: 'Address' },
     { 
       key: 'workerStatus', 
       header: 'Worker Status',
-      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
+      render: (value: boolean) => <StatusBadge type="activeInactive" value={value} />
     },
     { key: 'workerCard', header: 'Worker Card No.' },
     {     key: 'issuedDate', header: 'Issued Date' },
@@ -165,7 +151,7 @@ export default function WorkersPage() {
     {
       key: 'cardStatus',
       header: 'Card Status',
-      render: (value: 'Active' | 'Expired' | 'Blocked') => <StatusBadge status={value} />
+      render: (value: number) => <StatusBadge type="tagStatus" value={value} />
     },
     {
       key: 'action',
@@ -181,17 +167,15 @@ export default function WorkersPage() {
 
   return (
     <DashboardLayout pageTitle="Workers">
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
-        <AddNewButton onClick={handleAddNew} />
-      </div>
       <DataTable<Worker>
         columns={columns}
         data={workers}
         loading={isLoading}
-        showAddButton={false}
+        onAddClick={handleAddNew}
+        addButtonLabel="Add New"
         currentPage={currentPage}
         onPageChange={setCurrentPage}
-        getRowStatus={(row) => row.workerStatus}
+        getRowStatus={(row) => row.workerStatus ? 'Active' : 'Inactive'}
         error={isError ? `Failed to load workers: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
       />
       <WarningModal

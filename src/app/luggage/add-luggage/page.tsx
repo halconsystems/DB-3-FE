@@ -25,8 +25,8 @@ const toVehicleLicensePlate = (vehicleNo?: string, vehicleNo2?: string) => {
 };
 
 const toLuggagePassType = (quickPick?: string): number | null => {
-  if (quickPick === 'longStay') return 1;
-  if (quickPick === 'dayPass') return 0;
+  if (quickPick === 'LongStay') return 2;
+  if (quickPick === 'DayPass') return 1;
   return null;
 };
 
@@ -67,7 +67,7 @@ export default function AddNewLuggage() {
       ),
       vehicleLicenseNo: Number(data.vehicleNo2 || 0),
       description: data.description || '',
-      luggagePassType,
+      luggagePassType: luggagePassType || 1,
       validFrom: toIsoDate(data.fromDate),
       validTo: toIsoDate(data.toDate),
       externalUserId,

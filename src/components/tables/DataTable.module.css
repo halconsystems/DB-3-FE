@@ -39,10 +39,11 @@
 .addButtonWrapper {
   display: flex;
   justify-content: flex-end;
-  padding: 16px 24px;
+  padding: 16px 0;
 }
 
 .addButton {
+  min-width: 140px;
   background: var(--primary);
   color: white;
   border: none;
@@ -174,6 +175,8 @@
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
+  width: 100%;
+  text-align: center;
 }
 
 .statusActive {

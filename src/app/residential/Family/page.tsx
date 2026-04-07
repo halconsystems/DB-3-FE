@@ -5,6 +5,7 @@ import { familyDetails, vehicles, workers, visitors } from './familyData';
 import styles from './Family.module.css';
 
 const familyColumns: Column<any>[] = [
+  { key: 'sno', header: 'S.No' },
   { key: 'name', header: 'Name' },
   { key: 'relation', header: 'Relation' },
   { key: 'phone', header: 'Phone' },
@@ -17,6 +18,7 @@ const familyColumns: Column<any>[] = [
 ];
 
 const vehicleColumns: Column<any>[] = [
+  { key: 'sno', header: 'S.No' },
   { key: 'licensePlate', header: 'License Plate' },
   { key: 'vehicleETagId', header: 'Vehicle E-Tag ID' },
   { key: 'eTagType', header: 'E-Tag Type' },
@@ -32,6 +34,7 @@ const vehicleColumns: Column<any>[] = [
 ];
 
 const workerColumns: Column<any>[] = [
+  { key: 'sno', header: 'S.No' },
   { key: 'name', header: 'Name' },
   { key: 'jobType', header: 'Job Type' },
   { key: 'phone', header: 'Phone' },
@@ -45,6 +48,7 @@ const workerColumns: Column<any>[] = [
 ];
 
 const visitorColumns: Column<any>[] = [
+  { key: 'sno', header: 'S.No' },
   { key: 'name', header: 'Name' },
   { key: 'vehicleInfo', header: 'Vehicle Info' },
   { key: 'visitDetail', header: 'Visit Detail' },
@@ -60,6 +64,12 @@ export default function FamilyDetailsPage() {
   const getWorkerRowStatus = (row: any) => row.workerStatus;
   const getVisitorRowStatus = (row: any) => row.status;
 
+  // Add S.No to each dataset
+  const familyDetailsWithSno = familyDetails.map((row, idx) => ({ ...row, sno: idx + 1 }));
+  const vehiclesWithSno = vehicles.map((row, idx) => ({ ...row, sno: idx + 1 }));
+  const workersWithSno = workers.map((row, idx) => ({ ...row, sno: idx + 1 }));
+  const visitorsWithSno = visitors.map((row, idx) => ({ ...row, sno: idx + 1 }));
+
   return (
     <DashboardLayout pageTitle="Family Details">
       <div className={styles.container}>
@@ -69,7 +79,7 @@ export default function FamilyDetailsPage() {
             <span className={styles.sectionTitle}>Family Details</span>
             <a className={styles.seeMore}>See More</a>
           </div>
-          <DataTable columns={familyColumns} data={familyDetails} showAddButton={false} getRowStatus={getFamilyRowStatus} />
+          <DataTable columns={familyColumns} data={familyDetailsWithSno} showAddButton={false} getRowStatus={getFamilyRowStatus} />
         </div>
         {}
         <div className={styles.sectionCard}>
@@ -77,7 +87,7 @@ export default function FamilyDetailsPage() {
             <span>Vehicles</span>
             <a className={styles.seeMore}>See More</a>
           </div>
-          <DataTable columns={vehicleColumns} data={vehicles} showAddButton={false} getRowStatus={getVehicleRowStatus} />
+          <DataTable columns={vehicleColumns} data={vehiclesWithSno} showAddButton={false} getRowStatus={getVehicleRowStatus} />
         </div>
         {}
         <div className={styles.sectionCard}>
@@ -85,7 +95,7 @@ export default function FamilyDetailsPage() {
             <span>Workers</span>
             <a className={styles.seeMore}>See More</a>
           </div>
-          <DataTable columns={workerColumns} data={workers} showAddButton={false} getRowStatus={getWorkerRowStatus} />
+          <DataTable columns={workerColumns} data={workersWithSno} showAddButton={false} getRowStatus={getWorkerRowStatus} />
         </div>
         {}
         <div className={styles.sectionCard}>
@@ -93,7 +103,7 @@ export default function FamilyDetailsPage() {
             <span>Visitor</span>
             <a className={styles.seeMore}>See More</a>
           </div>
-          <DataTable columns={visitorColumns} data={visitors} showAddButton={false} getRowStatus={getVisitorRowStatus} />
+          <DataTable columns={visitorColumns} data={visitorsWithSno} showAddButton={false} getRowStatus={getVisitorRowStatus} />
         </div>
       </div>
     </DashboardLayout>

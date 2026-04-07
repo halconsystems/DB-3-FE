@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column, Tab } from '../../components/tables/DataTable';
-import { AddNewButton } from '../../components/ui/ActionButton';
 import CircularButton from '../../components/ui/CircularButton';
 import { saveTableRow } from '../../lib/tableRowStorage';
 
@@ -67,6 +66,7 @@ export default function ResidentialPage() {
   };
 
   const columns: Column<Member>[] = [
+    { key: 'sno', header: 'S.No' },
     { key: 'name', header: 'Name' },
     { key: 'email', header: 'Email' },
     { key: 'phone', header: 'Phone' },
@@ -100,18 +100,19 @@ export default function ResidentialPage() {
     },
   ];
 
+  // Add S.No to each row
+  const sampleDataWithSno = sampleData.map((row, idx) => ({ ...row, sno: idx + 1 }));
+
   return (
     <DashboardLayout pageTitle="Residential / Commercial">
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
-        <AddNewButton onClick={handleAddNew} />
-      </div>
       <DataTable<Member>
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={setActiveTab}
         columns={columns}
-        data={sampleData}
-        showAddButton={false}
+        data={sampleDataWithSno}
+        onAddClick={handleAddNew}
+        addButtonLabel="Add New"
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.memberStatus}

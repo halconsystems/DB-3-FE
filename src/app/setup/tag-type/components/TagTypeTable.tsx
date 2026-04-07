@@ -11,6 +11,7 @@ export interface TableTagType {
   id: string;
   tagTypeName: string;
   description: string;
+  created?: string;
   status: 'Active' | 'Inactive';
 }
 
@@ -65,8 +66,10 @@ export default function TagTypeTable({
   };
 
   const tagTypeColumns: Column<TableTagType>[] = [
-    { key: 'tagTypeName', header: 'Tag Type Name' },
+    { key: 'id', header: 'Tag ID' },
+    { key: 'tagTypeName', header: 'Tag Type' },
     { key: 'description', header: 'Description' },
+    { key: 'created', header: 'Created On' },
     { 
       key: 'status', 
       header: 'Status',

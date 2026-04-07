@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
 import CircularButton from '../../components/ui/CircularButton';
-import { AddNewButton } from '../../components/ui/ActionButton';
 import HostDetailsModal from '../../components/ui/components/HostDetailsModal';
 import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
@@ -14,14 +13,17 @@ import type { ExternalVisitorPass } from '../../services/visitor.service';
 
 interface Visitor {
   id: string;
-  name: string;
+  visitorName: string;
+  userName: string;
   vehicleInfo: string;
   visitDetail: string;
   validity: string;
   cnicNicopNo: string;
   hostDetails: string;
-  status: 'Active' | 'Inactive';
+  status: boolean;
+  cardStatus?: number;
   externalUserId: string;
+  sno?: number;
 }
 
 type SelectedVisitorRow = Pick<ExternalVisitorPass, 'id'>;
@@ -39,6 +41,12 @@ const formatDate = (value: string) => {
   return date.toLocaleDateString();
 };
 
+const toVisitorPassTypeLabel = (passType?: string | number): string => {
+  if (passType === 'DayPass' || passType === 1) return 'Day Pass';
+  if (passType === 'LongStay' || passType === 2) return 'Long Stay';
+  return '-';
+};
+
 
 
 export default function VisitorsPage() {
@@ -52,19 +60,25 @@ export default function VisitorsPage() {
   const { data, isLoading, isError, error } = useVisitors();
   const { mutateAsync: deleteVisitor, isPending: isDeleting } = useDeleteVisitor();
 
+  console.log('Fetched visitors data:', data);
+
   const visitors: Visitor[] = (data?.data || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
-    .map((item) => ({
+    .map((item, idx) => ({
+      sno: idx + 1,
       id: item.id,
-      name: item.name,
+      visitorName: item.name,
+      userName: item.externalUserName || '-',
       vehicleInfo: `${item.vehicleLicensePlate}`,
-      visitDetail: item.visitorPassType === 1 ? 'Long Stay' : 'Day Pass',
+      visitDetail: toVisitorPassTypeLabel(item.visitorPassType),
       validity: `${formatDate(item.validFrom)} - ${formatDate(item.validTo)}`,
       cnicNicopNo: item.cnic,
       hostDetails: item.externalUserName || 'host',
-      status: item.isActive && !item.isDeleted ? 'Active' : 'Inactive',
+      status: item.isActive && !item.isDeleted,
+      cardStatus: item.cardStatus,
       externalUserId: item.externalUserId,
     }));
+
 
   const router = useRouter();
 
@@ -102,14 +116,13 @@ export default function VisitorsPage() {
   };
 
   const handleHostClick = (row: Visitor) => {
-    // Get the full visitor data to extract host info
     const visitorData = (data?.data || []).find(v => v.id === row.id);
     if (visitorData) {
       setSelectedHost({
         id: visitorData.externalUserId,
         name: visitorData.externalUserName || 'Unknown',
         phone: '',
-        address: visitorData.visitorPassType === 1 ? 'Long Stay' : 'Day Pass',
+        address: visitorData.visitorPassType === 'LongStay' ? 'Long Stay' : 'Day Pass',
         imageUrl: undefined,
       });
     }
@@ -117,7 +130,9 @@ export default function VisitorsPage() {
   };
 
   const columns: Column<Visitor>[] = [
-    { key: 'name', header: 'Name' },
+    { key: 'sno', header: 'S.No' },
+    { key: 'visitorName', header: 'Visitor Name' },
+    { key: 'userName', header: 'User Name' },
     { key: 'vehicleInfo', header: 'Vehicle Info' },
     { key: 'visitDetail', header: 'Visit Detail' },
     { key: 'validity', header: 'Validity' },
@@ -129,10 +144,15 @@ export default function VisitorsPage() {
         <CircularButton imagePath="/icons/Host.svg" imageAlt="Host" width={32} height={32} onClick={() => handleHostClick(row)} />
       ),
     },
+     {
+      key: 'cardStatus',
+      header: 'Card Status',
+      render: (value: number) => <StatusBadge type="tagStatus" value={value} />
+    },
     {
       key: 'status',
       header: 'Status',
-      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />,
+      render: (value: boolean) => <StatusBadge type="activeInactive" value={value} />,
     },
     {
       key: 'action',
@@ -148,17 +168,15 @@ export default function VisitorsPage() {
 
   return (
     <DashboardLayout pageTitle="Visitor">
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
-        <AddNewButton onClick={handleAddNew} />
-      </div>
       <DataTable<Visitor>
         columns={columns}
         data={visitors}
         loading={isLoading}
-        showAddButton={false}
+        onAddClick={handleAddNew}
+        addButtonLabel="Add New"
         currentPage={currentPage}
         onPageChange={setCurrentPage}
-        getRowStatus={(row) => row.status}
+        getRowStatus={(row) => row.status ? 'Active' : 'Inactive'}
         error={isError ? `Failed to load visitors: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
       />
       <HostDetailsModal open={hostModalOpen} onClose={() => setHostModalOpen(false)} host={selectedHost || { id: '', name: '', phone: '', address: '', imageUrl: '' }} />

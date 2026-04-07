@@ -1,6 +1,7 @@
 import apiClient from "../lib/apiClient";
 
 export interface ExternalWorker {
+  externalUserName: string;
   id: string;
   ser: number;
   jobType: number;
@@ -16,7 +17,7 @@ export interface ExternalWorker {
   policeVerificationAttachment: string | null;
   workerCardNumber: string;
   cardStatus: number;
-  workerCardDeliveryType: number;
+  workerCardDeliveryType: string | number;
   validFrom: string | null;
   validTo: string | null;
   created: string;

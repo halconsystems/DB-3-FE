@@ -90,7 +90,7 @@ export default function AddNewTag() {
     return normalized === '1' || normalized === 'active' || normalized === 'true';
   };
 
-  // Build Fee Scale options for dropdown
+  // Build Fee   Scale options for dropdown
   const feeScaleOptions = feeScaleData?.data?.map((fee: FeeScale) => ({ value: fee.id, label: fee.name })) || [];
   const deviceOptions = [
     { value: '', label: 'Select Device' },
@@ -100,11 +100,7 @@ export default function AddNewTag() {
     { value: '', label: 'Select Zone' },
     ...(zoneData?.data?.map((zone) => ({ value: zone.id, label: zone.name })) || []),
   ];
-  const tagTypeOptions = [
-    { value: '', label: 'Select Tag Type' },
-    ...(tagTypeData?.data?.map((tagType) => ({ value: tagType.id, label: tagType.name })) || []),
-  ];
-
+  
   const approveFields: ProfileField[] = [
     { name: 'tagApprovalRequestId' as keyof ProfileFormData, label: 'Tag Approval Request ID', type: 'text', required: true, placeholder: 'Tag Approval Request ID here' },
     { name: 'name' as keyof ProfileFormData, label: 'Entity Name', type: 'text', required: true, placeholder: 'Entity Name here' },
@@ -112,10 +108,9 @@ export default function AddNewTag() {
     {
       name: 'tagType' as keyof ProfileFormData,
       label: 'Tag Type',
-      type: 'select',
+      type: 'text',
       required: true,
-      placeholder: 'Select Tag Type',
-      options: tagTypeOptions,
+      readOnly: true,
     },
     { name: 'tagNumber' as keyof ProfileFormData, label: 'Tag Number', type: 'text', required: true, placeholder: 'Enter Tag Number here' },
     { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: true, placeholder: 'Select Date' },
@@ -160,7 +155,7 @@ export default function AddNewTag() {
       name: 'zone' as keyof ProfileFormData,
       label: 'Zone',
       type: 'select',
-      required: true,
+      required: false,
       placeholder: 'Select Zone',
       options: zoneOptions,
     },
@@ -168,11 +163,11 @@ export default function AddNewTag() {
       name: 'device' as keyof ProfileFormData,
       label: 'Device',
       type: 'select',
-      required: true,
+      required: false,
       placeholder: 'Select Device',
       options: deviceOptions,
     },
-    { name: 'notes' as keyof ProfileFormData, label: 'Notes', type: 'text', required: true, placeholder: 'Enter Notes here' },
+    { name: 'notes' as keyof ProfileFormData, label: 'Notes', type: 'text', required: false, placeholder: 'Enter Notes here' },
   ];
 
   const handleSave = (formData: ProfileFormData) => {
@@ -181,8 +176,6 @@ export default function AddNewTag() {
     }
 
     const tag = data.data;
-
-    // Map planType string to backend enum (default to 'Unknown' if not matched)
     const allowedPlanTypes = ['Day', 'Week', 'Month', 'Year'];
     const planType = allowedPlanTypes.includes(formData.planType || '') ? formData.planType : 'Unknown';
 
@@ -214,15 +207,11 @@ export default function AddNewTag() {
   let initialValues: Partial<ProfileFormData> = {};
   if (data && data.data) {
     const tag = data.data;
-    const matchingTagType = tagTypeData?.data?.find(
-      (tagType) => tagType.id === tag.tagType || tagType.name === tag.tagType
-    );
-
     initialValues = {
       tagApprovalRequestId: tag.id,
       name: tag.subjectName,
       entityId: tag.subjectId,
-      tagType: matchingTagType?.id || '',
+      tagType: tag.tagType || '',
       tagNumber: tag.tagNumber,
       validFrom: toDateInputValue(tag.validFrom),
       validTo: toDateInputValue(tag.validTo),

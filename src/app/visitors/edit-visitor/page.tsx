@@ -45,15 +45,15 @@ const toVehicleLicensePlate = (vehicleNo?: string, vehicleNo2?: string) => {
 };
 
 const toVisitorPassType = (quickPick?: string): number | null => {
-  if (quickPick === 'long') {
+  if (quickPick === 'LongStay') {
+    return 2;
+  }
+
+  if (quickPick === 'DayPass') {
     return 1;
   }
 
-  if (quickPick === 'day') {
-    return 0;
-  }
-
-  return null;
+  return 0;
 };
 
 export default function EditVisitor() {
@@ -72,7 +72,7 @@ export default function EditVisitor() {
         vehicleNo2: String(data.data.vehicleLicenseNo || ''),
         licensePlate: data.data.vehicleLicensePlate,
         qrReference: data.data.qrCode,
-        quickPick: data.data.visitorPassType === 1 ? 'long' : 'day',
+        quickPick: data.data.visitorPassType === 2 || data.data.visitorPassType === 'LongStay' ? 'LongStay' : 'DayPass',
         fromDate: toDateInputValue(data.data.validFrom),
         toDate: toDateInputValue(data.data.validTo),
         isActive: data.data.isActive,
@@ -130,7 +130,7 @@ export default function EditVisitor() {
         cnic: formData.cnic || '',
         vehicleLicensePlate: toVehicleLicensePlate(formData.vehicleNo, formData.vehicleNo2),
         vehicleLicenseNo: Number(formData.vehicleNo2 || 0),
-        visitorPassType,
+        visitorPassType: visitorPassType,
         validFrom: toIsoDate(formData.fromDate),
         validTo: toIsoDate(formData.toDate),
         isActive,

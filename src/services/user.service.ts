@@ -20,6 +20,7 @@ export const updateUser = async (user: UpdateUserRequest) => {
 import apiClient from "../lib/apiClient";
 
 export interface ExternalUser {
+  externalUserName: string;
   id: string;
   name: string;
   email: string;

@@ -1,13 +1,14 @@
 import apiClient from "../lib/apiClient";
 
 export interface ExternalVisitorPass {
+  cardStatus: any;
   id: string;
   ser: number;
   name: string;
   cnic: string;
   vehicleLicensePlate: string;
   vehicleLicenseNo: number;
-  visitorPassType: number;
+  visitorPassType: string | number;
   validFrom: string;
   validTo: string;
   qrCode: string;

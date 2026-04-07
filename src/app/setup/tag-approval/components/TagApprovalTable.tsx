@@ -40,6 +40,7 @@ export default function TagApprovalTable({
   useEffect(() => {
     if (data && data.data) {
       setTags(data.data);
+      console.log('Fetched Tag Approval Requests:', data.data);
     }
   }, [data]);
   
@@ -69,7 +70,8 @@ export default function TagApprovalTable({
   };
 
   const TagColumns: Column<TagApprovalRequest>[] = [
-    { key: 'subjectName', header: 'Subject Name' },
+    { key: 'subjectName', header: 'Name' },
+    { key: 'subjectId', header: 'Entity ID' },
     { key: 'subjectType', header: 'Subject Type' },
     { key: 'tagType', header: 'Tag Type' },
     { key: 'tagNumber', header: 'Tag Number' },
@@ -124,12 +126,13 @@ export default function TagApprovalTable({
         columns={TagColumns}
         data={Tags}
         loading={isLoading}
-        showAddButton={true}
-        addButtonLabel={addButtonLabel}
-        onAddClick={onAddNew}
+        showAddButton={false}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status as 'Active' | 'Inactive' | 'Pending' | undefined}
+        headerContent={
+          <div style={{height:'40px'}}></div>
+        }
       />
       <WarningModal
         isOpen={deleteModalOpen}

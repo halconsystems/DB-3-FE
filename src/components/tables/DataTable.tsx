@@ -3,6 +3,7 @@ import React, { useEffect, useState, ReactNode } from 'react';
 import styles from './DataTable.module.css';
 import Loader from '../ui/loader';
 import { usePathname } from 'next/navigation';
+import { getStatusConfig } from '@/lib/statusMapping';
 
 export interface Column<T> {
   key: keyof T | string;
@@ -35,37 +36,78 @@ export interface DataTableProps<T> {
   headerContent?: React.ReactNode;
 }
 
-export function StatusBadge({ status }: { status: string }) {
-  const getStatusClass = () => {
-    switch (status.toLowerCase()) {
-      case 'approved':
-        return styles.statusApproved;
-      case 'rejected':
-        return styles.statusRejected;
-      case 'cancelled':
-        return styles.statusCancelled;
-      case 'active':
-        return styles.statusActive;
-      case 'inactive':
-        return styles.statusInactive;
-      case 'pending':
-      case 'blocked':
-        return styles.statusPending;
-      case 'private':
-        return styles.statusPrivate;
-      case 'official':
-        return styles.statusOfficial;
-      case 'service':
-        return styles.statusService;
-      case 'commercial':
-        return styles.statusCommercial;
-      default:
-        return styles.statusInactive;
+export function StatusBadge({
+  status,
+  type,
+  value,
+}: {
+  status?: string;
+  type?: string;
+  value?: string | number | boolean | null;
+}) {
+  // If type and value are provided, use the status mapping
+  let displayLabel = status;
+  let bgColor: string | undefined;
+  let textColor: string | undefined;
+
+  if (type && value !== undefined && value !== null) {
+    const config = getStatusConfig(type, value);
+    if (config) {
+      displayLabel = config.label;
+      bgColor = config.bg;
+      textColor = config.color;
     }
-  };
+  }
+
+  // Fallback to CSS classes if no custom colors
+  if (!bgColor || !textColor) {
+    const getStatusClass = () => {
+      const statusStr = (displayLabel || '').toLowerCase();
+      switch (statusStr) {
+        case 'approved':
+          return styles.statusApproved;
+        case 'rejected':
+          return styles.statusRejected;
+        case 'cancelled':
+          return styles.statusCancelled;
+        case 'active':
+          return styles.statusActive;
+        case 'inactive':
+          return styles.statusInactive;
+        case 'pending':
+        case 'blocked':
+          return styles.statusPending;
+        case 'private':
+          return styles.statusPrivate;
+        case 'official':
+          return styles.statusOfficial;
+        case 'service':
+          return styles.statusService;
+        case 'commercial':
+          return styles.statusCommercial;
+        default:
+          return styles.statusInactive;
+      }
+    };
+
+    const noStatus = "---"
+
+    return (
+      <span className={`${styles.statusBadge} ${getStatusClass()}`}>
+        {displayLabel ?? noStatus}
+      </span>
+    );
+  }
+
   return (
-    <span className={`${styles.statusBadge} ${getStatusClass()}`}>
-      {status}
+    <span
+      className={styles.statusBadge}
+      style={{
+        backgroundColor: bgColor,
+        color: textColor,
+      }}
+    >
+      {displayLabel}
     </span>
   );
 }
@@ -270,7 +312,7 @@ export default function DataTable<T extends Record<string, any>>({
             <thead>
               <tr>
                 {columns.map((column, ind) => (
-                  <th key={column.key.toString()} className={`${ind === 0 ? styles.tabEdgeLeft : ''} ${ind === columns.length - 1 ? styles.tabEdgeRight : ''}`}>
+                  <th key={ind} className={`${ind === 0 ? styles.tabEdgeLeft : ''} ${ind === columns.length - 1 ? styles.tabEdgeRight : ''}`}>
                     {column.header}
                   </th>
                 ))}
@@ -279,8 +321,8 @@ export default function DataTable<T extends Record<string, any>>({
             <tbody>
               {paginatedData.map((row, rowIndex) => (
                 <tr key={rowIndex} className={`${(rowIndex % 2 !== 0 ? styles.rowInactive : styles.rowActive)} ${rowIndex === paginatedData.length - 1 ? styles.lastRow : ''}`}>
-                  {columns.map((column) => (
-                    <td key={column.key.toString()}>
+                  {columns.map((column, colIndex) => (
+                    <td key={colIndex}>
                       {renderCell(column, row)}
                     </td>
                   ))}

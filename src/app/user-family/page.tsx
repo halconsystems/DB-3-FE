@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
-import { AddNewButton } from '../../components/ui/ActionButton';
 import CircularButton from '../../components/ui/CircularButton';
 import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
@@ -29,7 +28,7 @@ export default function UserFamilyPage() {
   };
 
 
-  const handleEdit = (family: UserFamily) => {
+  const handleEdit = (family: any) => {
     saveTableRow('userFamily', family);
     console.log('Edit User Family:', family);
     router.push(`/user-family/edit-user-family?id=${encodeURIComponent(family.id)}`);
@@ -60,12 +59,27 @@ export default function UserFamilyPage() {
       },
     });
   };
-  // Add S.No to each row
+
   const filteredData = userFamilyData
     .filter((family: UserFamily) => !localRemovedIds.includes(family.id))
-    .map((row, idx) => ({ ...row, sno: idx + 1 }));
+    .map((family, idx) => ({
+      sno: idx + 1,
+      id: family.id,
+      name: family.name || '',
+      externalUserName: family.externalUserName || '',
+      phoneNumber: family.phoneNumber || '',
+      cnic: family.cnic || '',
+      relation: family.relation || '',
+      fatherOrHusbandName: family.fatherOrHusbandName || '',
+      residentCardNumber: family.residentCardNumber || '',
+      dateOfBirth: family.dateOfBirth || '',
+      validFrom: family.validFrom || '',
+      validTo: family.validTo || '',
+      cardStatus: family.cardStatus,
+      isActive: family.isActive,
+    }));
 
-  const columns: Column<UserFamily>[] = [
+  const columns: Column<any>[] = [
     {
       key: 'sno',
       header: 'S.No',
@@ -74,77 +88,22 @@ export default function UserFamilyPage() {
     { key: 'externalUserName', header: 'User Name' },
     { key: 'phoneNumber', header: 'Phone' },
     { key: 'cnic', header: 'CNIC No' },
-    { key: 'relation', header: 'Relation' },
     { key: 'fatherOrHusbandName', header: 'Father/Husband Name' },
+    { key: 'relation', header: 'Relation' },
     { key: 'residentCardNumber', header: 'Resident Card No.' },
     { key: 'dateOfBirth', header: 'DOB' },
     { key: 'validFrom', header: 'Valid From' },
+    { key: 'validTo', header: 'Valid To' },
     {
       key: 'cardStatus',
       header: 'Card Status',
-      render: (value) => {
-        // CardStatus enum mapping
-        const statusMap: Record<number, { label: string; color: string; bg: string }> = {
-          0: { label: 'Draft', color: '#666', bg: '#eee' },
-          1: { label: 'Encoded', color: '#1976d2', bg: '#e3f2fd' },
-          2: { label: 'Active', color: '#388e3c', bg: '#e8f5e9' },
-          3: { label: 'Suspended', color: '#f9a825', bg: '#fffde7' },
-          4: { label: 'Blacklisted', color: '#d32f2f', bg: '#ffebee' },
-          5: { label: 'Replaced', color: '#c62828', bg: '#ffebee' },
-          6: { label: 'Expired', color: '#d32f2f', bg: '#ffebee' },
-        };
-        const status = statusMap[value as number];
-        if (!status) return '-';
-        return (
-          <span style={{
-            display: 'inline-block',
-            padding: '2px 10px',
-            borderRadius: '8px',
-            fontWeight: 500,
-            fontSize: 14,
-            color: status.color,
-            background: status.bg,
-            minWidth: 70,
-            textAlign: 'center',
-          }}>{status.label}</span>
-        );
-      },
+      render: (value) => <StatusBadge type="userFamily" value={value} />,
     },
     {
       key: 'isActive',
       header: 'Status',
-      render: (value) => {
-        if (value === true || value === 1 || value === '1' || value === 'Active') {
-          return (
-            <span style={{
-              display: 'inline-block',
-              padding: '2px 14px',
-              borderRadius: '8px',
-              fontWeight: 500,
-              fontSize: 14,
-              color: '#388e3c',
-              background: '#e8f5e9',
-              minWidth: 70,
-              textAlign: 'center',
-            }}>Active</span>
-          );
-        }
-        return (
-          <span style={{
-            display: 'inline-block',
-            padding: '2px 14px',
-            borderRadius: '8px',
-            fontWeight: 500,
-            fontSize: 14,
-            color: '#d32f2f',
-            background: '#ffebee',
-            minWidth: 70,
-            textAlign: 'center',
-          }}>Inactive</span>
-        );
-      },
+      render: (value) => <StatusBadge type="activeInactive" value={value} />,
     },
-    { key: 'validTo', header: 'Valid To' },
     {
       key: 'action',
       header: 'Action',
@@ -161,13 +120,11 @@ export default function UserFamilyPage() {
 
   return (
     <DashboardLayout pageTitle="User Family">
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
-        <AddNewButton onClick={handleAddNew} />
-      </div>
-      <DataTable<UserFamily>
+      <DataTable
         columns={columns}
         data={filteredData}
-        showAddButton={false}
+        onAddClick={handleAddNew}
+        addButtonLabel="Add New"
         currentPage={currentPage}
         loading={isLoading}
         emptyMessage={isLoading ? 'Loading...' : 'No user family data found.'}
