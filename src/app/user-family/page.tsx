@@ -60,10 +60,18 @@ export default function UserFamilyPage() {
       },
     });
   };
-  const filteredData = userFamilyData.filter((family: UserFamily) => !localRemovedIds.includes(family.id));
+  // Add S.No to each row
+  const filteredData = userFamilyData
+    .filter((family: UserFamily) => !localRemovedIds.includes(family.id))
+    .map((row, idx) => ({ ...row, sno: idx + 1 }));
 
   const columns: Column<UserFamily>[] = [
-    { key: 'name', header: 'Name' },
+    {
+      key: 'sno',
+      header: 'S.No',
+    },
+    { key: 'name', header: 'User Family Name' },
+    { key: 'externalUserName', header: 'User Name' },
     { key: 'phoneNumber', header: 'Phone' },
     { key: 'cnic', header: 'CNIC No' },
     { key: 'relation', header: 'Relation' },
@@ -71,6 +79,71 @@ export default function UserFamilyPage() {
     { key: 'residentCardNumber', header: 'Resident Card No.' },
     { key: 'dateOfBirth', header: 'DOB' },
     { key: 'validFrom', header: 'Valid From' },
+    {
+      key: 'cardStatus',
+      header: 'Card Status',
+      render: (value) => {
+        // CardStatus enum mapping
+        const statusMap: Record<number, { label: string; color: string; bg: string }> = {
+          0: { label: 'Draft', color: '#666', bg: '#eee' },
+          1: { label: 'Encoded', color: '#1976d2', bg: '#e3f2fd' },
+          2: { label: 'Active', color: '#388e3c', bg: '#e8f5e9' },
+          3: { label: 'Suspended', color: '#f9a825', bg: '#fffde7' },
+          4: { label: 'Blacklisted', color: '#d32f2f', bg: '#ffebee' },
+          5: { label: 'Replaced', color: '#c62828', bg: '#ffebee' },
+          6: { label: 'Expired', color: '#d32f2f', bg: '#ffebee' },
+        };
+        const status = statusMap[value as number];
+        if (!status) return '-';
+        return (
+          <span style={{
+            display: 'inline-block',
+            padding: '2px 10px',
+            borderRadius: '8px',
+            fontWeight: 500,
+            fontSize: 14,
+            color: status.color,
+            background: status.bg,
+            minWidth: 70,
+            textAlign: 'center',
+          }}>{status.label}</span>
+        );
+      },
+    },
+    {
+      key: 'isActive',
+      header: 'Status',
+      render: (value) => {
+        if (value === true || value === 1 || value === '1' || value === 'Active') {
+          return (
+            <span style={{
+              display: 'inline-block',
+              padding: '2px 14px',
+              borderRadius: '8px',
+              fontWeight: 500,
+              fontSize: 14,
+              color: '#388e3c',
+              background: '#e8f5e9',
+              minWidth: 70,
+              textAlign: 'center',
+            }}>Active</span>
+          );
+        }
+        return (
+          <span style={{
+            display: 'inline-block',
+            padding: '2px 14px',
+            borderRadius: '8px',
+            fontWeight: 500,
+            fontSize: 14,
+            color: '#d32f2f',
+            background: '#ffebee',
+            minWidth: 70,
+            textAlign: 'center',
+          }}>Inactive</span>
+        );
+      },
+    },
     { key: 'validTo', header: 'Valid To' },
     {
       key: 'action',
