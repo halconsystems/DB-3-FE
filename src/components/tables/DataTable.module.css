@@ -272,3 +272,65 @@
   padding: 48px;
   color: #666;
 }
+
+.rowsPerPage {
+  display: flex;
+  align-items: center;
+  /* flex-direction: column; */
+  gap: 20px;
+  background: white;
+  min-width: 100px;
+  color:var(--primary);
+  border: 2px solid #f0f0f0;
+  border-radius: 10px;
+  padding: 4px 10px;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.rowsPerPageValue {
+  font-size: 12px;
+  font-weight: 500;
+  color: gray;
+  font-weight: 700;
+}
+
+.rowsPerPageSelect {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  border: none;
+  box-shadow: -13.8px -13.8px 27.6px 0px #FFFFFF, 4.14px 4.14px 27.6px 0px #AAAACC80;
+  background: white;
+  color: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  appearance: none;
+  background: url('/icons/dropdown.svg') no-repeat center;
+  background-size: 12px;
+  justify-content: center;
+  align-items: center;
+  text-align: left;
+  padding: 0;
+  padding-left: 0;
+  transition: all 0.2s ease;
+
+}
+
+.rowsPerPageSelect:hover {
+  border-color: var(--primary);
+  background-color: rgba(0, 215, 31, 0.05);
+}
+
+.rowsPerPageSelect:focus {
+  outline: none;
+  /* border-color: var(--primary); */
+}
+
+.rowsPerPageSelect option {
+  color: #333;
+  background: white;
+  padding: 4px;
+}

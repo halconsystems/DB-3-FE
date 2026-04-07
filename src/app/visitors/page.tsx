@@ -10,7 +10,6 @@ import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
 import { useVisitors } from '../../hooks/visitors/useVisitors';
 import { useDeleteVisitor } from '../../hooks/visitors/useDeleteVisitor';
-import { useUserById } from '../../hooks/user/useUserById';
 import type { ExternalVisitorPass } from '../../services/visitor.service';
 
 interface Visitor {
@@ -46,14 +45,12 @@ export default function VisitorsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hostModalOpen, setHostModalOpen] = useState(false);
   const [selectedHost, setSelectedHost] = useState<any>(null);
-  const [selectedExternalUserId, setSelectedExternalUserId] = useState<string | undefined>(undefined);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedVisitor, setSelectedVisitor] = useState<SelectedVisitorRow | null>(null);
   const [localRemovedIds, setLocalRemovedIds] = useState<string[]>([]);
 
   const { data, isLoading, isError, error } = useVisitors();
   const { mutateAsync: deleteVisitor, isPending: isDeleting } = useDeleteVisitor();
-  const { data: externalUser, isLoading: isLoadingUser } = useUserById(selectedExternalUserId);
 
   const visitors: Visitor[] = (data?.data || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
@@ -105,7 +102,17 @@ export default function VisitorsPage() {
   };
 
   const handleHostClick = (row: Visitor) => {
-    setSelectedExternalUserId(row.externalUserId);
+    // Get the full visitor data to extract host info
+    const visitorData = (data?.data || []).find(v => v.id === row.id);
+    if (visitorData) {
+      setSelectedHost({
+        id: visitorData.externalUserId,
+        name: visitorData.externalUserName || 'Unknown',
+        phone: '',
+        address: visitorData.visitorPassType === 1 ? 'Long Stay' : 'Day Pass',
+        imageUrl: undefined,
+      });
+    }
     setHostModalOpen(true);
   };
 

@@ -81,7 +81,9 @@ export default function DataTable<T extends Record<string, any>>({
   headerContent,
 }: DataTableProps<T>) {
   const isPaginationControlled = typeof currentPage === 'number';
-  const safeRowsPerPage = Math.max(1, rowsPerPage);
+  const [internalRowsPerPage, setInternalRowsPerPage] = useState(rowsPerPage);
+  const effectiveRowsPerPage = Math.max(1, internalRowsPerPage);
+  const safeRowsPerPage = Math.max(1, effectiveRowsPerPage);
   const calculatedTotalPages = Math.max(1, Math.ceil(data.length / safeRowsPerPage));
   const resolvedTotalPages = Math.max(calculatedTotalPages, Math.max(1, totalPages ?? 1));
 
@@ -110,6 +112,12 @@ export default function DataTable<T extends Record<string, any>>({
     setInternalCurrentPage(clampedPage);
   };
 
+  const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newRows = parseInt(e.target.value, 10);
+    setInternalRowsPerPage(newRows);
+    setInternalCurrentPage(1); 
+  };
+
   const paginatedData = data.slice((safeCurrentPage - 1) * safeRowsPerPage, safeCurrentPage * safeRowsPerPage);
 
   const getRowClassName = (row: T) => {
@@ -127,7 +135,6 @@ export default function DataTable<T extends Record<string, any>>({
     if (column.render) {
       return column.render(value, row);
     }
-    // Show '-' if value is null, undefined, or empty string
     if (value === null) return '-';
     return value ?? '-';
   };
@@ -276,7 +283,25 @@ export default function DataTable<T extends Record<string, any>>({
         )}
       </div>
 
-      {renderPagination()}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+        {renderPagination()}
+        <div className={styles.rowsPerPage}>
+          <div>
+            <label htmlFor="rowsPerPageSelect" style={{ fontWeight: 500 }}>Show list</label>
+            <p className={styles.rowsPerPageValue}>{effectiveRowsPerPage}</p>
+          </div>
+          <select
+            id="rowsPerPageSelect"
+            value={effectiveRowsPerPage}
+            onChange={handleRowsPerPageChange}
+            className={styles.rowsPerPageSelect}
+            >
+            {[5, 10, 15, 20, 50, 100].map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+        </div>
+      </div>
     </div>
   );
 }

@@ -174,7 +174,7 @@ export default function CommonEntityForm({
       return;
     }
     // CNIC: 13 digits
-    if (formData.cnic && (!/^\d{13}$/.test(formData.cnic) || !/^\d{5}-\d{7}-\d{1}$/.test(formData.cnic))) {
+    if (formData.cnic && (!/^\d{13}$/.test(formData.cnic) && !/^\d{5}-\d{7}-\d{1}$/.test(formData.cnic))) {
       setWarningMessage('CNIC must be exactly 13 digits.');
       setShowWarning(true);
       return;
