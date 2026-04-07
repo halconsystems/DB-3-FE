@@ -51,6 +51,14 @@ export function StatusBadge({ status }: { status: string }) {
       case 'pending':
       case 'blocked':
         return styles.statusPending;
+      case 'private':
+        return styles.statusPrivate;
+      case 'official':
+        return styles.statusOfficial;
+      case 'service':
+        return styles.statusService;
+      case 'commercial':
+        return styles.statusCommercial;
       default:
         return styles.statusInactive;
     }

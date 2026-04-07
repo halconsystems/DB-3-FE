@@ -9,7 +9,12 @@ import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
 import { useVehicles } from '../../hooks/vehicle/useVehicles';
 import { useDeleteVehicle } from '../../hooks/vehicle/useDeleteVehicle';
-import type { ExternalVehicle } from '../../services/vehicle.service';
+import type { ExternalVehicle as BaseExternalVehicle } from '../../services/vehicle.service';
+
+// Extend ExternalVehicle to include externalUserName
+interface ExternalVehicle extends BaseExternalVehicle {
+  externalUserName?: string;
+}
 
 interface Vehicle {
   id: string;
@@ -18,7 +23,7 @@ interface Vehicle {
   eTagType: string;
   issueDate: string;
   expiryDate: string;
-  tagStatus: 'Active' | 'Inactive';
+  tagStatus: 'Private' | 'Official' | 'Service' | 'Commercial' | '-';
   ownership: string;
   make: string;
   model: string;
@@ -69,22 +74,37 @@ export default function VehiclePage() {
   const { data, isLoading, isError, error } = useVehicles();
   const { mutateAsync: deleteVehicle, isPending: isDeleting } = useDeleteVehicle();
 
-  const vehicles: Vehicle[] = (data?.data || [])
+  // Vehicle category enum mapping
+  const vehicleCategoryEnum: Record<number, string> = {
+    0: 'Private',
+    1: 'Official',
+    2: 'Service',
+    3: 'Commercial',
+  };
+
+  const vehicles: (Vehicle & { externalUserName?: string; tagStatusRaw?: number })[] = (data?.data || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
-    .map((item) => ({
-      id: item.id,
-      licensePlate: formatLicensePlate(item.license, item.licenseNo),
-      vehicleETagId: item.eTagId || '-',
-      eTagType: item.eTagId || '-',
-      issueDate: formatDate(item.validFrom),
-      expiryDate: formatDate(item.validTo),
-      tagStatus: item.tagStatus === 1 ? 'Active' : 'Inactive',
-      ownership: item.externalUserId || '-',
-      make: item.make || '-',
-      model: item.model || '-',
-      year: item.year || '-',
-      color: item.color || '-',
-    }));
+    .map((item: ExternalVehicle, idx) => {
+      // Only allow tagStatusRaw to be number or undefined, never null
+      const tagStatusRaw = typeof item.tagStatus === 'number' ? item.tagStatus : undefined;
+      return {
+        sno: idx + 1,
+        id: item.id,
+        licensePlate: formatLicensePlate(item.license, item.licenseNo),
+        vehicleETagId: item.eTagId || '-',
+        eTagType: item.eTagId || '-',
+        issueDate: formatDate(item.validFrom),
+        expiryDate: formatDate(item.validTo),
+        ownership: item.externalUserId || '-',
+        externalUserName: item.externalUserName || '-',
+        make: item.make || '-',
+        model: item.model || '-',
+        year: item.year || '-',
+        color: item.color || '-',
+        tagStatus: (tagStatusRaw !== undefined ? vehicleCategoryEnum[tagStatusRaw] || '-' : '-') as Vehicle['tagStatus'],
+        tagStatusRaw: tagStatusRaw,
+      };
+    });
 
   const router = useRouter();
 
@@ -122,22 +142,33 @@ export default function VehiclePage() {
     setSelectedVehicle(null);
   };
 
-  const columns: Column<Vehicle>[] = [
+  const columns: Column<Vehicle & { externalUserName?: string }>[] = [
+    { key: 'sno', header: 'S.No' },
+    {
+      key: 'externalUserName',
+      header: 'Ownership',
+      render: (value) => value || '-',
+    },
+    {
+      key: 'externalUserName',
+      header: 'User Name',
+      render: (value) => value || '-',
+    },
     { key: 'licensePlate', header: 'License Plate' },
     { key: 'vehicleETagId', header: 'Vehicle E-Tag ID' },
     { key: 'eTagType', header: 'E-Tag Type' },
     { key: 'issueDate', header: 'Issue Date' },
     { key: 'expiryDate', header: 'Expiry Date' },
-    { 
-      key: 'tagStatus', 
-      header: 'Tag Status',
-      render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
-    },
-    { key: 'ownership', header: 'Ownership' },
+    // Removed Ownership ID column as requested
     { key: 'make', header: 'Make' },
     { key: 'model', header: 'Model' },
     { key: 'year', header: 'Year' },
     { key: 'color', header: 'Color' },
+    {
+      key: 'tagStatus',
+      header: 'Tag Status',
+      render: (value: string, row) => <StatusBadge status={value} />,
+    },
     { 
       key: 'action', 
       header: 'Action',

@@ -1,3 +1,19 @@
+.statusPrivate {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+.statusOfficial {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+.statusService {
+  background: #f3e5f5;
+  color: #8e24aa;
+}
+.statusCommercial {
+  background: #e8f5e9;
+  color: #388e3c;
+}
 .statusApproved {
   background: #e6fbe8;
   color: #30b33d;
