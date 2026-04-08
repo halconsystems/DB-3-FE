@@ -190,7 +190,12 @@ export default function AddNewTag() {
 
     console.log('approveTagApprovalRequest payload:', payload);
 
-    approveTagMutation.mutate(payload);
+    // Ensure trialPeriod is a string as required by ApproveTagApprovalRequestPayload
+    const fixedPayload = {
+      ...payload,
+      trialPeriod: payload.trialPeriod?.toString(),
+    };
+    approveTagMutation.mutate(fixedPayload);
   };
 
   // Map fetched data to form fields
