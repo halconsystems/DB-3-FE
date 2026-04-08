@@ -150,6 +150,13 @@ export default function CommonEntityForm({
           setShowWarning(true);
           return;
         }
+
+        // Tag Number 18-digit validation
+        if (formData.tagNumber && !/^\d{18}$/.test(formData.tagNumber)) {
+          setWarningMessage('Tag Number must be exactly 18 digits.');
+          setShowWarning(true);
+          return;
+        }
     console.log('[CommonEntityForm] submit clicked', formData);
     // Skipping required fields validation as requested
 
