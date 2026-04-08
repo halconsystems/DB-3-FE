@@ -151,21 +151,7 @@ export default function CommonEntityForm({
           return;
         }
     console.log('[CommonEntityForm] submit clicked', formData);
-    // Validate required fields
-    if (fields && fields.length > 0) {
-      const missingFields = fields.filter(
-        (field) => field.required && (
-          formData[field.name] === undefined ||
-          formData[field.name] === null ||
-          (typeof formData[field.name] === 'string' && (formData[field.name] as string).trim() === '')
-        )
-      );
-      if (missingFields.length > 0) {
-        setWarningMessage('Please fill all the required fields.');
-        setShowWarning(true);
-        return;
-      }
-    }
+    // Skipping required fields validation as requested
 
     // Custom validations
     // Contact No: 11 digits (phoneNumber or cellNumber)

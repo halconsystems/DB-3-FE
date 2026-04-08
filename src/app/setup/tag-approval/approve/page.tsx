@@ -152,14 +152,6 @@ export default function AddNewTag() {
       ],
     },
     {
-      name: 'zone' as keyof ProfileFormData,
-      label: 'Zone',
-      type: 'select',
-      required: false,
-      placeholder: 'Select Zone',
-      options: zoneOptions,
-    },
-    {
       name: 'device' as keyof ProfileFormData,
       label: 'Device',
       type: 'select',
@@ -167,7 +159,6 @@ export default function AddNewTag() {
       placeholder: 'Select Device',
       options: deviceOptions,
     },
-    { name: 'notes' as keyof ProfileFormData, label: 'Notes', type: 'text', required: false, placeholder: 'Enter Notes here' },
   ];
 
   const handleSave = (formData: ProfileFormData) => {
