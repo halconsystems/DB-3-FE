@@ -177,9 +177,7 @@ export default function AddNewTag() {
       validTo: toIsoDate(String(formData.validTo || tag.validTo || '')),
       status: toStatusValue(formData.status),
       feeScaleId: String(formData.feeScaleId || tag.feeScale || ''),
-      zoneId: String(formData.zone || ''),
       deviceId: String(formData.device || ''),
-      zoneIds: formData.zone ? [String(formData.zone)] : [],
       trialPeriod: String(formData.trialPeriod || 'Unknown'),
       planType: 'unknown',
     };

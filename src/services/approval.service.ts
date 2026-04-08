@@ -52,9 +52,8 @@ export interface ApproveTagApprovalRequestPayload {
   validTo: string;
   status: number;
   feeScaleId: string;
-  zoneId: string;
   deviceId: string;
-  zoneIds: string[];
+
   trialPeriod: string;
 }
 
