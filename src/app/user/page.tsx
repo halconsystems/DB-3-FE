@@ -75,7 +75,7 @@ export default function UserPage() {
     .filter(user => !localRemovedIds.includes(String(user.id)) && user.isActive)
     .map((user) => ({
       id: String(user.id),
-      name: user.externalUserName || '',
+      name: user.name || '',
       emailAddress: user.email || '',
       cellNumber: user.phoneNumber || '',
       cnic: user.cnic || '',
