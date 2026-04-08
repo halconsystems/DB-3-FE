@@ -175,7 +175,7 @@ export default function AddNewTag() {
       entityName: String(formData.name || tag.subjectName || ''),
       entityId: String(formData.entityId || tag.subjectId || ''),
       tagNumber: String(formData.tagNumber || tag.tagNumber || ''),
-      tagTypeId: String(formData.tagType || ''),
+      tagTypeId: '00a07f67-9150-417a-fd67-08de8b030b56', // Pass fixed tag type id
       validFrom: toIsoDate(String(formData.validFrom || tag.validFrom || '')),
       validTo: toIsoDate(String(formData.validTo || tag.validTo || '')),
       status: toStatusValue(formData.status),
