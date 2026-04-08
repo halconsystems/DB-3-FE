@@ -1,5 +1,5 @@
 'use client';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 interface SignInFormProps {
   login: (data: { email: string; password: string }, options: any) => void;
@@ -13,6 +13,20 @@ export default function SignInForm({ login, isPending }: SignInFormProps) {
     password: '',
     remember: false
   });
+
+  // Autofill from localStorage if Remember Me was checked
+  useEffect(() => {
+    const remembered = localStorage.getItem("rememberMe");
+    const savedEmail = localStorage.getItem("rememberedEmail");
+    const savedPassword = localStorage.getItem("rememberedPassword");
+    if (remembered === "true" && savedEmail && savedPassword) {
+      setFormData({
+        email: savedEmail,
+        password: savedPassword,
+        remember: true
+      });
+    }
+  }, []);
   const [formError, setFormError] = useState("");
 
   if (isPending) return null;
@@ -20,6 +34,15 @@ export default function SignInForm({ login, isPending }: SignInFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
+    if (formData.remember) {
+      localStorage.setItem("rememberMe", "true");
+      localStorage.setItem("rememberedEmail", formData.email);
+      localStorage.setItem("rememberedPassword", formData.password);
+    } else {
+      localStorage.removeItem("rememberMe");
+      localStorage.removeItem("rememberedEmail");
+      localStorage.removeItem("rememberedPassword");
+    }
     login(
       { email: formData.email, password: formData.password },
       {
