@@ -167,14 +167,6 @@ export default function AddNewTag() {
     }
 
     const tag = data.data;
-    const allowedPlanTypes = ['Day', 'Week', 'Month', 'Year'];
-    const planType = allowedPlanTypes.includes(formData.planType || '') ? formData.planType : 'Unknown';
-    const trialPeriodMap = [
-  { value: 'Unknown', label: 'Unknown', days: 0 },
-  { value: 'SevenDays', label: 'Seven Days', days: 7 },
-  { value: 'FifteenDays', label: 'Fifteen Days', days: 15 },
-  { value: 'ThirtyDays', label: 'Thirty Days', days: 30 }
-    ];
     const payload = {
       tagApprovalRequestId: String(formData.tagApprovalRequestId || tag.id),
       entityName: String(formData.name || tag.subjectName || ''),
@@ -188,7 +180,7 @@ export default function AddNewTag() {
       zoneId: String(formData.zone || ''),
       deviceId: String(formData.device || ''),
       zoneIds: formData.zone ? [String(formData.zone)] : [],
-      trialPeriod: trialPeriodMap.find((p) => p.value === formData.trialPeriod)?.value || 'Unknown',
+      trialPeriod: String(formData.trialPeriod || 'Unknown'),
     };
 
     console.log('approveTagApprovalRequest payload:', payload);
@@ -209,9 +201,9 @@ export default function AddNewTag() {
       validFrom: toDateInputValue(tag.validFrom),
       validTo: toDateInputValue(tag.validTo),
       feeScaleId: tag.feeScale,
-      status: true, // status toggle default ON
-      planType: '',
-      trialPeriod: '',
+      status: toStatusFlag(tag.status),
+      planType: tag.planType || '',
+      trialPeriod: tag.trialPeriod || 'Unknown',
       zone: '',
       device: '',
       notes: tag.notes,
