@@ -145,10 +145,10 @@ export default function AddNewTag() {
       required: true,
       placeholder: 'Select Trial Period',
       options: [
-        { value: '', label: 'Select Trial Period' },
-        { value: '7', label: '7 Days' },
-        { value: '15', label: '15 Days' },
-        { value: '30', label: '30 Days' },
+        { value: '0', label: 'Unknown' },
+        { value: '7', label: 'Seven Days' },
+        { value: '15', label: 'Fifteen Days' },
+        { value: '30', label: 'Thirty Days' },
       ],
     },
     {
