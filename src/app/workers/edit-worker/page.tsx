@@ -148,7 +148,11 @@ export default function EditWorker() {
         cellNumber: data.data.phoneNumber,
         cnic: data.data.cnic,
         policeVerification: toPoliceVerificationFormValue(data.data.policeVerification),
-        cardDelivery: toWorkerCardDeliveryTypeFormValue(data.data.workerCardDeliveryType),
+        cardDelivery: toWorkerCardDeliveryTypeFormValue(
+          typeof data.data.workerCardDeliveryType === 'string'
+            ? toWorkerCardDeliveryType(data.data.workerCardDeliveryType)
+            : data.data.workerCardDeliveryType
+        ),
         cardNo: data.data.workerCardNumber,
         issueDate: toDateInputValue(data.data.validFrom),
         expiryDate: toDateInputValue(data.data.validTo),
