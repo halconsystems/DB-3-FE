@@ -183,9 +183,7 @@ export default function AddNewTag() {
       zoneId: String(formData.zone || ''),
       deviceId: String(formData.device || ''),
       zoneIds: formData.zone ? [String(formData.zone)] : [],
-      trialPeriod: formData.trialPeriod ? String(formData.trialPeriod) : 'Unknown',
-      notes: String(formData.notes || ''),
-      command: 'Approve', // Add required command field
+      trialPeriod: formData.trialPeriod !== undefined && formData.trialPeriod !== null ? String(formData.trialPeriod) : 'Unknown',
     };
 
     console.log('approveTagApprovalRequest payload:', payload);
