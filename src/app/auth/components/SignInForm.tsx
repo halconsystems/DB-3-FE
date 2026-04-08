@@ -24,9 +24,16 @@ export default function SignInForm({ login, isPending }: SignInFormProps) {
       { email: formData.email, password: formData.password },
       {
         onSuccess: (data: any) => {
-          localStorage.setItem("token", data.data.token);
-          if (data.data.fullName) {
-            localStorage.setItem("fullName", data.data.fullName);
+          if (formData.remember) {
+            localStorage.setItem("token", data.data.token);
+            if (data.data.fullName) {
+              localStorage.setItem("fullName", data.data.fullName);
+            }
+          } else {
+            sessionStorage.setItem("token", data.data.token);
+            if (data.data.fullName) {
+              sessionStorage.setItem("fullName", data.data.fullName);
+            }
           }
           router.push('/dashboard');
         },
@@ -89,10 +96,10 @@ export default function SignInForm({ login, isPending }: SignInFormProps) {
           checked={formData.remember}
           onChange={(e) => setFormData({ ...formData, remember: e.target.checked })}
         />
-        <label htmlFor="remember">I Agree to Terms & Conditions</label>
+        <label htmlFor="remember">Remember Me</label>
       </div>
 
-      <button type="submit" className="auth_button" disabled={isPending || !formData.remember}>
+      <button type="submit" className="auth_button" disabled={isPending}>
         Sign In
       </button>
       </form>
