@@ -181,6 +181,7 @@ export default function AddNewTag() {
       deviceId: String(formData.device || ''),
       zoneIds: formData.zone ? [String(formData.zone)] : [],
       trialPeriod: String(formData.trialPeriod || 'Unknown'),
+      planType: 'unknown',
     };
 
     console.log('approveTagApprovalRequest payload:', payload);
