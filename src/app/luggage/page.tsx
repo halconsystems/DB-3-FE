@@ -39,7 +39,7 @@ const formatDate = (value: string) => {
 
 const toLuggagePassTypeLabel = (passType?: string | number): string => {
   if (passType === 'DayPass' || passType === 1) return 'Day Pass';
-  if (passType === 'LongStay' || passType === 2) return 'Long Stay';
+  if (passType === 'LongDay' || passType === 2) return 'Long Stay';
   return '-';
 };
 

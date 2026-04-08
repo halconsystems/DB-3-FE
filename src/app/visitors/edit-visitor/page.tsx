@@ -72,7 +72,7 @@ export default function EditVisitor() {
         vehicleNo2: String(data.data.vehicleLicenseNo || ''),
         licensePlate: data.data.vehicleLicensePlate,
         qrReference: data.data.qrCode,
-        quickPick: data.data.visitorPassType === 2 || data.data.visitorPassType === 'LongStay' ? 'LongStay' : 'DayPass',
+        quickPick:data.data.visitorPassType === 'LongDay' ? 'LongStay' : 'DayPass',
         fromDate: toDateInputValue(data.data.validFrom),
         toDate: toDateInputValue(data.data.validTo),
         isActive: data.data.isActive,
