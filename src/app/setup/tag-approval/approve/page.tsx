@@ -167,19 +167,16 @@ export default function AddNewTag() {
     }
 
     const tag = data.data;
-    const allowedPlanTypes = ['Day', 'Week', 'Month', 'Year'];
-    const planType = allowedPlanTypes.includes(formData.planType || '') ? formData.planType : 'Unknown';
     const payload = {
       tagApprovalRequestId: String(formData.tagApprovalRequestId || tag.id),
       entityName: String(formData.name || tag.subjectName || ''),
       entityId: String(formData.entityId || tag.subjectId || ''),
       tagNumber: String(formData.tagNumber || tag.tagNumber || ''),
-      tagTypeId: '00a07f67-9150-417a-fd67-08de8b030b56', // Pass fixed tag type id
+      tagTypeId: '00a07f67-9150-417a-fd67-08de8b030b56',
       validFrom: toIsoDate(String(formData.validFrom || tag.validFrom || '')),
       validTo: toIsoDate(String(formData.validTo || tag.validTo || '')),
       status: toStatusValue(formData.status),
       feeScaleId: String(formData.feeScaleId || tag.feeScale || ''),
-      planType,
       zoneId: String(formData.zone || ''),
       deviceId: String(formData.device || ''),
       zoneIds: formData.zone ? [String(formData.zone)] : [],
