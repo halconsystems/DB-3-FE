@@ -151,7 +151,21 @@ export default function CommonEntityForm({
           return;
         }
     console.log('[CommonEntityForm] submit clicked', formData);
-    // Required fields validation removed as requested
+    // Validate required fields
+    if (fields && fields.length > 0) {
+      const missingFields = fields.filter(
+        (field) => field.required && (
+          formData[field.name] === undefined ||
+          formData[field.name] === null ||
+          (typeof formData[field.name] === 'string' && (formData[field.name] as string).trim() === '')
+        )
+      );
+      if (missingFields.length > 0) {
+        setWarningMessage('Please fill all the required fields.');
+        setShowWarning(true);
+        return;
+      }
+    }
 
     // Custom validations
     // Contact No: 11 digits (phoneNumber or cellNumber)
@@ -382,7 +396,15 @@ export default function CommonEntityForm({
       title={successTitle || (isEditMode ? 'Record Updated' : 'Record Added')}
       message={successMessage || (isEditMode ? 'The record has been updated successfully.' : 'The record has been added successfully.')}
     />
-    {/* WarningModal removed as requested */}
+    <WarningModal
+      isOpen={showWarning}
+      onClose={() => setShowWarning(false)}
+      onConfirm={() => setShowWarning(false)}
+      title="Required Fields Missing"
+      message={warningMessage}
+      confirmText="OK"
+      cancelText=""
+    />
     </>
   );
 }
