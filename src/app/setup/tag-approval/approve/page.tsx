@@ -145,10 +145,10 @@ export default function AddNewTag() {
       required: true,
       placeholder: 'Select Trial Period',
       options: [
-        { value: '0', label: 'Unknown' },
-        { value: '7', label: 'Seven Days' },
-        { value: '15', label: 'Fifteen Days' },
-        { value: '30', label: 'Thirty Days' },
+          { value: 'Unknown', label: 'Unknown' },
+          { value: 'SevenDays', label: 'Seven Days' },
+          { value: 'FifteenDays', label: 'Fifteen Days' },
+          { value: 'ThirtyDays', label: 'Thirty Days' },
       ],
     },
     {
@@ -169,12 +169,7 @@ export default function AddNewTag() {
     const tag = data.data;
     const allowedPlanTypes = ['Day', 'Week', 'Month', 'Year'];
     const planType = allowedPlanTypes.includes(formData.planType || '') ? formData.planType : 'Unknown';
-    const trialPeriodMap = [
-  { value: 'Unknown', label: 'Unknown', days: 0 },
-  { value: 'SevenDays', label: 'Seven Days', days: 7 },
-  { value: 'FifteenDays', label: 'Fifteen Days', days: 15 },
-  { value: 'ThirtyDays', label: 'Thirty Days', days: 30 }
-    ];
+    // No trialPeriodMap needed, pass string value
     const payload = {
       tagApprovalRequestId: String(formData.tagApprovalRequestId || tag.id),
       entityName: String(formData.name || tag.subjectName || ''),
@@ -189,7 +184,7 @@ export default function AddNewTag() {
       zoneId: String(formData.zone || ''),
       deviceId: String(formData.device || ''),
       zoneIds: formData.zone ? [String(formData.zone)] : [],
-      trialPeriod: trialPeriodMap.find((p) => p.value === formData.trialPeriod)?.days || 0,
+        trialPeriod: String(formData.trialPeriod || 'Unknown'),
       notes: String(formData.notes || ''),
       command: 'Approve', // Add required command field
     };
