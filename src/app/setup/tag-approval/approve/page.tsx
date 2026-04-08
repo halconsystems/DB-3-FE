@@ -151,7 +151,23 @@ export default function AddNewTag() {
         { value: '30', label: '30 Days' },
       ],
     },
-    // Removed zone, device, and notes fields as requested
+    {
+      name: 'zone' as keyof ProfileFormData,
+      label: 'Zone',
+      type: 'select',
+      required: false,
+      placeholder: 'Select Zone',
+      options: zoneOptions,
+    },
+    {
+      name: 'device' as keyof ProfileFormData,
+      label: 'Device',
+      type: 'select',
+      required: false,
+      placeholder: 'Select Device',
+      options: deviceOptions,
+    },
+    { name: 'notes' as keyof ProfileFormData, label: 'Notes', type: 'text', required: false, placeholder: 'Enter Notes here' },
   ];
 
   const handleSave = (formData: ProfileFormData) => {
