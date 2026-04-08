@@ -55,7 +55,7 @@ export interface ApproveTagApprovalRequestPayload {
   zoneId: string;
   deviceId: string;
   zoneIds: string[];
-  trialPeriod: string;
+  trialPeriod: number;
 }
 
 export const approveTagApprovalRequest = async (payload: ApproveTagApprovalRequestPayload): Promise<any> => {
