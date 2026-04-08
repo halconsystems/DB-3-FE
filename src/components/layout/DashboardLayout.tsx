@@ -127,45 +127,45 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
             <>
               <Link 
                 href="/user" 
-                className={`${activeMenuItem === '/user' ? styles.menuItemActive : ''} ${styles.menuItem}`}
+                className={`${(activeMenuItem === '/user' || activeMenuItem.startsWith('/user/')) ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
                 <span>User</span>
-                <img src={getMenuIcon('/user', activeMenuItem === '/user')} alt="" className={styles.menuIconImg} />
+                <img src={getMenuIcon('/user', (activeMenuItem === '/user' || activeMenuItem.startsWith('/user/')))} alt="" className={styles.menuIconImg} />
               </Link>
               <Link 
                 href="/user-family" 
-                className={`${activeMenuItem === '/user-family' ? styles.menuItemActive : ''} ${styles.menuItem}`}
+                className={`${(activeMenuItem === '/user-family' || activeMenuItem.startsWith('/user-family/')) ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
                 <span>User Family</span>
-                <img src={getMenuIcon('/user-family', activeMenuItem === '/user-family')} alt="" className={styles.menuIconImg} />
+                <img src={getMenuIcon('/user-family', (activeMenuItem === '/user-family' || activeMenuItem.startsWith('/user-family/')))} alt="" className={styles.menuIconImg} />
               </Link>
               <Link 
                 href="/vehicle" 
-                className={`${activeMenuItem === '/vehicle' ? styles.menuItemActive : ''} ${styles.menuItem}`}
+                className={`${(activeMenuItem === '/vehicle' || activeMenuItem.startsWith('/vehicle/')) ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
                 <span>Vehicles</span>
-                <img src={getMenuIcon('/vehicle', activeMenuItem === '/vehicle')} alt="" className={styles.menuIconImg} />
+                <img src={getMenuIcon('/vehicle', (activeMenuItem === '/vehicle' || activeMenuItem.startsWith('/vehicle/')))} alt="" className={styles.menuIconImg} />
               </Link>
               <Link 
                 href="/visitors" 
-                className={`${activeMenuItem === '/visitors' ? styles.menuItemActive : ''} ${styles.menuItem}`}
+                className={`${(activeMenuItem === '/visitors' || activeMenuItem.startsWith('/visitors/')) ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
                 <span>Visitor</span>
-                <img src={getMenuIcon('/visitors', activeMenuItem === '/visitors')} alt="" className={styles.menuIconImg} />
+                <img src={getMenuIcon('/visitors', (activeMenuItem === '/visitors' || activeMenuItem.startsWith('/visitors/')))} alt="" className={styles.menuIconImg} />
               </Link>
               <Link 
                 href="/workers" 
-                className={`${activeMenuItem === '/workers' ? styles.menuItemActive : ''} ${styles.menuItem}`}
+                className={`${(activeMenuItem === '/workers' || activeMenuItem.startsWith('/workers/')) ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
                 <span>Workers</span>
-                <img src={getMenuIcon('/workers', activeMenuItem === '/workers')} alt="" className={styles.menuIconImg} />
+                <img src={getMenuIcon('/workers', (activeMenuItem === '/workers' || activeMenuItem.startsWith('/workers/')))} alt="" className={styles.menuIconImg} />
               </Link>
               <Link 
                 href="/luggage" 
-                className={`${activeMenuItem === '/luggage' ? styles.menuItemActive : ''} ${styles.menuItem}`}
+                className={`${(activeMenuItem === '/luggage' || activeMenuItem.startsWith('/luggage/')) ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
                 <span>Luggage Pass</span>
-                <img src={getMenuIcon('/luggage', activeMenuItem === '/luggage')} alt="" className={styles.menuIconImg} />
+                <img src={getMenuIcon('/luggage', (activeMenuItem === '/luggage' || activeMenuItem.startsWith('/luggage/')))} alt="" className={styles.menuIconImg} />
               </Link>
             </>
           )}

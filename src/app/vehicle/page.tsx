@@ -75,6 +75,8 @@ export default function VehiclePage() {
   const { data, isLoading, isError, error } = useVehicles();
   const { mutateAsync: deleteVehicle, isPending: isDeleting } = useDeleteVehicle();
 
+  console.log('VehiclePage render with data:', data, 'isLoading:', isLoading, 'isError:', isError, 'error:', error);
+
   const vehicles: Vehicle[] = (data?.data || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
     .map((item: ExternalVehicle, idx) => ({
@@ -155,7 +157,7 @@ export default function VehiclePage() {
     {
       key: 'tagStatus',
       header: 'Tag Status',
-      render: (value: number | null) => <StatusBadge type="vehicleCategory" value={value} />,
+      render: (value: number | null) => <StatusBadge type="tagStatus" value={value} />,
     },
     { 
       key: 'action', 
