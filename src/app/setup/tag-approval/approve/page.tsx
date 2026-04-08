@@ -90,8 +90,11 @@ export default function AddNewTag() {
     return normalized === '1' || normalized === 'active' || normalized === 'true';
   };
 
-  // Build Fee   Scale options for dropdown
-  const feeScaleOptions = feeScaleData?.data?.map((fee: FeeScale) => ({ value: fee.id, label: fee.name })) || [];
+  // Build Fee Scale options for dropdown with placeholder
+  const feeScaleOptions = [
+    { value: '', label: 'Select Fee Scale' },
+    ...((feeScaleData?.data?.map((fee: FeeScale) => ({ value: fee.id, label: fee.name })) || [])),
+  ];
   const deviceOptions = [
     { value: '', label: 'Select Device' },
     ...(deviceData?.data?.map((device) => ({ value: device.id, label: device.name })) || []),
@@ -167,6 +170,7 @@ export default function AddNewTag() {
     }
 
     const tag = data.data;
+    // Ensure feeScaleId is passed correctly, even for the first real item
     const payload = {
       tagApprovalRequestId: String(formData.tagApprovalRequestId || tag.id),
       entityName: String(formData.name || tag.subjectName || ''),
@@ -176,7 +180,7 @@ export default function AddNewTag() {
       validFrom: toIsoDate(String(formData.validFrom || tag.validFrom || '')),
       validTo: toIsoDate(String(formData.validTo || tag.validTo || '')),
       status: toStatusValue(formData.status),
-      feeScaleId: String(formData.feeScaleId || tag.feeScale || ''),
+      feeScaleId: formData.feeScaleId !== undefined ? String(formData.feeScaleId) : String(tag.feeScale || ''),
       deviceId: String(formData.device || ''),
       trialPeriod: String(formData.trialPeriod || 'Unknown'),
       planType: 'unknown',
