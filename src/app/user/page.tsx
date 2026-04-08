@@ -73,7 +73,8 @@ export default function UserPage() {
   // Map API data to table data
   const filteredData = (data || [])
     .filter(user => !localRemovedIds.includes(String(user.id)) && user.isActive)
-    .map((user) => ({
+    .map((user, idx) => ({
+      sno: idx + 1,
       id: String(user.id),
       name: user.name || '',
       emailAddress: user.email || '',
@@ -88,6 +89,7 @@ export default function UserPage() {
     }));
 
   const columns: Column<any>[] = [
+    { key: 'sno', header: 'S.No' },
     { key: 'name', header: 'Name' },
     { key: 'emailAddress', header: 'Email' },
     { key: 'cellNumber', header: 'Phone' },

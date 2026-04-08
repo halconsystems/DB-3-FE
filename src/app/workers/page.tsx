@@ -78,7 +78,10 @@ export default function WorkersPage() {
       workerName: item.name || '-',
       userName: item.externalUserName || '-',
       fatherOrHusbandName: item.fatherOrHusbandName || '-',
-      jobType: toJobTypeLabel(item.jobType),
+      jobType:
+        typeof item.jobType === 'string'
+          ? item.jobType
+          : toJobTypeLabel(item.jobType),
       phone: item.phoneNumber || '-',
       dob: formatDate(item.dateOfBirth),
       cnicNicopNo: item.cnic || '-',
