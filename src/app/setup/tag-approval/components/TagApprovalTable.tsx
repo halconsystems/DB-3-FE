@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import { useCancelTagApprovalRequest } from '../../../../hooks/tag-approval/useCancelTagApprovalRequest';
 import { TagApprovalRequest } from '../../../../types/tag-approval.types';
+import { useGetAllTagTypes } from '@/hooks/tagtype/useGetAllTagTypes';
 
 interface TagTableProps {
   tabs: Tab[];
@@ -35,7 +36,16 @@ export default function TagApprovalTable({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [selectedTag, setSelectedTag] = useState<TagApprovalRequest | null>(null);
+  const { data: tagTypesData, isLoading: tagLoading } = useGetAllTagTypes();
   const router = useRouter();
+
+  const getTagTypeId = (tagTypeName: string): string => {
+    if (!tagTypesData?.data) return tagTypeName;
+    const foundTagType = tagTypesData.data.find(
+      (t) => t.name.toLowerCase() === tagTypeName.toLowerCase()
+    );
+    return foundTagType?.id || tagTypeName;
+  };
 
   useEffect(() => {
     if (data && data.data) {
@@ -73,7 +83,11 @@ export default function TagApprovalTable({
     { key: 'subjectName', header: 'Name' },
     { key: 'subjectId', header: 'Entity ID' },
     { key: 'subjectType', header: 'Subject Type' },
-    { key: 'tagType', header: 'Tag Type' },
+    {
+      key: 'tagType',
+      header: 'Tag Type ID',
+      render: (value: string) => getTagTypeId(value),
+    },
     { key: 'tagNumber', header: 'Tag Number' },
     { key: 'feeScale', header: 'Fee Scale' },
     { key: 'planType', header: 'Plan Type' },
