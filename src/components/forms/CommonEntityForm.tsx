@@ -144,6 +144,12 @@ export default function CommonEntityForm({
   };
 
   const handleSubmit = async () => {
+        // RFID 18-digit validation
+        if (formData.rfidCardNo && !/^\d{18}$/.test(formData.rfidCardNo)) {
+          setWarningMessage('RFID Card No must be exactly 18 digits.');
+          setShowWarning(true);
+          return;
+        }
     console.log('[CommonEntityForm] submit clicked', formData);
     // Validate required fields
     if (fields && fields.length > 0) {
@@ -180,7 +186,10 @@ export default function CommonEntityForm({
       return;
     }
 
-    if(formData.emailAddress && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailAddress)) {
+
+    // Email validation for both 'email' and 'emailAddress' fields
+    const emailToValidate = formData.email || formData.emailAddress;
+    if (emailToValidate && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailToValidate)) {
       setWarningMessage('Please enter a valid email address.');
       setShowWarning(true);
       return;
