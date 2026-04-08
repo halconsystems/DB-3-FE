@@ -80,7 +80,8 @@ export default function TagApprovalTable({
   };
 
   const TagColumns: Column<TagApprovalRequest>[] = [
-    { key: 'subjectName', header: 'Name' },
+    { key: 'parentUserName', header: 'Name' },
+    { key: 'subjectName', header: 'Subject Name' },
     { key: 'subjectId', header: 'Entity ID' },
     { key: 'subjectType', header: 'Subject Type' },
     {

@@ -18,6 +18,7 @@ type Tag = {
   entityId: string;
   vendorId: string;
   status: 'Active' | 'Inactive';
+  parentUserName?: string;
 };
 
 interface TagTableProps {
@@ -55,6 +56,7 @@ export default function TagTable({
         entityId: tag.assignedEntityId,
         vendorId: '',
         status: tag.isActive ? 'Active' as const : 'Inactive' as const,
+        parentUserName: tag.parentUserName || '',
       }));
       setTags(mapped);
     }
@@ -80,6 +82,7 @@ export default function TagTable({
   };
 
   const TagColumns: Column<Tag>[] = [
+    { key: 'parentUserName', header: 'Parent User Name' },
     { key: 'tagNumber', header: 'Tag Number' },
     { key: 'tagType', header: 'Tag Type' },
     { key: 'validFrom', header: 'Valid From' },
