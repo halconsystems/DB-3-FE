@@ -115,17 +115,30 @@ export default function CommonEntityForm({
       return;
     }
 
-    // Autofill validFrom and validTo when trialPeriod changes
-    if (name === 'trialPeriod') {
+    // Autofill validFrom and validTo when planType changes
+    if (name === 'planType') {
+      console.log('[CommonEntityForm] planType change:', value);
       const today = new Date();
       const validFrom = today.toISOString().split('T')[0];
       let validTo = validFrom;
-      const days = Number(value);
-      if (!isNaN(days) && days > 0) {
+      
+      if (value === 'Day') {
+        validTo = validFrom;
+      } else if (value === 'Week') {
         const toDate = new Date(today);
-        toDate.setDate(toDate.getDate() + days);
+        toDate.setDate(toDate.getDate() + 7);
+        validTo = toDate.toISOString().split('T')[0];
+      } else if (value === 'Month') {
+        const toDate = new Date(today);
+        toDate.setDate(toDate.getDate() + 30);
+        validTo = toDate.toISOString().split('T')[0];
+      } else if (value === 'Year') {
+        const toDate = new Date(today);
+        toDate.setDate(toDate.getDate() + 365);
         validTo = toDate.toISOString().split('T')[0];
       }
+      
+      console.log('[CommonEntityForm] planType autofill:', { validFrom, validTo, planType: value });
       setFormData((prev) => withDerivedVehicleLicensePlate({ ...prev, [name]: value, validFrom, validTo }));
       return;
     }

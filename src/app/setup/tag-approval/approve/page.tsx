@@ -116,16 +116,6 @@ export default function AddNewTag() {
       readOnly: true,
     },
     { name: 'tagNumber' as keyof ProfileFormData, label: 'Tag Number', type: 'text', required: true, placeholder: 'Enter Tag Number here' },
-    { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: true, placeholder: 'Select Date' },
-    { name: 'validTo' as keyof ProfileFormData, label: 'Valid To', type: 'date', required: true, placeholder: 'Select Date' },
-    {
-      name: 'feeScaleId' as keyof ProfileFormData,
-      label: 'Fee Scale',
-      type: 'select',
-      required: true,
-      placeholder: 'Select Fee Scale',
-      options: feeScaleOptions,
-    },
     {
       name: 'planType' as keyof ProfileFormData,
       label: 'Plan Type',
@@ -139,6 +129,16 @@ export default function AddNewTag() {
         { value: 'Month', label: 'Month' },
         { value: 'Year', label: 'Year' },
       ],
+    },
+    { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: true, placeholder: 'Select Date' },
+    { name: 'validTo' as keyof ProfileFormData, label: 'Valid To', type: 'date', required: true, placeholder: 'Select Date' },
+    {
+      name: 'feeScaleId' as keyof ProfileFormData,
+      label: 'Fee Scale',
+      type: 'select',
+      required: true,
+      placeholder: 'Select Fee Scale',
+      options: feeScaleOptions,
     },
     { name: 'status' as keyof ProfileFormData, label: 'Status', type: 'statusSwitch', required: false, placeholder: 'Status' },
     {
