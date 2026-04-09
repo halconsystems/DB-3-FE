@@ -5,6 +5,7 @@ import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column, Tab } from '../../components/tables/DataTable';
 import CircularButton from '../../components/ui/CircularButton';
 import { saveTableRow } from '../../lib/tableRowStorage';
+import { formatDateDisplay } from '../../lib/dateUtils';
 
 interface Member {
   id: number;
@@ -83,8 +84,8 @@ export default function ResidentialPage() {
       render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
     },
     { key: 'card', header: 'Card No/ID' },
-    {key: 'issueDate', header: 'Issue Date'},
-    {key: 'expiryDate', header: 'Expiry Date'},
+    { key: 'issueDate', header: 'Issue Date', render: (value: string) => formatDateDisplay(value) },
+    { key: 'expiryDate', header: 'Expiry Date', render: (value: string) => formatDateDisplay(value) },
     {
       key: 'cardStatus', header: 'Card Status',
       render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />

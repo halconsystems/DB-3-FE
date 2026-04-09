@@ -9,6 +9,7 @@ import DataTable, { StatusBadge, Column } from '../../components/tables/DataTabl
 import CircularButton from '../../components/ui/CircularButton';
 import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
+import { formatDateDisplay } from '../../lib/dateUtils';
 
 
 // Map API user type to display values
@@ -96,8 +97,8 @@ export default function UserPage() {
     { key: 'cnic', header: 'CNIC No.' },
     { key: 'userType', header: 'User Type' },
     { key: 'rfidCardNo', header: 'RFID Card No.' },
-    { key: 'cardIssueDate', header: 'Card Issue Date' },
-    { key: 'cardExpiryDate', header: 'Card Expiry Date' },
+    { key: 'cardIssueDate', header: 'Card Issue Date', render: (value: string) => formatDateDisplay(value) },
+    { key: 'cardExpiryDate', header: 'Card Expiry Date', render: (value: string) => formatDateDisplay(value) },
     {
       key: 'cardStatus',
       header: 'Card Status',

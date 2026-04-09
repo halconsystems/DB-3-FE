@@ -276,7 +276,6 @@ export function StatusSwitchInputField({ field, checked, onChange, styles, wrapp
   return (<div>
       <label className={styles.formTitle}>
         {field.label}
-        {field.required && <span style={{ color: '#ff1744', marginLeft: '4px' }}>*</span>}
       </label>
       <button
         type="button"

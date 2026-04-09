@@ -7,7 +7,7 @@ export const workerFields: ProfileField[] = [
   { name: 'fatherOrHusband' as keyof ProfileFormData, label: 'Father / Husband Name', type: 'text', required: true, placeholder: 'Full Name here' },
   { name: 'dob' as keyof ProfileFormData, label: 'Date of Birth (DOB)', type: 'date', required: true, placeholder: 'Select Date' },
   { name: 'cellNumber' as keyof ProfileFormData, label: 'Add Cell Number', type: 'text', required: true, placeholder: '0300-1234567' },
-  { name: 'cnic' as keyof ProfileFormData, label: 'CNIC / NICOP No.', type: 'text', required: false, placeholder: '(12345-1234567-1)' },
+  { name: 'cnic' as keyof ProfileFormData, label: 'CNIC / NICOP No.', type: 'text', required: false, placeholder: '12345-1234567-1' },
   { name: 'policeVerification' as keyof ProfileFormData, label: 'Police Verification', type: 'select', required: true, options: [ { value: '', label: 'Select (Yes/No)' }, { value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' } ] },
   { name: 'cardDelivery' as keyof ProfileFormData, label: `Select Worker's Card Delivery`, type: 'select', required: false, options: [ { value: '', label: 'Select here' }, { value: 'owner', label: 'Owner/Employer Address' }, { value: 'self', label: 'Self Pick Up' } ] },
   { name: 'address' as keyof ProfileFormData, label: 'Select Address / Location', type: 'text', required: false, placeholder: 'Select here' },

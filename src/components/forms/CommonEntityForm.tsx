@@ -143,24 +143,87 @@ export default function CommonEntityForm({
     setFormData((prev) => ({ ...prev, [field]: file }));
   };
 
-  const handleSubmit = async () => {
-        // RFID 18-digit validation
-        if (formData.rfidCardNo && !/^\d{18}$/.test(formData.rfidCardNo)) {
-          setWarningMessage('RFID Card No must be exactly 18 digits.');
-          setShowWarning(true);
-          return;
+  // Validate required fields
+  const validateRequiredFields = (): { isValid: boolean; missingFields: string[] } => {
+    const missingFields: string[] = [];
+
+    fields.forEach((field) => {
+      if (field.required) {
+        const value = formData[field.name];
+        
+        // Check for empty values
+        if (value === null || value === undefined || value === '') {
+          missingFields.push(field.label);
         }
+        
+        // For select fields, also check if empty string is selected
+        if (field.type === 'select' && value === '') {
+          missingFields.push(field.label);
+        }
+      }
+    });
 
-        // Tag Number 18-digit validation removed as requested
-    console.log('[CommonEntityForm] submit clicked', formData);
-    // Skipping required fields validation as requested
+    return {
+      isValid: missingFields.length === 0,
+      missingFields,
+    };
+  };
 
-    // Custom validations
-    // Contact No: 11 digits (phoneNumber or cellNumber)
-    if (formData.phoneNumber && !/^\d{11}$/.test(formData.phoneNumber)) {
-      setWarningMessage('Contact Number must be exactly 11 digits.');
+  // Check if form is valid (for button disabled state)
+  const isFormValid = (): boolean => {
+    const { isValid } = validateRequiredFields();
+    return isValid;
+  };
+
+  const handleSubmit = async () => {
+    // Validate required fields FIRST
+    const { isValid, missingFields } = validateRequiredFields();
+    if (!isValid) {
+      setWarningMessage(`Please fill in all required fields:\n${missingFields.join(', ')}`);
       setShowWarning(true);
       return;
+    }
+
+    // RFID 18-digit validation
+    if (formData.rfidCardNo && !/^\d{18}$/.test(formData.rfidCardNo)) {
+      setWarningMessage('RFID Card No must be exactly 18 digits.');
+      setShowWarning(true);
+      return;
+    }
+
+    // Tag Number 18-digit validation removed as requested
+    console.log('[CommonEntityForm] submit clicked', formData);
+
+    // Custom validations
+    const normalizePakistaniPhone = (phone:string) => {
+      // Remove all spaces, dashes, parentheses
+      let cleaned = phone.replace(/[\s\-\(\)]/g, '');
+      
+      // Handle +92XXXXXXXXXX or 92XXXXXXXXXX → 0XXXXXXXXX
+      if (cleaned.startsWith('+92')) {
+        cleaned = '0' + cleaned.slice(3);
+      } else if (cleaned.startsWith('92') && cleaned.length === 12) {
+        cleaned = '0' + cleaned.slice(2);
+      }
+      
+      return cleaned;
+    };
+
+    const isValidPakistaniPhone = (phone:string) => {
+      const normalized = normalizePakistaniPhone(phone);
+      // Must be exactly 11 digits starting with 03
+      return /^03\d{9}$/.test(normalized);
+    };
+
+    // Contact No: 11 digits (phoneNumber or cellNumber)
+    if (formData.phoneNumber) {
+      if (!isValidPakistaniPhone(formData.phoneNumber)) {
+        setWarningMessage('Please enter a valid Pakistani phone number.');
+        setShowWarning(true);
+        return;
+      }
+      // Optionally normalize before saving
+      formData.phoneNumber = normalizePakistaniPhone(formData.phoneNumber);
     }
     if (formData.cellNumber && !/^\d{11}$/.test(formData.cellNumber)) {
       setWarningMessage('Contact Number must be exactly 11 digits.');
@@ -370,7 +433,13 @@ export default function CommonEntityForm({
         <button type="button" className={styles.cancelButton} onClick={onCancel} disabled={loading}>
           {cancelButtonText}
         </button>
-        <button type="button" className={styles.saveButton} onClick={handleSubmit} disabled={loading}>
+        <button 
+          type="button" 
+          className={styles.saveButton} 
+          onClick={handleSubmit} 
+          disabled={loading || !isFormValid()}
+          title={!isFormValid() ? 'Please fill in all required fields' : ''}
+        >
           {loading ? 'Saving...' : saveButtonText}
         </button>
       </div>

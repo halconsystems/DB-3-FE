@@ -7,6 +7,7 @@ import WarningModal from '../../../../components/popup/WarningModal';
 import { saveTableRow } from '../../../../lib/tableRowStorage';
 import { useGetAllTags } from '../../../../hooks/tag/useGetAllTags';
 import { useRemoveTag } from '../../../../hooks/tag/useRemoveTag';
+import { formatDateDisplay } from '../../../../lib/dateUtils';
 
 type Tag = {
   id: string;
@@ -85,8 +86,8 @@ export default function TagTable({
     { key: 'parentUserName', header: 'Parent User Name' },
     { key: 'tagNumber', header: 'Tag Number' },
     { key: 'tagType', header: 'Tag Type' },
-    { key: 'validFrom', header: 'Valid From' },
-    { key: 'validTo', header: 'Valid To' },
+    { key: 'validFrom', header: 'Valid From', render: (value: string) => formatDateDisplay(value) },
+    { key: 'validTo', header: 'Valid To', render: (value: string) => formatDateDisplay(value) },
     { key: 'entityType', header: 'Assigned Entity Type' },
     { key: 'entityId', header: 'Assigned Entity ID' },
     { 

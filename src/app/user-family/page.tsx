@@ -6,6 +6,7 @@ import DataTable, { StatusBadge, Column } from '../../components/tables/DataTabl
 import CircularButton from '../../components/ui/CircularButton';
 import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
+import { formatDateDisplay } from '../../lib/dateUtils';
 
 import { useUserFamily } from '../../hooks/user-family/useUserFamily';
 import { useRemoveUserFamily } from '../../hooks/user-family/useRemoveUserFamily';
@@ -91,9 +92,21 @@ export default function UserFamilyPage() {
     { key: 'fatherOrHusbandName', header: 'Father/Husband Name' },
     { key: 'relation', header: 'Relation' },
     { key: 'residentCardNumber', header: 'Resident Card No.' },
-    { key: 'dateOfBirth', header: 'DOB' },
-    { key: 'validFrom', header: 'Valid From' },
-    { key: 'validTo', header: 'Valid To' },
+    {
+      key: 'dateOfBirth',
+      header: 'DOB',
+      render: (value) => formatDateDisplay(value),
+    },
+    {
+      key: 'validFrom',
+      header: 'Valid From',
+      render: (value) => formatDateDisplay(value),
+    },
+    {
+      key: 'validTo',
+      header: 'Valid To',
+      render: (value) => formatDateDisplay(value),
+    },
     {
       key: 'cardStatus',
       header: 'Card Status',

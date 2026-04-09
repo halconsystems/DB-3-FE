@@ -2,7 +2,7 @@ import { ProfileField, ProfileFormData } from '../../components/forms/CommonEnti
 
 export const luggageFields: ProfileField[] = [
   { name: 'fullName' as keyof ProfileFormData, label: 'Full Name', type: 'text', required: true, placeholder: 'Full Name here' },
-  { name: 'cnic' as keyof ProfileFormData, label: 'CNIC No.', type: 'text', required: false, placeholder: '(12345-1234567-1)' },
+  { name: 'cnic' as keyof ProfileFormData, label: 'CNIC No.', type: 'text', required: false, placeholder: '12345-1234567-1' },
   { name: 'vehicleNo' as keyof ProfileFormData, label: 'Vehicle No', type: 'text', required: true, placeholder: 'ABC Only' },
   { name: 'vehicleNo2' as keyof ProfileFormData, label: 'Vehicle No', type: 'text', required: true, placeholder: 'Number Only' },
   { name: 'licensePlate' as keyof ProfileFormData, label: 'License Plate', type: 'text', required: false, placeholder: 'ABC-123', readOnly: true },

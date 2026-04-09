@@ -7,6 +7,7 @@ import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
 import { useWorkers } from '../../hooks/workers/useWorkers';
 import { useDeleteWorker } from '../../hooks/workers/useDeleteWorker';
+import { formatDateDisplay } from '../../lib/dateUtils';
 import type { ExternalWorker } from '../../services/worker.service';
 import CircularButton from '../../components/ui/CircularButton';
 
@@ -30,19 +31,6 @@ interface Worker {
 }
 
 type SelectedWorkerRow = Pick<ExternalWorker, 'id'>;
-
-const formatDate = (value?: string | null) => {
-  if (!value) {
-    return '-';
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return date.toLocaleDateString();
-};
 
 const toJobTypeLabel = (jobType?: number) => {
   switch (jobType) {
@@ -83,14 +71,14 @@ export default function WorkersPage() {
           ? item.jobType
           : toJobTypeLabel(item.jobType),
       phone: item.phoneNumber || '-',
-      dob: formatDate(item.dateOfBirth),
+      dob: formatDateDisplay(item.dateOfBirth),
       cnicNicopNo: item.cnic || '-',
       policeVerification: item.policeVerification ? 'Yes' : 'No',
       workerCardDelivery: item.workerCardDeliveryType?.toString() || '-',
       workerStatus: !!(item.isActive && !item.isDeleted),
       workerCard: item.workerCardNumber || '-',
-      issuedDate: formatDate(item.validFrom),
-      expiryDate: formatDate(item.validTo),
+      issuedDate: formatDateDisplay(item.validFrom),
+      expiryDate: formatDateDisplay(item.validTo),
       cardStatus: item.cardStatus,
     }));
 

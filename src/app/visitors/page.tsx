@@ -9,6 +9,7 @@ import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
 import { useVisitors } from '../../hooks/visitors/useVisitors';
 import { useDeleteVisitor } from '../../hooks/visitors/useDeleteVisitor';
+import { formatDateDisplay } from '../../lib/dateUtils';
 import type { ExternalVisitorPass } from '../../services/visitor.service';
 
 interface Visitor {
@@ -27,19 +28,6 @@ interface Visitor {
 }
 
 type SelectedVisitorRow = Pick<ExternalVisitorPass, 'id'>;
-
-const formatDate = (value: string) => {
-  if (!value) {
-    return '';
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return date.toLocaleDateString();
-};
 
 const toVisitorPassTypeLabel = (passType?: string | number): string => {
   if (passType === 'DayPass' || passType === 1) return 'Day Pass';
@@ -71,7 +59,7 @@ export default function VisitorsPage() {
       userName: item.externalUserName || '-',
       vehicleInfo: `${item.vehicleLicensePlate}`,
       visitDetail: toVisitorPassTypeLabel(item.visitorPassType),
-      validity: `${formatDate(item.validFrom)} - ${formatDate(item.validTo)}`,
+      validity: `${formatDateDisplay(item.validFrom)} - ${formatDateDisplay(item.validTo)}`,
       cnicNicopNo: item.cnic,
       hostDetails: item.externalUserName || 'host',
       status: item.isActive && !item.isDeleted,

@@ -487,8 +487,16 @@
   background: var(--primary);
 }
 
-.saveButton:hover {
+.saveButton:hover:not(:disabled) {
   background: #219a52;
+}
+
+.saveButton:disabled {
+  background: #a9a9a9;
+  color: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .toggleButton {

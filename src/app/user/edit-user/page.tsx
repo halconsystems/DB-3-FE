@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUserById } from '../../../hooks/user/useUserById';
 import { useUpdateUser } from '../../../hooks/user/useUpdateUser';
+import { useEnumMetadata } from '../../../hooks/metadata/useEnumMetadata';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
@@ -22,42 +23,26 @@ interface SelectedUserRow {
   status: 'Active' | 'Inactive';
 }
 
+// Extract YYYY-MM-DD from any date format without timezone conversion
 const toDateInputValue = (value?: string | null) => {
   if (!value) {
     return '';
   }
 
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
+  // Simply extract the date part (YYYY-MM-DD) from the string
+  const dateMatch = String(value).match(/^\d{4}-\d{2}-\d{2}/);
+  return dateMatch ? dateMatch[0] : '';
+};
+
+// Return YYYY-MM-DD as-is without conversion
+const toIsoDate = (value?: string | null) => {
+  if (!value) {
     return '';
   }
 
-  return date.toISOString().split('T')[0];
-};
-
-const toIsoDate = (value?: string | null) => {
-  if (!value) {
-    return new Date().toISOString();
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return new Date().toISOString();
-  }
-
-  return date.toISOString();
-};
-
-const toUserTypeValue = (value?: string | null) => {
-  if (value === 'admin') {
-    return 1;
-  }
-
-  if (value === 'user') {
-    return 2;
-  }
-
-  return 2;
+  // Simply extract the date part (YYYY-MM-DD) from the string
+  const dateMatch = String(value).match(/^\d{4}-\d{2}-\d{2}/);
+  return dateMatch ? dateMatch[0] : '';
 };
 
 const toCardStatusValue = (value?: string | number | boolean | null) => {
@@ -87,6 +72,7 @@ export default function EditUser() {
   const [hasCheckedId, setHasCheckedId] = useState(false);
   const [formError, setFormError] = useState('');
   const updateUserMutation = useUpdateUser();
+  const { data: userTypesEnum, isLoading: isEnumLoading } = useEnumMetadata('UserType');
 
   useEffect(() => {
     const selected = getTableRow<any>('user');
@@ -109,6 +95,30 @@ export default function EditUser() {
 
   const { data: userDetails, isLoading } = useUserById(userId || undefined);
 
+  // Build dynamic userType options from enum
+  const dynamicUserFields = useMemo(() => {
+    const userTypeOptions = [{ value: '', label: 'Select User Type' }];
+    
+    if (userTypesEnum?.members) {
+      userTypesEnum.members.forEach((member) => {
+        userTypeOptions.push({
+          value: String(member.value),
+          label: member.name,
+        });
+      });
+    }
+
+    return userFields.map((field) => {
+      if (field.name === 'userType') {
+        return {
+          ...field,
+          options: userTypeOptions,
+        };
+      }
+      return field;
+    });
+  }, [userTypesEnum]);
+
   const initialValues = useMemo<ProfileFormData | null>(() => {
     if (!userDetails) {
       return null;
@@ -119,7 +129,7 @@ export default function EditUser() {
       emailAddress: userDetails.email || '',
       cellNumber: userDetails.phoneNumber || '',
       cnic: userDetails.cnic || '',
-      userType: userDetails.userType === 1 ? 'admin' : userDetails.userType === 2 ? 'user' : '',
+      userType: userDetails.userType !== null && userDetails.userType !== undefined ? String(userDetails.userType) : '',
       rfidCardNo: userDetails.rfidCardNumber || '',
       cardIssueDate: toDateInputValue(userDetails.cardIssueDate),
       cardExpiryDate: toDateInputValue(userDetails.cardExpiryDate),
@@ -154,7 +164,7 @@ export default function EditUser() {
         email: formData.emailAddress || userDetails.email || '',
         phoneNumber: formData.cellNumber || userDetails.phoneNumber || '',
         cnic: formData.cnic || userDetails.cnic || '',
-        userType: toUserTypeValue(formData.userType),
+        userType: Number(formData.userType) || userDetails.userType,
         rfidCardNumber: formData.rfidCardNo || userDetails.rfidCardNumber || '',
         lastModifiedBy,
         cardIssueDate: toIsoDate(formData.cardIssueDate || userDetails.cardIssueDate),
@@ -179,10 +189,10 @@ export default function EditUser() {
             title="Please update details below!"
             onSave={handleUpdate}
             onCancel={() => router.back()}
-            fields={userFields}
+            fields={dynamicUserFields}
             initialValues={initialValues || undefined}
             saveButtonText="Edit"
-            loading={isLoading || updateUserMutation.isPending}
+            loading={isLoading || isEnumLoading || updateUserMutation.isPending}
             showStatusToggle={false}
           />
         )}

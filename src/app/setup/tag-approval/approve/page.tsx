@@ -105,9 +105,9 @@ export default function AddNewTag() {
   ];
   
   const approveFields: ProfileField[] = [
-    { name: 'tagApprovalRequestId' as keyof ProfileFormData, label: 'Tag Approval Request ID', type: 'text', required: true, placeholder: 'Tag Approval Request ID here' },
-    { name: 'name' as keyof ProfileFormData, label: 'Entity Name', type: 'text', required: true, placeholder: 'Entity Name here' },
-    { name: 'entityId' as keyof ProfileFormData, label: 'Entity ID', type: 'text', required: true, placeholder: 'Enter Entity ID here' },
+    { name: 'tagApprovalRequestId' as keyof ProfileFormData, label: 'Tag Approval Request ID', type: 'text',readOnly:true, required: true, placeholder: 'Tag Approval Request ID here' },
+    { name: 'name' as keyof ProfileFormData, label: 'Entity Name', type: 'text', required: true, readOnly:true, placeholder: 'Entity Name here' },
+    { name: 'entityId' as keyof ProfileFormData, label: 'Entity ID', type: 'text', required: true, readOnly:true, placeholder: 'Enter Entity ID here' },
     {
       name: 'tagType' as keyof ProfileFormData,
       label: 'Tag Type',

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useGetAllRequestedTags } from '../../../../hooks/approval/useGetAllRequestedTags';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import { TagApprovalRequest } from '../../../../types/tag-approval.types';
+import { formatDateDisplay } from '../../../../lib/dateUtils';
 
 interface TagLogTableProps {
   tabs: Tab[];
@@ -40,8 +41,8 @@ export default function TagLogTable({
     { key: 'feeScale', header: 'FeeScale' },
     { key: 'planType', header: 'Plan Type' },
     { key: 'notes', header: 'Description' },
-    { key: 'validFrom', header: 'Valid From' },
-    { key: 'validTo', header: 'Valid To' },
+    { key: 'validFrom', header: 'Valid From', render: (value: string) => formatDateDisplay(value) },
+    { key: 'validTo', header: 'Valid To', render: (value: string) => formatDateDisplay(value) },
     { key: 'trialPeriod', header: 'Trial Period' },
     { key: 'status', header: 'Status', render: (value: string) => (<StatusBadge status={value} />) },
   ];

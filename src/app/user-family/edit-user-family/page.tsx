@@ -22,30 +22,26 @@ interface SelectedUserFamilyRow {
   validTo: string;
 }
 
+// Extract YYYY-MM-DD from any date format without timezone conversion
 const toDateInputValue = (value?: string | null) => {
   if (!value) {
     return '';
   }
 
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
+  // Simply extract the date part (YYYY-MM-DD) from the string
+  const dateMatch = String(value).match(/^\d{4}-\d{2}-\d{2}/);
+  return dateMatch ? dateMatch[0] : '';
+};
+
+// Return YYYY-MM-DD as-is without conversion
+const toIsoDate = (value?: string | null) => {
+  if (!value) {
     return '';
   }
 
-  return date.toISOString().split('T')[0];
-};
-
-const toIsoDate = (value?: string | null) => {
-  if (!value) {
-    return new Date().toISOString();
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return new Date().toISOString();
-  }
-
-  return date.toISOString();
+  // Simply extract the date part (YYYY-MM-DD) from the string
+  const dateMatch = String(value).match(/^\d{4}-\d{2}-\d{2}/);
+  return dateMatch ? dateMatch[0] : '';
 };
 
 const relationLabelById: Record<number, string> = {

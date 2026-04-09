@@ -1,14 +1,41 @@
 "use client";
 
+import { useMemo } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm from '../../../components/forms/CommonEntityForm';
 import { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { userFields } from '../fields';
 import { useCreateUser } from '../../../hooks/user/useCreateUser';
+import { useEnumMetadata } from '../../../hooks/metadata/useEnumMetadata';
 
 
 export default function AddNewUser() {
   const createUserMutation = useCreateUser();
+  const { data: userTypesEnum, isLoading: isEnumLoading } = useEnumMetadata('UserType');
+
+  // Build dynamic userType options from enum
+  const dynamicUserFields = useMemo(() => {
+    const userTypeOptions = [{ value: '', label: 'Select User Type' }];
+    
+    if (userTypesEnum?.members) {
+      userTypesEnum.members.forEach((member) => {
+        userTypeOptions.push({
+          value: String(member.value),
+          label: member.name,
+        });
+      });
+    }
+
+    return userFields.map((field) => {
+      if (field.name === 'userType') {
+        return {
+          ...field,
+          options: userTypeOptions,
+        };
+      }
+      return field;
+    });
+  }, [userTypesEnum]);
 
   const handleSave = (data: ProfileFormData) => {
     const cardStatus = typeof data.cardStatus === 'string'
@@ -21,7 +48,7 @@ export default function AddNewUser() {
       email: data.emailAddress || '',
       phoneNumber: data.cellNumber || '',
       cnic: data.cnic || '',
-      userType: data.userType === 'admin' ? 1 : 2, // adjust as needed
+      userType: Number(data.userType) || 0,
       rfidCardNumber: data.rfidCardNo || '',
       createdBy: 'admin', // or get from context/auth
       cardIssueDate: data.cardIssueDate || '',
@@ -54,9 +81,9 @@ export default function AddNewUser() {
           title="Please provide details below!"
           onSave={handleSave}
           onCancel={() => window.history.back()}
-          fields={userFields}
+          fields={dynamicUserFields}
           initialValues={initVal}
-          loading={false}
+          loading={isEnumLoading || createUserMutation.isPending}
           showStatusToggle={false}
         />
     </DashboardLayout>

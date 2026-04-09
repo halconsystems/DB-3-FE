@@ -10,6 +10,7 @@ import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tabl
 import { useCancelTagApprovalRequest } from '../../../../hooks/tag-approval/useCancelTagApprovalRequest';
 import { TagApprovalRequest } from '../../../../types/tag-approval.types';
 import { useGetAllTagTypes } from '@/hooks/tagtype/useGetAllTagTypes';
+import { formatDateDisplay } from '../../../../lib/dateUtils';
 
 interface TagTableProps {
   tabs: Tab[];
@@ -92,8 +93,8 @@ export default function TagApprovalTable({
     { key: 'tagNumber', header: 'Tag Number' },
     { key: 'feeScale', header: 'Fee Scale' },
     { key: 'planType', header: 'Plan Type' },
-    { key: 'validFrom', header: 'Valid From' },
-    { key: 'validTo', header: 'Valid To' },
+    { key: 'validFrom', header: 'Valid From', render: (value: string) => formatDateDisplay(value) },
+    { key: 'validTo', header: 'Valid To', render: (value: string) => formatDateDisplay(value) },
     { key: 'notes', header: 'Notes' },
     {
       key: 'status',

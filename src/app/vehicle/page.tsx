@@ -8,6 +8,7 @@ import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
 import { useVehicles } from '../../hooks/vehicle/useVehicles';
 import { useDeleteVehicle } from '../../hooks/vehicle/useDeleteVehicle';
+import { formatDateDisplay } from '../../lib/dateUtils';
 import type { ExternalVehicle as BaseExternalVehicle } from '../../services/vehicle.service';
 
 // Extend ExternalVehicle to include externalUserName
@@ -33,19 +34,6 @@ interface Vehicle {
 }
 
 type SelectedVehicleRow = Pick<ExternalVehicle, 'id'>;
-
-const formatDate = (value?: string | null) => {
-  if (!value) {
-    return '-';
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return date.toLocaleDateString();
-};
 
 const formatLicensePlate = (license?: string | null, licenseNo?: number | null) => {
   const first = (license || '').trim();
@@ -85,8 +73,8 @@ export default function VehiclePage() {
       licensePlate: formatLicensePlate(item.license, item.licenseNo),
       vehicleETagId: item.eTagId || '-',
       eTagType: item.eTagId || '-',
-      issueDate: formatDate(item.validFrom),
-      expiryDate: formatDate(item.validTo),
+      issueDate: formatDateDisplay(item.validFrom),
+      expiryDate: formatDateDisplay(item.validTo),
       ownership: item.externalUserId || '-',
       externalUserName: item.externalUserName || '-',
       make: item.make || '-',

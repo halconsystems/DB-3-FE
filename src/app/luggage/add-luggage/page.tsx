@@ -7,13 +7,13 @@ import { luggageFields } from '../fields';
 import { useCreateLuggage } from '../../../hooks/luggage/useCreateLuggage';
 import { getAllExternalUsers } from '../../../services/user.service';
 
+// Return YYYY-MM-DD as-is without conversion
 const toIsoDate = (value?: string) => {
-  if (!value) return new Date().toISOString();
+  if (!value) return '';
 
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return new Date().toISOString();
-
-  return date.toISOString();
+  // Simply extract the date part (YYYY-MM-DD) from the string
+  const dateMatch = String(value).match(/^\d{4}-\d{2}-\d{2}/);
+  return dateMatch ? dateMatch[0] : '';
 };
 
 const toVehicleLicensePlate = (vehicleNo?: string, vehicleNo2?: string) => {

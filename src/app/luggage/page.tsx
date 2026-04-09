@@ -8,6 +8,7 @@ import WarningModal from '../../components/popup/WarningModal';
 import { saveTableRow } from '../../lib/tableRowStorage';
 import { useLuggage } from '../../hooks/luggage/useLuggage';
 import { useDeleteLuggage } from '../../hooks/luggage/useDeleteLuggage';
+import { formatDateDisplay } from '../../lib/dateUtils';
 import type { Luggage } from '../../services/luggage.service';
 
 interface LuggagePass {
@@ -23,19 +24,6 @@ interface LuggagePass {
 }
 
 type SelectedLuggageRow = Pick<Luggage, 'id'>;
-
-const formatDate = (value: string) => {
-  if (!value) {
-    return '';
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return date.toLocaleDateString();
-};
 
 const toLuggagePassTypeLabel = (passType?: string | number): string => {
   if (passType === 'DayPass' || passType === 1) return 'Day Pass';
@@ -61,7 +49,7 @@ export default function LuggagePage() {
       userName: item.externalUserName || '-',
       vehicleInfo: item.vehicleLicensePlate || '-',
       visitDetail: toLuggagePassTypeLabel(item.luggagePassType),
-      validity: `${formatDate(item.validFrom)} - ${formatDate(item.validTo)}`,
+      validity: `${formatDateDisplay(item.validFrom)} - ${formatDateDisplay(item.validTo)}`,
       cnicNicopNo: item.cnic,
       status: item.isActive && !item.isDeleted,
     }));
