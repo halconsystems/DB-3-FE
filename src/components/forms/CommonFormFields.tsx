@@ -63,7 +63,8 @@ const getInputStyle = (field: ProfileField): React.CSSProperties => ({
   height: toCssSize(field.inputHeight),
 });
 
-export function TextInputField({ field, value, onChange, styles, wrapperClassName }: InputFieldProps) {
+// Add disabled prop for phone/cell auto-disable
+export function TextInputField({ field, value, onChange, styles, wrapperClassName, maxLength }: InputFieldProps & { maxLength?: number }) {
   return (
     <div className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()} style={getWrapperStyle(field)}>
       <label className={styles.labelGreen}>
@@ -79,6 +80,7 @@ export function TextInputField({ field, value, onChange, styles, wrapperClassNam
         value={value}
         onChange={onChange}
         readOnly={field.readOnly}
+        maxLength={maxLength}
       />
     </div>
   );
@@ -276,6 +278,7 @@ export function StatusSwitchInputField({ field, checked, onChange, styles, wrapp
   return (<div>
       <label className={styles.formTitle}>
         {field.label}
+        {field.required && <span style={{ color: '#ff1744', marginLeft: '4px' }}>*</span>}
       </label>
       <button
         type="button"

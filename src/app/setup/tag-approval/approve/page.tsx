@@ -108,6 +108,9 @@ export default function AddNewTag() {
     { name: 'tagApprovalRequestId' as keyof ProfileFormData, label: 'Tag Approval Request ID', type: 'text',readOnly:true, required: true, placeholder: 'Tag Approval Request ID here' },
     { name: 'name' as keyof ProfileFormData, label: 'Entity Name', type: 'text', required: true, readOnly:true, placeholder: 'Entity Name here' },
     { name: 'entityId' as keyof ProfileFormData, label: 'Entity ID', type: 'text', required: true, readOnly:true, placeholder: 'Enter Entity ID here' },
+    { name: 'tagApprovalRequestId' as keyof ProfileFormData, label: 'Tag Approval Request ID', type: 'text', required: true, placeholder: 'Tag Approval Request ID here', readOnly: true },
+    { name: 'name' as keyof ProfileFormData, label: 'Entity Name', type: 'text', required: true, placeholder: 'Entity Name here', readOnly: true },
+    { name: 'entityId' as keyof ProfileFormData, label: 'Entity ID', type: 'text', required: true, placeholder: 'Enter Entity ID here', readOnly: true },
     {
       name: 'tagType' as keyof ProfileFormData,
       label: 'Tag Type',
@@ -116,6 +119,16 @@ export default function AddNewTag() {
       readOnly: true,
     },
     { name: 'tagNumber' as keyof ProfileFormData, label: 'Tag Number', type: 'text', required: true, placeholder: 'Enter Tag Number here' },
+    { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: true, placeholder: 'Select Date', readOnly: true },
+    { name: 'validTo' as keyof ProfileFormData, label: 'Valid To', type: 'date', required: true, placeholder: 'Select Date', readOnly: true },
+    {
+      name: 'feeScaleId' as keyof ProfileFormData,
+      label: 'Fee Scale',
+      type: 'select',
+      required: true,
+      placeholder: 'Select Fee Scale',
+      options: feeScaleOptions,
+    },
     {
       name: 'planType' as keyof ProfileFormData,
       label: 'Plan Type',
