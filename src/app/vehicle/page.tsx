@@ -140,20 +140,7 @@ export default function VehiclePage() {
       key: 'color',
       header: 'Color',
       render: (value: string) => (
-        value && value !== '-' ? (
-          <span style={{
-            display: 'inline-block',
-            padding: '4px 16px',
-            borderRadius: '4px',
-            fontSize: '12px',
-            fontWeight: 500,
-            backgroundColor: value.toLowerCase(),
-            color: ['white', '#fff', 'black', '#000', 'gray', 'grey'].includes(value.toLowerCase()) ? '#222' : '#fff',
-            border: '1px solid #eee',
-            minWidth: 60,
-            textAlign: 'center',
-          }}>{value}</span>
-        ) : '-'
+        value && value !== '-' ? value : '-'
       ),
     },
     {

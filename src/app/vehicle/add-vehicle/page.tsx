@@ -1,6 +1,7 @@
 
 'use client';
 import React from 'react';
+import { getEnumMetadata } from '../../../services/enum.service';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { vehicleFields } from '../fields';
@@ -39,9 +40,42 @@ const toAttachmentString = (value?: File | null): string => {
   return value.name;
 };
 
+
 export default function AddNewVehicle() {
   const { mutateAsync: createVehicle, isPending } = useCreateVehicle();
   const [formError, setFormError] = React.useState('');
+  const [fields, setFields] = React.useState(vehicleFields);
+  const [loadingEnums, setLoadingEnums] = React.useState(true);
+
+  React.useEffect(() => {
+    async function fetchEnumOptions() {
+      try {
+        // Fetch both enums in parallel
+        const [colorRes, tagStatusRes] = await Promise.all([
+          getEnumMetadata({ EnumType: 'VehicleColor' }),
+          getEnumMetadata({ EnumType: 'TagStatus' })
+        ]);
+        const colorEnum = colorRes.data.enums.find(e => e.name === 'VehicleColor');
+        const tagStatusEnum = tagStatusRes.data.enums.find(e => e.name === 'TagStatus');
+        const colorOptions = colorEnum?.members.map(m => ({ value: m.value.toString(), label: m.name })) || [];
+        const tagStatusOptions = tagStatusEnum?.members.map(m => ({ value: m.value.toString(), label: m.name })) || [];
+        setFields(prevFields => prevFields.map(f => {
+          if (f.name === 'color') {
+            return { ...f, type: 'select', options: colorOptions };
+          }
+          if (f.name === 'eTagStatus') {
+            return { ...f, type: 'select', options: tagStatusOptions };
+          }
+          return f;
+        }));
+      } catch {
+        // fallback: leave as text if API fails
+      } finally {
+        setLoadingEnums(false);
+      }
+    }
+    fetchEnumOptions();
+  }, []);
 
   const handleSave = async (data: ProfileFormData) => {
     setFormError('');
@@ -83,7 +117,7 @@ export default function AddNewVehicle() {
         eTagId: data.eTagId || '',
         validFrom: toIsoDate(data.issueDate),
         validTo: toIsoDate(data.expiryDate),
-        tagStatus: toTagStatus(data.tagStatus),
+        tagStatus: Number(data.eTagStatus) || 0,
         createdBy,
         externalUserId,
       });
@@ -102,8 +136,8 @@ export default function AddNewVehicle() {
           title="Please provide details below!"
           onSave={handleSave}
           onCancel={() => window.history.back()}
-          fields={vehicleFields}
-          loading={isPending}
+          fields={fields}
+          loading={isPending || loadingEnums}
         />
       </div>
     </DashboardLayout>
