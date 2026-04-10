@@ -173,6 +173,7 @@ export default function CommonEntityForm({
     }
 
 
+
     // Vehicle No: only alphabet, max 4
     if (name === 'vehicleNo') {
       let alpha = value.replace(/[^A-Za-z]/g, '');
@@ -186,6 +187,20 @@ export default function CommonEntityForm({
       let numeric = value.replace(/\D/g, '');
       if (numeric.length > 4) numeric = numeric.slice(0, 4);
       setFormData((prev) => withDerivedVehicleLicensePlate({ ...prev, [name]: numeric }));
+      return;
+    }
+
+    // eTagId (RFID) and tagNumber: format as 1234 5678 1234 5678, allow only 16 digits
+    if (name === 'eTagId' || name === 'tagNumber') {
+      let digits = value.replace(/\D/g, '');
+      if (digits.length > 16) digits = digits.slice(0, 16);
+      // Insert space every 4 digits
+      let formatted = '';
+      for (let i = 0; i < digits.length; i += 4) {
+        if (i > 0) formatted += ' ';
+        formatted += digits.slice(i, i + 4);
+      }
+      setFormData((prev) => ({ ...prev, [name]: formatted }));
       return;
     }
 
@@ -257,11 +272,22 @@ export default function CommonEntityForm({
 
   const handleSubmit = async () => {
 
-    // RFID 18-digit validation
-    if (formData.rfidCardNo && !/^\d{18}$/.test(formData.rfidCardNo)) {
-      setWarningMessage('RFID Card No must be exactly 18 digits.');
-      setShowWarning(true);
-      return;
+
+    // eTagId (RFID) and tagNumber validation: must be exactly 16 digits, formatted as 1234 5678 1234 5678
+    for (const field of ['eTagId', 'tagNumber']) {
+      if (formData[field]) {
+        const digits = formData[field].replace(/\D/g, '');
+        if (digits.length !== 16) {
+          setWarningMessage(`${field === 'eTagId' ? 'Vehicle E-Tag ID (RFID)' : 'Tag Number'} must be exactly 16 digits.`);
+          setShowWarning(true);
+          return;
+        }
+        if (!/^\d{4}( \d{4}){3}$/.test(formData[field])) {
+          setWarningMessage(`${field === 'eTagId' ? 'Vehicle E-Tag ID (RFID)' : 'Tag Number'} must be in the format 1234 5678 1234 5678.`);
+          setShowWarning(true);
+          return;
+        }
+      }
     }
 
     // Card No validation: 1234 5678 1234 5678

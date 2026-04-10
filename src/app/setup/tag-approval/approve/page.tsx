@@ -2,6 +2,8 @@
 'use client';
 import DashboardLayout from '../../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileField, ProfileFormData } from '../../../../components/forms/CommonEntityForm';
+import { useEffect, useState } from 'react';
+import { getEnumMetadata } from '../../../../services/enum.service';
 import { useSearchParams } from 'next/navigation';
 import { useGetTagApprovalRequestById } from '../../../../hooks/tag-approval/useGetTagApprovalRequestById';
 
@@ -19,8 +21,32 @@ export default function AddNewTag() {
   const { data: feeScaleData, isLoading: isFeeScaleLoading } = useFeeScales();
   const { data: deviceData, isLoading: isDeviceLoading } = useDevices();
   const { data: zoneData, isLoading: isZoneLoading } = useZones();
-  const { data: tagTypeData, isLoading: isTagTypeLoading } = useGetAllTagTypes();
+
+  // Restore approveTagMutation declaration
   const approveTagMutation = useApproveTagApprovalRequest();
+  const { data: tagTypeData, isLoading: isTagTypeLoading } = useGetAllTagTypes();
+
+  // PlanType enum options state
+  const [planTypeOptions, setPlanTypeOptions] = useState([
+    { value: '', label: 'Select Plan Type' }
+  ]);
+  useEffect(() => {
+    async function fetchPlanTypeOptions() {
+      try {
+        const res = await getEnumMetadata({ EnumType: 'PlanType' });
+        const planTypeEnum = res.data.enums.find(e => e.name === 'PlanType');
+        if (planTypeEnum) {
+          setPlanTypeOptions([
+            { value: '', label: 'Select Plan Type' },
+            ...planTypeEnum.members.map(m => ({ value: m.value.toString(), label: m.name }))
+          ]);
+        }
+      } catch {
+        // fallback: leave as default
+      }
+    }
+    fetchPlanTypeOptions();
+  }, []);
 
   const toDateInputValue = (value?: string | null) => {
     if (!value) {
@@ -105,11 +131,8 @@ export default function AddNewTag() {
   ];
   
   const approveFields: ProfileField[] = [
-    { name: 'tagApprovalRequestId' as keyof ProfileFormData, label: 'Tag Approval Request ID', type: 'text',readOnly:true, required: true, placeholder: 'Tag Approval Request ID here' },
-    { name: 'name' as keyof ProfileFormData, label: 'Entity Name', type: 'text', required: true, readOnly:true, placeholder: 'Entity Name here' },
-    { name: 'entityId' as keyof ProfileFormData, label: 'Entity ID', type: 'text', required: true, readOnly:true, placeholder: 'Enter Entity ID here' },
     { name: 'tagApprovalRequestId' as keyof ProfileFormData, label: 'Tag Approval Request ID', type: 'text', required: true, placeholder: 'Tag Approval Request ID here', readOnly: true },
-    { name: 'name' as keyof ProfileFormData, label: 'Entity Name', type: 'text', required: true, placeholder: 'Entity Name here', readOnly: true },
+     { name: 'name' as keyof ProfileFormData, label: 'Entity Name', type: 'text', required: true, placeholder: 'Entity Name here', readOnly: true },
     { name: 'entityId' as keyof ProfileFormData, label: 'Entity ID', type: 'text', required: true, placeholder: 'Enter Entity ID here', readOnly: true },
     {
       name: 'tagType' as keyof ProfileFormData,
@@ -119,8 +142,6 @@ export default function AddNewTag() {
       readOnly: true,
     },
     { name: 'tagNumber' as keyof ProfileFormData, label: 'Tag Number', type: 'text', required: true, placeholder: 'Enter Tag Number here' },
-    { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: true, placeholder: 'Select Date', readOnly: true },
-    { name: 'validTo' as keyof ProfileFormData, label: 'Valid To', type: 'date', required: true, placeholder: 'Select Date', readOnly: true },
     {
       name: 'feeScaleId' as keyof ProfileFormData,
       label: 'Fee Scale',
@@ -135,24 +156,10 @@ export default function AddNewTag() {
       type: 'select',
       required: true,
       placeholder: 'Select Plan Type',
-      options: [
-        { value: '', label: 'Select Plan Type' },
-        { value: 'Day', label: 'Day' },
-        { value: 'Week', label: 'Week' },
-        { value: 'Month', label: 'Month' },
-        { value: 'Year', label: 'Year' },
-      ],
+      options: planTypeOptions,
     },
     { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: true, placeholder: 'Select Date' },
     { name: 'validTo' as keyof ProfileFormData, label: 'Valid To', type: 'date', required: true, placeholder: 'Select Date' },
-    {
-      name: 'feeScaleId' as keyof ProfileFormData,
-      label: 'Fee Scale',
-      type: 'select',
-      required: true,
-      placeholder: 'Select Fee Scale',
-      options: feeScaleOptions,
-    },
     { name: 'status' as keyof ProfileFormData, label: 'Status', type: 'statusSwitch', required: false, placeholder: 'Status' },
     {
       name: 'trialPeriod' as keyof ProfileFormData,
@@ -196,7 +203,7 @@ export default function AddNewTag() {
       feeScaleId: formData.feeScaleId !== undefined ? String(formData.feeScaleId) : String(tag.feeScale || ''),
       deviceId: String(formData.device || ''),
       trialPeriod: String(formData.trialPeriod || 'Unknown'),
-      planType: 'unknown',
+      planType: formData.planType ? String(Number(formData.planType)) : "0",
     };
 
     console.log('approveTagApprovalRequest payload:', payload);
