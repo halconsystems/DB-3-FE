@@ -175,6 +175,7 @@ export function DateInputField({ field, value, onChange, styles, wrapperClassNam
         style={getInputStyle(field)}
         value={value}
         onChange={onChange}
+        placeholder={field.placeholder || field.label}
       />
       <div style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)' }}>
         <CircularButton imagePath='/icons/Calendar.svg' width="24px" height="24px" onClick={openDatePicker} />
