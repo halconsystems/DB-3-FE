@@ -1,15 +1,21 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useRemoveUser } from '../../hooks/user/useRemoveUser';
 import { useExternalUsers } from '../../hooks/user/useUsers';
 import { useUserById } from '../../hooks/user/useUserById';
-import { useRouter } from 'next/navigation';
+import { useCreateUser } from '../../hooks/user/useCreateUser';
+import { useUpdateUser } from '../../hooks/user/useUpdateUser';
+import { useEnumMetadata } from '../../hooks/metadata/useEnumMetadata';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
 import CircularButton from '../../components/ui/CircularButton';
 import WarningModal from '../../components/popup/WarningModal';
-import { saveTableRow } from '../../lib/tableRowStorage';
+import FormModal from '../../components/popup/FormModal';
+import CommonEntityForm, { ProfileFormData } from '../../components/forms/CommonEntityForm';
+import { saveTableRow, clearTableRow, getTableRow } from '../../lib/tableRowStorage';
 import { formatDateDisplay } from '../../lib/dateUtils';
+import { userFields } from './fields';
 
 
 // Map API user type to display values
@@ -25,25 +31,165 @@ const mapUserType = (type: number | string) => {
 
 
 export default function UserPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
   const removeUserMutation = useRemoveUser();
   const { data, isLoading } = useExternalUsers();
+  const { mutateAsync: createUser } = useCreateUser();
+  const { mutateAsync: updateUser } = useUpdateUser();
+  const { data: userTypesEnum } = useEnumMetadata('UserType');
+
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
-  // Fetch full user details by ID when a user is selected (for details, edit, etc.)
-  const { data: selectedUserDetails, isLoading: isUserDetailsLoading } = useUserById(selectedUser ? String(selectedUser.id) : undefined);
   const [localRemovedIds, setLocalRemovedIds] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
-  const router = useRouter();
+  const [formError, setFormError] = useState('');
+
+  // Modal state
+  const [editUserId, setEditUserId] = useState<string | undefined>();
+  const [hasCheckedId, setHasCheckedId] = useState(false);
+  const { data: editUserDetails, isLoading: isEditUserLoading } = useUserById(editUserId);
+
+  // Build dynamic userType options from enum
+  const dynamicUserFields = useMemo(() => {
+    const userTypeOptions = [{ value: '', label: 'Select User Type' }];
+    
+    if (userTypesEnum?.members) {
+      userTypesEnum.members.forEach((member) => {
+        userTypeOptions.push({
+          value: String(member.value),
+          label: member.name,
+        });
+      });
+    }
+
+    return userFields.map((field) => {
+      if (field.name === 'userType') {
+        return {
+          ...field,
+          options: userTypeOptions,
+        };
+      }
+      return field;
+    });
+  }, [userTypesEnum]);
+
+  // Detect modal state from URL
+  const modalMode = searchParams?.get('modal');
+  const modalId = searchParams?.get('id');
+
+  useEffect(() => {
+    if (modalMode === 'edit') {
+      if (modalId) {
+        setEditUserId(modalId);
+        setHasCheckedId(true);
+      } else {
+        const selected = getTableRow<any>('user');
+        if (selected?.id) {
+          setEditUserId(String(selected.id));
+          clearTableRow('user');
+          setHasCheckedId(true);
+        }
+      }
+    }
+  }, [modalMode, modalId]);
 
   const handleAddNew = () => {
-    router.push('/user/add-user');
+    router.push('/user?modal=add');
   };
 
   const handleEdit = (user: any) => {
-    // Optionally, you can use selectedUserDetails here for more complete info
-    saveTableRow('user', user);
-    router.push(`/user/edit-user?id=${encodeURIComponent(user.id)}`);
+    saveTableRow('user', { id: user.id });
+    router.push(`/user?modal=edit&id=${encodeURIComponent(user.id)}`);
+  };
+
+  const handleCloseModal = () => {
+    setEditUserId(undefined);
+    setHasCheckedId(false);
+    setFormError('');
+    router.push('/user');
+  };
+
+  const toDateInputValue = (value?: string | null) => {
+    if (!value) return '';
+    const dateMatch = String(value).match(/^\d{4}-\d{2}-\d{2}/);
+    return dateMatch ? dateMatch[0] : '';
+  };
+
+  const toIsoDate = (value?: string | null) => {
+    if (!value) return '';
+    const dateMatch = String(value).match(/^\d{4}-\d{2}-\d{2}/);
+    return dateMatch ? dateMatch[0] : '';
+  };
+
+  const toCardStatusValue = (value?: string | number | boolean | null) => {
+    if (value === null || value === undefined) return 0;
+    if (typeof value === 'boolean') return value ? 1 : 0;
+    if (typeof value === 'number') return value === 1 ? 1 : 0;
+    if (value === 'active' || value === '1') return 1;
+    return 0;
+  };
+
+  const handleAddUser = async (data: ProfileFormData) => {
+    setFormError('');
+    try {
+      await createUser({
+        name: data.name || '',
+        email: data.emailAddress || '',
+        phoneNumber: data.cellNumber || '',
+        cnic: data.cnic || '',
+        userType: Number(data.userType) || 0,
+        rfidCardNumber: data.rfidCardNo || '',
+        cardIssueDate: toIsoDate(data.cardIssueDate),
+        cardExpiryDate: toIsoDate(data.cardExpiryDate),
+        cardStatus: toCardStatusValue(data.cardStatus),
+      });
+      handleCloseModal();
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create user';
+      setFormError(message);
+    }
+  };
+
+  const initialValues = useMemo<ProfileFormData | null>(() => {
+    if (!editUserDetails) return null;
+    return {
+      name: editUserDetails.name || '',
+      emailAddress: editUserDetails.email || '',
+      cellNumber: editUserDetails.phoneNumber || '',
+      cnic: editUserDetails.cnic || '',
+      userType: editUserDetails.userType !== null && editUserDetails.userType !== undefined ? String(editUserDetails.userType) : '',
+      rfidCardNo: editUserDetails.rfidCardNumber || '',
+      cardIssueDate: toDateInputValue(editUserDetails.cardIssueDate),
+      cardExpiryDate: toDateInputValue(editUserDetails.cardExpiryDate),
+      cardStatus: editUserDetails.cardStatus === 1,
+      status: !!editUserDetails.isActive,
+    };
+  }, [editUserDetails]);
+
+  const handleUpdateUser = async (data: ProfileFormData) => {
+    if (!editUserId || !editUserDetails) return;
+    setFormError('');
+    try {
+      await updateUser({
+        id: editUserId,
+        name: data.name || editUserDetails.name || '',
+        email: data.emailAddress || editUserDetails.email || '',
+        phoneNumber: data.cellNumber || editUserDetails.phoneNumber || '',
+        cnic: data.cnic || editUserDetails.cnic || '',
+        userType: Number(data.userType) || editUserDetails.userType,
+        rfidCardNumber: data.rfidCardNo || editUserDetails.rfidCardNumber || '',
+        cardIssueDate: toIsoDate(data.cardIssueDate || editUserDetails.cardIssueDate),
+        cardExpiryDate: toIsoDate(data.cardExpiryDate || editUserDetails.cardExpiryDate),
+        cardStatus: toCardStatusValue(data.cardStatus),
+      });
+      handleCloseModal();
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update user';
+      setFormError(message);
+    }
   };
 
   const handleDelete = (user: any) => {
@@ -137,19 +283,47 @@ export default function UserPage() {
         emptyMessage={isLoading ? 'Loading users...' : 'No users found'}
       />
 
-      {/* Example usage of useUserById hook for selected user */}
-      {selectedUser && (
-        <div style={{ marginTop: 24 }}>
-          <h4>User Details (from useUserById):</h4>
-          {isUserDetailsLoading ? (
-            <div>Loading user details...</div>
-          ) : selectedUserDetails ? (
-            <pre style={{ background: '#f5f5f5', padding: 12, borderRadius: 4 }}>{JSON.stringify(selectedUserDetails, null, 2)}</pre>
-          ) : (
-            <div>No details found.</div>
-          )}
-        </div>
-      )}
+      {/* ADD USER MODAL */}
+      <FormModal
+        isOpen={modalMode === 'add'}
+        onClose={handleCloseModal}
+        title="Add New User"
+      >
+        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
+        <CommonEntityForm
+          title="Please provide details below!"
+          onSave={handleAddUser}
+          onCancel={handleCloseModal}
+          fields={dynamicUserFields}
+          saveButtonText="Create"
+          showStatusToggle={false}
+        />
+      </FormModal>
+
+      {/* EDIT USER MODAL */}
+      <FormModal
+        isOpen={modalMode === 'edit' && hasCheckedId}
+        onClose={handleCloseModal}
+        title="Edit User"
+      >
+        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
+        {isEditUserLoading ? (
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
+        ) : initialValues ? (
+          <CommonEntityForm
+            key={editUserId}
+            title="Please update details below!"
+            onSave={handleUpdateUser}
+            onCancel={handleCloseModal}
+            fields={dynamicUserFields}
+            initialValues={initialValues}
+            saveButtonText="Update"
+            showStatusToggle={false}
+          />
+        ) : (
+          <div style={{ padding: '20px', textAlign: 'center' }}>Error loading user details</div>
+        )}
+      </FormModal>
 
       <WarningModal
         isOpen={deleteModalOpen}

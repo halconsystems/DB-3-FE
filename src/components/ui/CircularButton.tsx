@@ -9,6 +9,7 @@ interface CircularButtonProps {
   onClick?: () => void;
   className?: string;
   pos?: "abs" | "";
+  imgSize?: number;
 }
 
 export default function CircularButton({
@@ -18,7 +19,8 @@ export default function CircularButton({
   height = 32,
   onClick,
   className = '',
-  pos = ""
+  pos = "",
+  imgSize = 15,
 }: CircularButtonProps) {
   const buttonStyle = {
     width: typeof width === 'number' ? `${width}px` : width,
@@ -33,9 +35,11 @@ export default function CircularButton({
       style={buttonStyle}
     >
       <img
+        className={styles.buttonIcon}
         src={imagePath}
         alt={imageAlt}
-        className={styles.buttonIcon}
+        width={imgSize} 
+        height={imgSize}
       />
     </button>
   );

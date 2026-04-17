@@ -50,12 +50,13 @@ export interface UpdateLuggageRequest {
   vehicleLicensePlate: string;
   vehicleLicenseNo: number;
   description: string;
-  luggagePassType: number;
+  luggagePassType: string | number;
   validFrom: string;
   validTo: string;
-  lastModifiedBy: string;
-  isActive: boolean;
-  isDeleted: boolean;
+  lastModifiedBy?: string;
+  isActive?: boolean;
+  isDeleted?: boolean;
+  externalUserId: string;
 }
 
 export interface DeleteLuggageRequest {

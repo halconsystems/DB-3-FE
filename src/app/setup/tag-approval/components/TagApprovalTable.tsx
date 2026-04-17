@@ -1,16 +1,21 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSignalR } from 'hooks/useSignalR';
 import { useGetTagApprovalRequests } from '../../../../hooks/tag-approval/useGetTagApprovalRequests';
-import { saveTableRow } from '../../../../lib/tableRowStorage';
+import { saveTableRow, clearTableRow, getTableRow } from '../../../../lib/tableRowStorage';
 import WarningModal from '../../../../components/popup/WarningModal';
+import FormModal from '../../../../components/popup/FormModal';
+import CommonEntityForm, { ProfileFormData } from '../../../../components/forms/CommonEntityForm';
 import { useRejectTagApprovalRequest } from '../../../../hooks/tag-approval/useRejectTagApprovalRequest';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import { useCancelTagApprovalRequest } from '../../../../hooks/tag-approval/useCancelTagApprovalRequest';
+import { useCreateTagApprovalRequest } from '../../../../hooks/tag-approval/useCreateTagApprovalRequest';
+import { useGetTagApprovalRequestById } from '../../../../hooks/tag-approval/useGetTagApprovalRequestById';
 import { TagApprovalRequest } from '../../../../types/tag-approval.types';
 import { useGetAllTagTypes } from '@/hooks/tagtype/useGetAllTagTypes';
 import { formatDateDisplay } from '../../../../lib/dateUtils';
+import { tagApprovalFields } from '../../../../app/setup/tag-log/fields';
 
 interface TagTableProps {
   tabs: Tab[];
@@ -18,6 +23,7 @@ interface TagTableProps {
   onTabChange: (tab: string) => void;
   onAddNew: () => void;
   addButtonLabel: string;
+  searchParams?: ReadonlyURLSearchParams | null;
 }
 
 export default function TagApprovalTable({
@@ -25,7 +31,8 @@ export default function TagApprovalTable({
   activeTab,
   onTabChange,
   onAddNew,
-  addButtonLabel
+  addButtonLabel,
+  searchParams
 }: TagTableProps) {
   useSignalR(); 
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,6 +46,64 @@ export default function TagApprovalTable({
   const [selectedTag, setSelectedTag] = useState<TagApprovalRequest | null>(null);
   const { data: tagTypesData, isLoading: tagLoading } = useGetAllTagTypes();
   const router = useRouter();
+  const [editTagApprovalId, setEditTagApprovalId] = useState<string | undefined>();
+  const [hasCheckedId, setHasCheckedId] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  const { mutateAsync: createTagApprovalRequest } = useCreateTagApprovalRequest();
+  const { data: editTagApprovalDetails, isLoading: isEditTagApprovalLoading } = useGetTagApprovalRequestById(editTagApprovalId);
+
+  const modalMode = searchParams?.get('modal');
+  const modalId = searchParams?.get('id');
+
+  useEffect(() => {
+    if (modalMode === 'edit') {
+      if (modalId) {
+        setEditTagApprovalId(modalId);
+        setHasCheckedId(true);
+      } else {
+        const selected = getTableRow<any>('tag-approval');
+        if (selected?.id) {
+          setEditTagApprovalId(String(selected.id));
+          clearTableRow('tag-approval');
+          setHasCheckedId(true);
+        }
+      }
+    }
+  }, [modalMode, modalId]);
+
+  const handleCloseModal = () => {
+    setEditTagApprovalId(undefined);
+    setHasCheckedId(false);
+    setFormError('');
+    router.push('/setup/tag-approval');
+  };
+
+  const handleAddTagApproval = async (data: ProfileFormData) => {
+    setFormError('');
+    try {
+      await createTagApprovalRequest({
+        tagNumber: data.tagNumber || '',
+        requestedBy: data.requestedBy || '',
+        requestDate: data.requestDate || '',
+        status: data.status || 'Pending',
+      } as any);
+      handleCloseModal();
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create tag approval request';
+      setFormError(message);
+    }
+  };
+
+  const initialTagApprovalValues = useMemo<ProfileFormData | null>(() => {
+    if (!editTagApprovalDetails?.data) return null;
+    return {
+      tagNumber: editTagApprovalDetails.data.tagNumber || '',
+      requestedBy: editTagApprovalDetails.data.parentUserName || '',
+      requestDate: editTagApprovalDetails.data.validFrom || '',
+      status: editTagApprovalDetails.data.status || 'Pending',
+    };
+  }, [editTagApprovalDetails]);
 
   const getTagTypeId = (tagTypeName: string): string => {
     if (!tagTypesData?.data) return tagTypeName;
@@ -142,7 +207,9 @@ export default function TagApprovalTable({
         columns={TagColumns}
         data={Tags}
         loading={isLoading}
-        showAddButton={false}
+        showAddButton={true}
+        addButtonLabel={addButtonLabel}
+        onAddClick={() => router.push('/setup/tag-approval?modal=add')}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status as 'Active' | 'Inactive' | 'Pending' | undefined}
@@ -150,6 +217,47 @@ export default function TagApprovalTable({
           <div style={{height:'40px'}}></div>
         }
       />
+      
+      <FormModal
+        isOpen={modalMode === 'add'}
+        onClose={handleCloseModal}
+        title="Add Tag Approval Request"
+      >
+        <CommonEntityForm
+          title=""
+          fields={tagApprovalFields}
+          initialValues={{
+            tagNumber: '',
+            requestedBy: '',
+            requestDate: new Date().toISOString().split('T')[0],
+            status: 'Pending',
+          }}
+          onSave={handleAddTagApproval}
+          onCancel={handleCloseModal}
+          loading={false}
+          error={formError}
+        />
+      </FormModal>
+
+      <FormModal
+        isOpen={modalMode === 'edit' && hasCheckedId}
+        onClose={handleCloseModal}
+        title="Edit Tag Approval Request"
+      >
+        {isEditTagApprovalLoading ? (
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
+        ) : (
+          <CommonEntityForm
+            title=""
+            fields={tagApprovalFields}
+            initialValues={initialTagApprovalValues || { tagNumber: '', requestedBy: '', requestDate: new Date().toISOString().split('T')[0], status: 'Pending' }}
+            onSave={handleAddTagApproval}
+            onCancel={handleCloseModal}
+            loading={false}
+            error={formError}
+          />
+        )}
+      </FormModal>
       <WarningModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}

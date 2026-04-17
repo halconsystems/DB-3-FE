@@ -7,7 +7,7 @@ export interface UpdateUserRequest {
   cnic: string;
   userType: number;
   rfidCardNumber: string;
-  lastModifiedBy: string;
+  lastModifiedBy?: string;
   cardIssueDate: string;
   cardExpiryDate: string;
   cardStatus: number;
@@ -57,7 +57,7 @@ export interface CreateUserRequest {
   cnic: string;
   userType: number;
   rfidCardNumber: string;
-  createdBy: string;
+  createdBy?: string;
   cardIssueDate: string;
   cardExpiryDate: string;
   cardStatus: number;

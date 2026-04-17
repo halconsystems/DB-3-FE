@@ -1,12 +1,18 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { usePhases } from '../../../../hooks/phase/usePhases';
 import { useRemovePhase } from '../../../../hooks/phase/useRemovePhase';
+import { useCreatePhase } from '../../../../hooks/phase/useCreatePhase';
+import { useUpdatePhase } from '../../../../hooks/phase/useUpdatePhase';
+import { usePhaseById } from '../../../../hooks/phase/usePhaseById';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import CircularButton from '../../../../components/ui/CircularButton';
 import WarningModal from '../../../../components/popup/WarningModal';
-import { saveTableRow } from '../../../../lib/tableRowStorage';
+import FormModal from '../../../../components/popup/FormModal';
+import CommonEntityForm, { ProfileFormData } from '../../../../components/forms/CommonEntityForm';
+import { saveTableRow, clearTableRow, getTableRow } from '../../../../lib/tableRowStorage';
+import { phaseFields } from '../fields';
 
 export interface Phase {
   id: string;
@@ -21,6 +27,7 @@ interface PhaseTableProps {
   onTabChange: (tab: string) => void;
   onAddNew: () => void;
   addButtonLabel: string;
+  searchParams?: ReadonlyURLSearchParams | null;
 }
 
 export default function PhaseTable({
@@ -28,7 +35,8 @@ export default function PhaseTable({
   activeTab,
   onTabChange,
   onAddNew,
-  addButtonLabel
+  addButtonLabel,
+  searchParams
 }: PhaseTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const { data: phases = [], isLoading, isError } = usePhases();
@@ -36,12 +44,86 @@ export default function PhaseTable({
   const [selectedPhase, setSelectedPhase] = useState<Phase | null>(null);
   const { mutateAsync: removePhase, status: removeStatus } = useRemovePhase();
   const isDeleting = removeStatus === 'pending';
+  const [editPhaseId, setEditPhaseId] = useState<string | undefined>();
+  const [hasCheckedId, setHasCheckedId] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  const { mutateAsync: createPhase } = useCreatePhase();
+  const { mutateAsync: updatePhase } = useUpdatePhase();
+  const { data: editPhaseDetails, isLoading: isEditPhaseLoading } = usePhaseById(editPhaseId);
+
+  const modalMode = searchParams?.get('modal');
+  const modalId = searchParams?.get('id');
 
   const router = useRouter();
 
+  useEffect(() => {
+    if (modalMode === 'edit') {
+      if (modalId) {
+        setEditPhaseId(modalId);
+        setHasCheckedId(true);
+      } else {
+        const selected = getTableRow<any>('phase');
+        if (selected?.id) {
+          setEditPhaseId(String(selected.id));
+          clearTableRow('phase');
+          setHasCheckedId(true);
+        }
+      }
+    }
+  }, [modalMode, modalId]);
+
+  const handleCloseModal = () => {
+    setEditPhaseId(undefined);
+    setHasCheckedId(false);
+    setFormError('');
+    router.push('/setup/phase');
+  };
+
+  const handleAddPhase = async (data: ProfileFormData) => {
+    setFormError('');
+    try {
+      await createPhase({
+        phaseName: data.phaseName || '',
+        description: data.description || '',
+        cardNo: data.cardNo || '',
+      });
+      handleCloseModal();
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create phase';
+      setFormError(message);
+    }
+  };
+
+  const initialPhaseValues = useMemo<ProfileFormData | null>(() => {
+    if (!editPhaseDetails?.data) return null;
+    return {
+      phaseName: editPhaseDetails.data.phaseName || '',
+      description: editPhaseDetails.data.description || '',
+      cardNo: editPhaseDetails.data.cardNo || '',
+    };
+  }, [editPhaseDetails]);
+
+  const handleUpdatePhase = async (formData: ProfileFormData) => {
+    if (!editPhaseId || !editPhaseDetails?.data) return;
+    setFormError('');
+    try {
+      await updatePhase({
+        id: editPhaseId,
+        phaseName: formData.phaseName || editPhaseDetails.data.phaseName || '',
+        description: formData.description || editPhaseDetails.data.description || '',
+        cardNo: formData.cardNo || editPhaseDetails.data.cardNo || '',
+      });
+      handleCloseModal();
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update phase';
+      setFormError(message);
+    }
+  };
+
   const handleEdit = (item: Phase) => {
     saveTableRow('phase', item);
-    router.push('/setup/phase/edit-phase');
+    router.push(`/setup/phase?modal=edit&id=${encodeURIComponent(item.id)}`);
   };
 
   const handleDelete = (item: Phase) => {
@@ -92,7 +174,7 @@ export default function PhaseTable({
         loading={isLoading}
         showAddButton={true}
         addButtonLabel={addButtonLabel}
-        onAddClick={onAddNew}
+        onAddClick={() => router.push('/setup/phase?modal=add')}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         error={isError ? 'Failed to load phases.' : undefined}
@@ -103,6 +185,46 @@ export default function PhaseTable({
           return undefined;
         }}
       />
+      
+      <FormModal
+        isOpen={modalMode === 'add'}
+        onClose={handleCloseModal}
+        title="Add Phase"
+      >
+        <CommonEntityForm
+          title=""
+          fields={phaseFields}
+          initialValues={{
+            phaseName: '',
+            description: '',
+            cardNo: '',
+          }}
+          onSave={handleAddPhase}
+          onCancel={handleCloseModal}
+          loading={false}
+          error={formError}
+        />
+      </FormModal>
+
+      <FormModal
+        isOpen={modalMode === 'edit' && hasCheckedId}
+        onClose={handleCloseModal}
+        title="Edit Phase"
+      >
+        {isEditPhaseLoading ? (
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
+        ) : (
+          <CommonEntityForm
+            title=""
+            fields={phaseFields}
+            initialValues={initialPhaseValues || { phaseName: '', description: '', cardNo: '' }}
+            onSave={handleUpdatePhase}
+            onCancel={handleCloseModal}
+            loading={false}
+            error={formError}
+          />
+        )}
+      </FormModal>
       <WarningModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}

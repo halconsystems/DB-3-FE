@@ -31,38 +31,40 @@ export interface ApiResponse<T> {
 }
 
 export interface CreateExternalVehicleRequest {
-  ser: number;
+  ser?: number;
   licenseNo: number;
   license: string;
   year: string;
   color: string;
   make: string;
   model: string;
-  attachment: string;
+  attachment?: string;
   eTagId: string;
   validFrom: string;
   validTo: string;
   tagStatus: number;
   createdBy: string;
   externalUserId: string;
+  isActive: boolean;
 }
 
 export interface UpdateExternalVehicleRequest {
   id: string;
-  ser: number;
+  ser?: number;
   licenseNo: number;
   license: string;
   year: string;
   color: string;
   make: string;
   model: string;
-  attachment: string;
+  attachment?: string;
   eTagId: string;
   validFrom: string;
   validTo: string;
   tagStatus: number;
-  lastModifiedBy: string;
+  lastModifiedBy?: string;
   externalUserId: string;
+  isActive: boolean;
 }
 
 export type CreateExternalVehicleResponse = ApiResponse<ExternalVehicle | null>;

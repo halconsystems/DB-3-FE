@@ -2,6 +2,7 @@ import DashboardLayout from '../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileField } from '../../components/forms/CommonEntityForm';
 
 export default function ProfilePage() {
+  const pageTitle = 'Profile';
   
   // Status options for different status type selects
   const cardStatusOptions = [
@@ -56,7 +57,7 @@ export default function ProfilePage() {
   ];
 
   return (
-    <DashboardLayout pageTitle="Profile">
+    <DashboardLayout pageTitle={pageTitle} showBackButton={true}>
       <CommonEntityForm fields={profileFields} />
     </DashboardLayout>
   );

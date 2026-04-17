@@ -8,7 +8,7 @@
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: #F9FAFB;
+  background: #F5F5FA;
   box-shadow: -10px -10px 20px 0px #FFFFFF, 3px 3px 10px 0px #AAAACC80;
 
 }
@@ -21,7 +21,7 @@
 }
 
 .circularButton:hover {
-  box-shadow: 3px 3px 25px 0px rgba(170, 170, 204, 0.6);
+  /* box-shadow: 3px 3px 25px 0px rgba(170, 170, 204, 0.6); */
   transform: scale(1.05);
 }
 
@@ -30,7 +30,5 @@
 }
 
 .buttonIcon {
-  width: 15px;
-  height: 15px;
   object-fit: contain;
 }

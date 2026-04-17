@@ -44,11 +44,11 @@ export interface CreateExternalWorkerRequest {
   phoneNumber: string;
   cnic: string;
   dateOfBirth: string;
-  cnicFront: string;
-  cnicBack: string;
-  profilePicture: string;
+  cnicFront?: string;
+  cnicBack?: string;
+  profilePicture?: string;
   policeVerification: boolean;
-  policeVerificationAttachment: string;
+  policeVerificationAttachment?: string;
   workerCardNumber: string;
   cardStatus: number;
   workerCardDeliveryType: number;
@@ -56,6 +56,7 @@ export interface CreateExternalWorkerRequest {
   validTo: string;
   createdBy: string;
   externalUserId: string;
+  isActive?: boolean;
 }
 
 export interface UpdateExternalWorkerRequest {
@@ -67,17 +68,19 @@ export interface UpdateExternalWorkerRequest {
   phoneNumber: string;
   cnic: string;
   dateOfBirth: string;
-  cnicFront: string;
-  cnicBack: string;
-  profilePicture: string;
+  cnicFront?: string;
+  cnicBack?: string;
+  profilePicture?: string;
   policeVerification: boolean;
-  policeVerificationAttachment: string;
+  policeVerificationAttachment?: string;
   workerCardNumber: string;
-  lastModifiedBy: string;
+  lastModifiedBy?: string;
   cardStatus: number;
   workerCardDeliveryType: number;
   validFrom: string;
   validTo: string;
+  isActive?: boolean;
+  externalUserId?: string;
 }
 
 export type CreateExternalWorkerResponse = ApiResponse<ExternalWorker | null>;

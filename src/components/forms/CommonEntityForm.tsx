@@ -303,12 +303,12 @@ export default function CommonEntityForm({
 
     // Custom validations
     // Contact No: 11 digits (phoneNumber or cellNumber)
-    if (formData.phoneNumber && !/^\d{11}$/.test(formData.phoneNumber)) {
+    if (formData.phoneNumber && !/^\d{11}$/.test(formData.phoneNumber) && !/^\+92 3\d{2} \d{7}$/.test(formData.phoneNumber) && !/^03\d{2}-\d{7}$/.test(formData.phoneNumber)) {
       setWarningMessage('Contact Number must be exactly 11 digits.');
       setShowWarning(true);
       return;
     }
-    if (formData.cellNumber && !/^\d{11}$/.test(formData.cellNumber)) {
+    if (formData.cellNumber && !/^\d{11}$/.test(formData.cellNumber) && !/^\+92 3\d{2} \d{7}$/.test(formData.cellNumber) && !/^03\d{2}-\d{7}$/.test(formData.cellNumber)) {
       setWarningMessage('Contact Number must be exactly 11 digits.');
       setShowWarning(true);
       return;
@@ -547,26 +547,27 @@ export default function CommonEntityForm({
     return (
     <>
     <div className={styles.formContainer}>
-      <div className={styles.formHeader}>
-        <h2 className={styles.formTitle}>{title}</h2>
-        {statusSwitchFields.length > 0 && (
-          <div className={styles.statusWrapper} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            {statusSwitchFields.map(field => (
-              <StatusSwitchInputField
-                key={field.name as string}
-                field={field}
-                checked={!!formData[field.name]}
-                onChange={handleInputChange}
-                styles={styles}
-                wrapperClassName={styles.statusToggle}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className={styles.formGrid}>
-        {renderedFields}
+      <div className={styles.innerForm}>
+        <div className={styles.formHeader}>
+          <h2 className={styles.formTitle}>{title}</h2>
+          {statusSwitchFields.length > 0 && (
+            <div className={styles.statusWrapper} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              {statusSwitchFields.map(field => (
+                <StatusSwitchInputField
+                  key={field.name as string}
+                  field={field}
+                  checked={!!formData[field.name]}
+                  onChange={handleInputChange}
+                  styles={styles}
+                  wrapperClassName={styles.statusToggle}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+        <div className={styles.formGrid}>
+          {renderedFields}
+        </div>
       </div>
 
       <div className={styles.formActions}>

@@ -48,12 +48,13 @@ export interface UpdateExternalVisitorPassRequest {
   cnic: string;
   vehicleLicensePlate: string;
   vehicleLicenseNo: number;
-  visitorPassType: number;
+  visitorPassType: string | number;
   validFrom: string;
   validTo: string;
-  isActive: boolean;
-  isDeleted: boolean;
-  lastModifiedBy: string;
+  isActive?: boolean;
+  isDeleted?: boolean;
+  lastModifiedBy?: string;
+  externalUserId?: string;
 }
 
 export type CreateExternalVisitorPassResponse = ApiResponse<ExternalVisitorPass | null>;

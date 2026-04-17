@@ -1,12 +1,18 @@
 "use client";
 import WarningModal from '../../../../components/popup/WarningModal';
-import { useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useFeeScales } from '../../../../hooks/fees/useFeeScales';
 import { useRemoveFeeScale } from '../../../../hooks/fees/useRemoveFeeScale';
+import { useCreateFeeScale } from '../../../../hooks/fees/useCreateFeeScale';
+import { useUpdateFeeScale } from '../../../../hooks/fees/useUpdateFeeScale';
+import { useFeeScaleById } from '../../../../hooks/fees/useFeeScaleById';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import CircularButton from '../../../../components/ui/CircularButton';
-import { saveTableRow } from '../../../../lib/tableRowStorage';
+import FormModal from '../../../../components/popup/FormModal';
+import CommonEntityForm, { ProfileFormData } from '../../../../components/forms/CommonEntityForm';
+import { saveTableRow, clearTableRow, getTableRow } from '../../../../lib/tableRowStorage';
+import { feeScaleFields } from '../fields';
 
 interface FeeScale {
   id: string;
@@ -28,16 +34,16 @@ interface FeeScaleTableProps {
   onTabChange: (tab: string) => void;
   onAddNew: () => void;
   addButtonLabel: string;
+  searchParams?: ReadonlyURLSearchParams | null;
 }
-
-
 
 export default function FeeScaleTable({
   tabs,
   activeTab,
   onTabChange,
   onAddNew,
-  addButtonLabel
+  addButtonLabel,
+  searchParams
 }: FeeScaleTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
@@ -45,6 +51,98 @@ export default function FeeScaleTable({
   const removeFeeScaleMutation = useRemoveFeeScale();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedFeeScale, setSelectedFeeScale] = useState<FeeScale | null>(null);
+  const [editFeeScaleId, setEditFeeScaleId] = useState<string | undefined>();
+  const [hasCheckedId, setHasCheckedId] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  const { mutateAsync: createFeeScale } = useCreateFeeScale();
+  const { mutateAsync: updateFeeScale } = useUpdateFeeScale();
+  const { data: editFeeScaleDetails, isLoading: isEditFeeScaleLoading } = useFeeScaleById(editFeeScaleId);
+
+  const modalMode = searchParams?.get('modal');
+  const modalId = searchParams?.get('id');
+
+  useEffect(() => {
+    if (modalMode === 'edit') {
+      if (modalId) {
+        setEditFeeScaleId(modalId);
+        setHasCheckedId(true);
+      } else {
+        const selected = getTableRow<any>('fee-scale');
+        if (selected?.id) {
+          setEditFeeScaleId(String(selected.id));
+          clearTableRow('fee-scale');
+          setHasCheckedId(true);
+        }
+      }
+    }
+  }, [modalMode, modalId]);
+
+  const handleCloseModal = () => {
+    setEditFeeScaleId(undefined);
+    setHasCheckedId(false);
+    setFormError('');
+    router.push('/setup/fee-scale');
+  };
+
+  const handleAddFeeScale = async (data: ProfileFormData) => {
+    setFormError('');
+    try {
+      await createFeeScale({
+        name: data.name || '',
+        feeCategory: data.feeCategory || '',
+        amount: data.amount ? Number(data.amount) : 0,
+        taxPercentage: data.taxPercentage ? Number(data.taxPercentage) : 0,
+        currency: data.currency || '',
+        isTaxApplicable: Boolean(data.isTaxApplicable),
+        applicableUserTypes: data.applicableUserTypes || '',
+        applicableVehicleCategory: data.applicableVehicleCategory || '',
+        description: data.description || '',
+      });
+      handleCloseModal();
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create fee scale';
+      setFormError(message);
+    }
+  };
+
+  const initialFeeScaleValues = useMemo<ProfileFormData | null>(() => {
+    if (!editFeeScaleDetails?.data) return null;
+    return {
+      name: editFeeScaleDetails.data.name || '',
+      feeCategory: editFeeScaleDetails.data.feeCategory || '',
+      amount: String(editFeeScaleDetails.data.amount || ''),
+      taxPercentage: String(editFeeScaleDetails.data.taxPercentage || ''),
+      currency: editFeeScaleDetails.data.currency || '',
+      isTaxApplicable: editFeeScaleDetails.data.isTaxApplicable,
+      applicableUserTypes: editFeeScaleDetails.data.applicableUserTypes || '',
+      applicableVehicleCategory: editFeeScaleDetails.data.applicableVehicleCategory || '',
+      description: editFeeScaleDetails.data.description || '',
+    };
+  }, [editFeeScaleDetails]);
+
+  const handleUpdateFeeScale = async (formData: ProfileFormData) => {
+    if (!editFeeScaleId || !editFeeScaleDetails?.data) return;
+    setFormError('');
+    try {
+      await updateFeeScale({
+        id: editFeeScaleId,
+        name: formData.name || editFeeScaleDetails.data.name || '',
+        feeCategory: formData.feeCategory || editFeeScaleDetails.data.feeCategory || '',
+        amount: formData.amount ? Number(formData.amount) : editFeeScaleDetails.data.amount,
+        taxPercentage: formData.taxPercentage ? Number(formData.taxPercentage) : editFeeScaleDetails.data.taxPercentage,
+        currency: formData.currency || editFeeScaleDetails.data.currency || '',
+        isTaxApplicable: formData.isTaxApplicable !== undefined ? Boolean(formData.isTaxApplicable) : editFeeScaleDetails.data.isTaxApplicable,
+        applicableUserTypes: formData.applicableUserTypes || editFeeScaleDetails.data.applicableUserTypes || '',
+        applicableVehicleCategory: formData.applicableVehicleCategory || editFeeScaleDetails.data.applicableVehicleCategory || '',
+        description: formData.description || editFeeScaleDetails.data.description || '',
+      });
+      handleCloseModal();
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update fee scale';
+      setFormError(message);
+    }
+  };
   const feeScales: FeeScale[] = (data?.data || []).map((item: any) => ({
     id: item.id,
     packageName: item.name, // Assuming API 'name' maps to 'packageName'
@@ -61,7 +159,7 @@ export default function FeeScaleTable({
 
   const handleEdit = (item: FeeScale) => {
     saveTableRow('fee-scale', item);
-    router.push('/setup/fee-scale/edit-fee-scale');
+    router.push(`/setup/fee-scale?modal=edit&id=${encodeURIComponent(item.id)}`);
   };
 
   const handleDelete = (id: string) => {
@@ -125,10 +223,56 @@ export default function FeeScaleTable({
         loading={isLoading}
         showAddButton={true}
         addButtonLabel={addButtonLabel}
-        onAddClick={onAddNew}
+        onAddClick={() => router.push('/setup/fee-scale?modal=add')}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
       />
+      
+      <FormModal
+        isOpen={modalMode === 'add'}
+        onClose={handleCloseModal}
+        title="Add Fee Scale"
+      >
+        <CommonEntityForm
+          title=""
+          fields={feeScaleFields}
+          initialValues={{
+            name: '',
+            feeCategory: '',
+            amount: '',
+            taxPercentage: '',
+            currency: '',
+            isTaxApplicable: false,
+            applicableUserTypes: '',
+            applicableVehicleCategory: '',
+            description: '',
+          }}
+          onSave={handleAddFeeScale}
+          onCancel={handleCloseModal}
+          loading={false}
+          error={formError}
+        />
+      </FormModal>
+
+      <FormModal
+        isOpen={modalMode === 'edit' && hasCheckedId}
+        onClose={handleCloseModal}
+        title="Edit Fee Scale"
+      >
+        {isEditFeeScaleLoading ? (
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
+        ) : (
+          <CommonEntityForm
+            title=""
+            fields={feeScaleFields}
+            initialValues={initialFeeScaleValues || { name: '', feeCategory: '', amount: '', taxPercentage: '', currency: '', isTaxApplicable: false, applicableUserTypes: '', applicableVehicleCategory: '', description: '' }}
+            onSave={handleUpdateFeeScale}
+            onCancel={handleCloseModal}
+            loading={false}
+            error={formError}
+          />
+        )}
+      </FormModal>
       <WarningModal
         isOpen={deleteModalOpen}
         onClose={handleCloseDeleteModal}

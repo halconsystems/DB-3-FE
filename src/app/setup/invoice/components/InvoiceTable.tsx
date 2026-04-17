@@ -1,10 +1,16 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useInvoices } from '../../../../hooks/invoice/useInvoices';
+import { useCreateInvoice } from '../../../../hooks/invoice/useCreateInvoice';
+import { useUpdateInvoice } from '../../../../hooks/invoice/useUpdateInvoice';
+import { useInvoiceById } from '../../../../hooks/invoice/useInvoiceById';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import CircularButton from '../../../../components/ui/CircularButton';
-import { saveTableRow } from '../../../../lib/tableRowStorage';
+import FormModal from '../../../../components/popup/FormModal';
+import CommonEntityForm, { ProfileFormData } from '../../../../components/forms/CommonEntityForm';
+import { saveTableRow, clearTableRow, getTableRow } from '../../../../lib/tableRowStorage';
+import { invoiceFields } from '../fields';
 
 interface Invoice {
   id: string;
@@ -28,21 +34,102 @@ interface InvoiceTableProps {
   onTabChange: (tab: string) => void;
   onAddNew: () => void;
   addButtonLabel: string;
+  searchParams?: ReadonlyURLSearchParams | null;
 }
-
-
-
 
 export default function InvoiceTable({
   tabs,
   activeTab,
   onTabChange,
   onAddNew,
-  addButtonLabel
+  addButtonLabel,
+  searchParams
 }: InvoiceTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
   const { data, isLoading } = useInvoices();
+  const [editInvoiceId, setEditInvoiceId] = useState<string | undefined>();
+  const [hasCheckedId, setHasCheckedId] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  const { mutateAsync: createInvoice } = useCreateInvoice();
+  const { mutateAsync: updateInvoice } = useUpdateInvoice();
+  const { data: editInvoiceDetails, isLoading: isEditInvoiceLoading } = useInvoiceById(editInvoiceId);
+
+  const modalMode = searchParams?.get('modal');
+  const modalId = searchParams?.get('id');
+
+  useEffect(() => {
+    if (modalMode === 'edit') {
+      if (modalId) {
+        setEditInvoiceId(modalId);
+        setHasCheckedId(true);
+      } else {
+        const selected = getTableRow<any>('invoice');
+        if (selected?.id) {
+          setEditInvoiceId(String(selected.id));
+          clearTableRow('invoice');
+          setHasCheckedId(true);
+        }
+      }
+    }
+  }, [modalMode, modalId]);
+
+  const handleCloseModal = () => {
+    setEditInvoiceId(undefined);
+    setHasCheckedId(false);
+    setFormError('');
+    router.push('/setup/invoice');
+  };
+
+  const handleAddInvoice = async (data: ProfileFormData) => {
+    setFormError('');
+    try {
+      await createInvoice({
+        id: data.id || '',
+        paymentMethod: data.paymentMethod || '',
+        transactionId: data.transactionId || '',
+        invoiceNumber: data.invoiceNumber || '',
+        tagId: data.tagId || '',
+        entityType: data.entityType || '',
+      });
+      handleCloseModal();
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create invoice';
+      setFormError(message);
+    }
+  };
+
+  const initialInvoiceValues = useMemo<ProfileFormData | null>(() => {
+    if (!editInvoiceDetails?.data) return null;
+    return {
+      id: editInvoiceDetails.data.id || '',
+      paymentMethod: editInvoiceDetails.data.paymentMethod || '',
+      transactionId: editInvoiceDetails.data.transactionId || '',
+      invoiceNumber: editInvoiceDetails.data.invoiceNumber || '',
+      tagId: editInvoiceDetails.data.tagId || '',
+      entityType: editInvoiceDetails.data.entityType || '',
+    };
+  }, [editInvoiceDetails]);
+
+  const handleUpdateInvoice = async (formData: ProfileFormData) => {
+    if (!editInvoiceId || !editInvoiceDetails?.data) return;
+    setFormError('');
+    try {
+      await updateInvoice({
+        id: editInvoiceId,
+        paymentMethod: formData.paymentMethod || editInvoiceDetails.data.paymentMethod || '',
+        transactionId: formData.transactionId || editInvoiceDetails.data.transactionId || '',
+        invoiceNumber: formData.invoiceNumber || editInvoiceDetails.data.invoiceNumber || '',
+        tagId: formData.tagId || editInvoiceDetails.data.tagId || '',
+        entityType: formData.entityType || editInvoiceDetails.data.entityType || '',
+      });
+      handleCloseModal();
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update invoice';
+      setFormError(message);
+    }
+  };
   // Map InvoiceRecord to Invoice for DataTable
   const invoices: Invoice[] = (data?.data || []).map((inv) => ({
     id: inv.id,
@@ -62,7 +149,7 @@ export default function InvoiceTable({
 
   const handleEdit = (item: Invoice) => {
     saveTableRow('invoice', item);
-    router.push('/setup/invoice/edit-invoice');
+    router.push(`/setup/invoice?modal=edit&id=${encodeURIComponent(item.id)}`);
   };
 
   const handleDelete = (id: string) => {
@@ -101,18 +188,63 @@ export default function InvoiceTable({
   ];
 
   return (
-    <DataTable<Invoice>
-      tabs={tabs}
-      activeTab={activeTab}
-      onTabChange={onTabChange}
-      columns={columns}
-      data={invoices}
-      loading={isLoading}
-      showAddButton={true}
-      addButtonLabel={addButtonLabel}
-      onAddClick={onAddNew}
-      currentPage={currentPage}
-      onPageChange={setCurrentPage}
-    />
+    <>
+      <DataTable<Invoice>
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        columns={columns}
+        data={invoices}
+        loading={isLoading}
+        showAddButton={true}
+        addButtonLabel={addButtonLabel}
+        onAddClick={() => router.push('/setup/invoice?modal=add')}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+      />
+      
+      <FormModal
+        isOpen={modalMode === 'add'}
+        onClose={handleCloseModal}
+        title="Add Invoice"
+      >
+        <CommonEntityForm
+          title=""
+          fields={invoiceFields}
+          initialValues={{
+            id: '',
+            paymentMethod: '',
+            transactionId: '',
+            invoiceNumber: '',
+            tagId: '',
+            entityType: '',
+          }}
+          onSave={handleAddInvoice}
+          onCancel={handleCloseModal}
+          loading={false}
+          error={formError}
+        />
+      </FormModal>
+
+      <FormModal
+        isOpen={modalMode === 'edit' && hasCheckedId}
+        onClose={handleCloseModal}
+        title="Edit Invoice"
+      >
+        {isEditInvoiceLoading ? (
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
+        ) : (
+          <CommonEntityForm
+            title=""
+            fields={invoiceFields}
+            initialValues={initialInvoiceValues || { id: '', paymentMethod: '', transactionId: '', invoiceNumber: '', tagId: '', entityType: '' }}
+            onSave={handleUpdateInvoice}
+            onCancel={handleCloseModal}
+            loading={false}
+            error={formError}
+          />
+        )}
+      </FormModal>
+    </>
   );
 }

@@ -12,6 +12,7 @@ interface DashboardLayoutProps {
   userName?: string;
   userAvatarUrl?: string;
   headerAction?: React.ReactNode;
+  showBackButton?: boolean;
 }
 
 // Icon mapping for menu items
@@ -32,7 +33,7 @@ const getMenuIcon = (path: string, isActive: boolean): string => {
   return icons ? `/icons/${icons[isActive ? 'active' : 'inactive']}` : '';
 };
 
-export default function DashboardLayout({ children, pageTitle = "Dashboard", userName = "Ahmed Faraz", userAvatarUrl, headerAction }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, pageTitle = "Dashboard", userName = "Ahmed Faraz", userAvatarUrl, headerAction, showBackButton }: DashboardLayoutProps) {
   const [memberTypeOpen, setMemberTypeOpen] = useState(true);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
@@ -181,12 +182,12 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
       <main className={styles.mainContent}>
         <header className={styles.header}>
           <div className={styles.headerTitleWrapper}>
-            {(activeMenuItem.match(/\//g)?.length ?? 0) >= 2 && (<img 
+            {(showBackButton !== false && (activeMenuItem.match(/\//g)?.length ?? 0) >= 2) || showBackButton === true ? (<img 
               src="/icons/arrow-back.png" 
               alt="Back" 
               className={styles.backArrowImg} 
               onClick={() => router.back()}
-            />)}
+            />) : null}
             <div className={styles.headerTitle}>{pageTitle}</div>
           </div>
           <div className={styles.headerRight}>

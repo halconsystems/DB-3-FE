@@ -1,12 +1,17 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import CircularButton from '../../../../components/ui/CircularButton';
 import WarningModal from '../../../../components/popup/WarningModal';
-import { saveTableRow } from '../../../../lib/tableRowStorage';
+import FormModal from '../../../../components/popup/FormModal';
+import CommonEntityForm, { ProfileFormData } from '../../../../components/forms/CommonEntityForm';
+import { saveTableRow, clearTableRow, getTableRow } from '../../../../lib/tableRowStorage';
 import { useEmployees } from '../../../../hooks/employee/useEmployees';
 import { useRemoveEmployee } from '../../../../hooks/employee/useRemoveEmployee';
+import { useUpdateEmployee } from '../../../../hooks/employee/useUpdateEmployee';
+import { useEmployeeById } from '../../../../hooks/employee/useEmployeeById';
+import { employeeFields } from '../fields';
 
 export interface Employee {
   id: string;
@@ -25,6 +30,7 @@ interface EmployeeTableProps {
   onTabChange: (tab: string) => void;
   onAddNew: () => void;
   addButtonLabel: string;
+  searchParams?: ReadonlyURLSearchParams | null;
 }
 
 export default function EmployeeTable({
@@ -32,13 +38,77 @@ export default function EmployeeTable({
   activeTab,
   onTabChange,
   onAddNew,
-  addButtonLabel
+  addButtonLabel,
+  searchParams
 }: EmployeeTableProps) {
   const pageSize = 10;
   const [currentPage, setCurrentPage] = useState(1);
   const { data, isLoading } = useEmployees();
   const { mutateAsync: removeEmployee, isPending: isDeleting } = useRemoveEmployee();
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [editEmployeeId, setEditEmployeeId] = useState<string | undefined>();
+  const [hasCheckedId, setHasCheckedId] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  const { mutateAsync: updateEmployee } = useUpdateEmployee();
+  const { data: editEmployeeDetails, isLoading: isEditEmployeeLoading } = useEmployeeById(editEmployeeId);
+
+  const modalMode = searchParams?.get('modal');
+  const modalId = searchParams?.get('id');
+
+  useEffect(() => {
+    if (modalMode === 'edit') {
+      if (modalId) {
+        setEditEmployeeId(modalId);
+        setHasCheckedId(true);
+      } else {
+        const selected = getTableRow<any>('employee');
+        if (selected?.id) {
+          setEditEmployeeId(String(selected.id));
+          clearTableRow('employee');
+          setHasCheckedId(true);
+        }
+      }
+    }
+  }, [modalMode, modalId]);
+
+  const handleCloseModal = () => {
+    setEditEmployeeId(undefined);
+    setHasCheckedId(false);
+    setFormError('');
+    router.push('/setup/employee');
+  };
+
+  const initialEmployeeValues = useMemo<ProfileFormData | null>(() => {
+    if (!editEmployeeDetails?.data) return null;
+    return {
+      fullName: editEmployeeDetails.data.fullName || '',
+      emailAddress: editEmployeeDetails.data.email || '',
+      cellNumber: editEmployeeDetails.data.phoneNumber || '',
+      cnic: editEmployeeDetails.data.cnic || '',
+      role: editEmployeeDetails.data.userRole || '',
+      tempPassword: '',
+    };
+  }, [editEmployeeDetails]);
+
+  const handleUpdateEmployee = async (formData: ProfileFormData) => {
+    if (!editEmployeeId || !editEmployeeDetails?.data) return;
+    setFormError('');
+    try {
+      await updateEmployee({
+        id: editEmployeeId,
+        fullName: formData.fullName || editEmployeeDetails.data.fullName || '',
+        email: formData.emailAddress || editEmployeeDetails.data.email || '',
+        phoneNumber: formData.cellNumber || editEmployeeDetails.data.phoneNumber || '',
+        cnic: formData.cnic || editEmployeeDetails.data.cnic || '',
+        userRole: formData.role || editEmployeeDetails.data.userRole || '',
+      } as any);
+      handleCloseModal();
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update employee';
+      setFormError(message);
+    }
+  };
 
   useEffect(() => {
     const items = data?.data?.items;
@@ -66,7 +136,7 @@ export default function EmployeeTable({
   const router = useRouter();
   const handleEdit = (item: Employee) => {
     saveTableRow('employee', item);
-    router.push('/setup/employee/edit-employee');
+    router.push(`/setup/employee?modal=edit&id=${encodeURIComponent(item.id)}`);
   };
   const handleDelete = (item: Employee) => {
     setSelectedEmployee(item);
@@ -135,6 +205,26 @@ export default function EmployeeTable({
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status}
       />
+      
+      <FormModal
+        isOpen={modalMode === 'edit' && hasCheckedId}
+        onClose={handleCloseModal}
+        title="Edit Employee"
+      >
+        {isEditEmployeeLoading ? (
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
+        ) : (
+          <CommonEntityForm
+            title=""
+            fields={employeeFields}
+            initialValues={initialEmployeeValues || { fullName: '', emailAddress: '', cellNumber: '', cnic: '', role: '', tempPassword: '' }}
+            onSave={handleUpdateEmployee}
+            onCancel={handleCloseModal}
+            loading={false}
+            error={formError}
+          />
+        )}
+      </FormModal>
       <WarningModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}

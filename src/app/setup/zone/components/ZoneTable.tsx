@@ -1,12 +1,18 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useZones } from '../../../../hooks/zone/useZones';
+import { useZoneById } from '../../../../hooks/zone/useZoneById';
 import { useDeleteZone } from '../../../../hooks/zone/useDeleteZone';
+import { useCreateZone } from '../../../../hooks/zone/useCreateZone';
+import { useUpdateZone } from '../../../../hooks/zone/useUpdateZone';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import CircularButton from '../../../../components/ui/CircularButton';
 import WarningModal from '../../../../components/popup/WarningModal';
-import { saveTableRow } from '../../../../lib/tableRowStorage';
+import FormModal from '../../../../components/popup/FormModal';
+import CommonEntityForm, { ProfileFormData } from '../../../../components/forms/CommonEntityForm';
+import { saveTableRow, clearTableRow, getTableRow } from '../../../../lib/tableRowStorage';
+import { zoneFields } from '../fields';
 import type { Zone as BaseZone } from '../../../../services/zone.service';
 
 type Zone = BaseZone & { phaseName?: string; status: 'Active' | 'Inactive' };
@@ -33,13 +39,15 @@ interface VendorTableProps {
   onTabChange: (tab: string) => void;
   onAddNew: () => void;
   addButtonLabel: string;
+  searchParams?: ReadonlyURLSearchParams | null;
 }
 export default function ZoneTable({
   tabs,
   activeTab,
   onTabChange,
   onAddNew,
-  addButtonLabel
+  addButtonLabel,
+  searchParams,
 }: VendorTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
@@ -47,8 +55,18 @@ export default function ZoneTable({
   const [zones, setZones] = useState<(Zone & { phaseName?: string; status: 'Active' | 'Inactive' })[]>([]);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedZone, setSelectedZone] = useState<(Zone & { phaseName?: string; status: 'Active' | 'Inactive' }) | null>(null);
+  const [editZoneId, setEditZoneId] = useState<string | undefined>();
+  const [hasCheckedId, setHasCheckedId] = useState(false);
+  const [formError, setFormError] = useState('');
+
   const { mutateAsync: deleteZone, status: deleteStatus } = useDeleteZone();
+  const { mutateAsync: createZone } = useCreateZone();
+  const { mutateAsync: updateZone } = useUpdateZone();
+  const { data: editZoneDetails, isLoading: isEditZoneLoading } = useZoneById(editZoneId);
   const isDeleting = deleteStatus === 'pending';
+
+  const modalMode = searchParams?.get('modal');
+  const modalId = searchParams?.get('id');
 
   useEffect(() => {
     if (!data?.data) {
@@ -64,9 +82,74 @@ export default function ZoneTable({
     );
   }, [data]);
 
+  useEffect(() => {
+    if (modalMode === 'edit') {
+      if (modalId) {
+        setEditZoneId(modalId);
+        setHasCheckedId(true);
+      } else {
+        const selected = getTableRow<any>('zone');
+        if (selected?.id) {
+          setEditZoneId(String(selected.id));
+          clearTableRow('zone');
+          setHasCheckedId(true);
+        }
+      }
+    }
+  }, [modalMode, modalId]);
+
+  const handleCloseModal = () => {
+    setEditZoneId(undefined);
+    setHasCheckedId(false);
+    setFormError('');
+    router.push('/setup/zone');
+  };
+
+  const handleAddZone = async (data: ProfileFormData) => {
+    setFormError('');
+    try {
+      await createZone({
+        name: data.name || '',
+        phaseId: data.phaseId ? Number(data.phaseId) : 0,
+        description: data.description || '',
+      });
+      setZones(prev => [...prev, { id: '', name: data.name, isActive: true, status: 'Active' } as any]);
+      handleCloseModal();
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create zone';
+      setFormError(message);
+    }
+  };
+
+  const initialZoneValues = useMemo<ProfileFormData | null>(() => {
+    if (!editZoneDetails?.data) return null;
+    return {
+      name: editZoneDetails.data.name || '',
+      phaseId: String(editZoneDetails.data.phaseId || ''),
+      description: editZoneDetails.data.description || '',
+    };
+  }, [editZoneDetails]);
+
+  const handleUpdateZone = async (formData: ProfileFormData) => {
+    if (!editZoneId || !editZoneDetails?.data) return;
+    setFormError('');
+    try {
+      await updateZone({
+        id: editZoneId,
+        name: formData.name || editZoneDetails.data.name || '',
+        phaseId: formData.phaseId ? Number(formData.phaseId) : editZoneDetails.data.phaseId,
+        description: formData.description || editZoneDetails.data.description || '',
+      });
+      handleCloseModal();
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update zone';
+      setFormError(message);
+    }
+  };
+
   const handleEdit = (item: Zone) => {
     saveTableRow('zone', item);
-    router.push('/setup/zone/edit-zone');
+    router.push(`/setup/zone?modal=edit&id=${encodeURIComponent(item.id)}`);
   };
   const handleDelete = (item: Zone) => {
     const zoneItem = item as Zone & { phaseName?: string; status: 'Active' | 'Inactive' };
@@ -114,12 +197,53 @@ export default function ZoneTable({
         data={zones}
         showAddButton={true}
         addButtonLabel={addButtonLabel}
-        onAddClick={onAddNew}
+        onAddClick={() => router.push('/setup/zone?modal=add')}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status}
         loading={isLoading}
       />
+      
+      <FormModal
+        isOpen={modalMode === 'add'}
+        onClose={handleCloseModal}
+        title="Add Zone"
+      >
+        <CommonEntityForm
+          title=""
+          fields={zoneFields}
+          initialValues={{
+            name: '',
+            phaseId: '',
+            description: '',
+          }}
+          onSave={handleAddZone}
+          onCancel={handleCloseModal}
+          loading={false}
+          error={formError}
+        />
+      </FormModal>
+
+      <FormModal
+        isOpen={modalMode === 'edit' && hasCheckedId}
+        onClose={handleCloseModal}
+        title="Edit Zone"
+      >
+        {isEditZoneLoading ? (
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
+        ) : (
+          <CommonEntityForm
+            title=""
+            fields={zoneFields}
+            initialValues={initialZoneValues || { name: '', phaseId: '', description: '' }}
+            onSave={handleUpdateZone}
+            onCancel={handleCloseModal}
+            loading={false}
+            error={formError}
+          />
+        )}
+      </FormModal>
+
       <WarningModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}

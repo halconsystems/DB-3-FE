@@ -1,12 +1,18 @@
 .formContainer {
-  background: #fff;
+  /* background: #fff; */
   border-radius: 20px;
-  padding: 32px 40px 40px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  padding: 0px;
+  /* box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06); */
   font-family: Inter, 'Noto Sans', sans-serif;
   width: 100%;
+  max-height: 100%;
 }
 
+.innerForm{
+  height: 100%;
+  max-height: 370px;
+  overflow-y: auto;
+}
 
 .formHeader {
   display: flex;
@@ -449,7 +455,7 @@
   display: flex;
   justify-content: center;
   gap: 16px;
-  margin-top: 40px;
+  margin-top: 32px;
 }
 
 .cancelButton {

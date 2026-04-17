@@ -1,13 +1,19 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import CircularButton from '../../../../components/ui/CircularButton';
 import WarningModal from '../../../../components/popup/WarningModal';
-import { saveTableRow } from '../../../../lib/tableRowStorage';
+import FormModal from '../../../../components/popup/FormModal';
+import CommonEntityForm, { ProfileFormData } from '../../../../components/forms/CommonEntityForm';
+import { saveTableRow, clearTableRow, getTableRow } from '../../../../lib/tableRowStorage';
 import { useGetAllTags } from '../../../../hooks/tag/useGetAllTags';
 import { useRemoveTag } from '../../../../hooks/tag/useRemoveTag';
+import { useCreateTag } from '../../../../hooks/tag/useCreateTag';
+import { useUpdateTag } from '../../../../hooks/tag/useUpdateTag';
+import { useGetTagById } from '../../../../hooks/tag/useGetTagById';
 import { formatDateDisplay } from '../../../../lib/dateUtils';
+import { tagFields } from '../fields';
 
 type Tag = {
   id: string;
@@ -28,6 +34,7 @@ interface TagTableProps {
   onTabChange: (tab: string) => void;
   onAddNew: () => void;
   addButtonLabel: string;
+  searchParams?: ReadonlyURLSearchParams | null;
 }
 
 export default function TagTable({
@@ -35,7 +42,8 @@ export default function TagTable({
   activeTab,
   onTabChange,
   onAddNew,
-  addButtonLabel
+  addButtonLabel,
+  searchParams
 }: TagTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const { data, isLoading, isError } = useGetAllTags();
@@ -44,6 +52,89 @@ export default function TagTable({
   const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
   const router = useRouter();
   const removeTagMutation = useRemoveTag();
+  const [editTagId, setEditTagId] = useState<string | undefined>();
+  const [hasCheckedId, setHasCheckedId] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  const { mutateAsync: createTag } = useCreateTag();
+  const { mutateAsync: updateTag } = useUpdateTag();
+  const { data: editTagDetails, isLoading: isEditTagLoading } = useGetTagById(editTagId);
+
+  const modalMode = searchParams?.get('modal');
+  const modalId = searchParams?.get('id');
+
+  useEffect(() => {
+    if (modalMode === 'edit') {
+      if (modalId) {
+        setEditTagId(modalId);
+        setHasCheckedId(true);
+      } else {
+        const selected = getTableRow<any>('tag');
+        if (selected?.id) {
+          setEditTagId(String(selected.id));
+          clearTableRow('tag');
+          setHasCheckedId(true);
+        }
+      }
+    }
+  }, [modalMode, modalId]);
+
+  const handleCloseModal = () => {
+    setEditTagId(undefined);
+    setHasCheckedId(false);
+    setFormError('');
+    router.push('/setup/tag');
+  };
+
+  const handleAddTag = async (data: ProfileFormData) => {
+    setFormError('');
+    try {
+      await createTag({
+        tagNumber: data.tagNumber || '',
+        tagType: data.tagType || '',
+        validFrom: data.validFrom || '',
+        validTo: data.validTo || '',
+        entityType: data.entityType || '',
+        entityId: data.entityId || '',
+      });
+      handleCloseModal();
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create tag';
+      setFormError(message);
+    }
+  };
+
+  const initialTagValues = useMemo<ProfileFormData | null>(() => {
+    if (!editTagDetails?.data) return null;
+    return {
+      tagNumber: editTagDetails.data.tagNumber || '',
+      tagType: editTagDetails.data.tagType || '',
+      validFrom: editTagDetails.data.validFrom || '',
+      validTo: editTagDetails.data.validTo || '',
+      entityType: editTagDetails.data.entityType || '',
+      entityId: editTagDetails.data.entityId || '',
+    };
+  }, [editTagDetails]);
+
+  const handleUpdateTag = async (formData: ProfileFormData) => {
+    if (!editTagId || !editTagDetails?.data) return;
+    setFormError('');
+    try {
+      await updateTag({
+        id: editTagId,
+        tagNumber: formData.tagNumber || editTagDetails.data.tagNumber || '',
+        tagType: formData.tagType || editTagDetails.data.tagType || '',
+        validFrom: formData.validFrom || editTagDetails.data.validFrom || '',
+        validTo: formData.validTo || editTagDetails.data.validTo || '',
+        entityType: formData.entityType || editTagDetails.data.entityType || '',
+        entityId: formData.entityId || editTagDetails.data.entityId || '',
+      });
+      handleCloseModal();
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update tag';
+      setFormError(message);
+    }
+  };
 
   useEffect(() => {
     if (data && data.data) {
@@ -65,7 +156,7 @@ export default function TagTable({
 
   const handleEdit = (item: Tag) => {
     saveTableRow('tag', item);
-    router.push('/setup/tag/edit-tag');
+    router.push(`/setup/tag?modal=edit&id=${encodeURIComponent(item.id)}`);
   };
 
   const handleDelete = (item: Tag) => {
@@ -117,13 +208,56 @@ export default function TagTable({
         data={Tags}
         showAddButton={true}
         addButtonLabel={addButtonLabel}
-        onAddClick={onAddNew}
+        onAddClick={() => router.push('/setup/tag?modal=add')}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         loading={isLoading}
         error={isError ? 'Failed to load tags.' : undefined}
         getRowStatus={(row) => row.status}
       />
+      
+      <FormModal
+        isOpen={modalMode === 'add'}
+        onClose={handleCloseModal}
+        title="Add Tag"
+      >
+        <CommonEntityForm
+          title=""
+          fields={tagFields}
+          initialValues={{
+            tagNumber: '',
+            tagType: '',
+            validFrom: '',
+            validTo: '',
+            entityType: '',
+            entityId: '',
+          }}
+          onSave={handleAddTag}
+          onCancel={handleCloseModal}
+          loading={false}
+          error={formError}
+        />
+      </FormModal>
+
+      <FormModal
+        isOpen={modalMode === 'edit' && hasCheckedId}
+        onClose={handleCloseModal}
+        title="Edit Tag"
+      >
+        {isEditTagLoading ? (
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
+        ) : (
+          <CommonEntityForm
+            title=""
+            fields={tagFields}
+            initialValues={initialTagValues || { tagNumber: '', tagType: '', validFrom: '', validTo: '', entityType: '', entityId: '' }}
+            onSave={handleUpdateTag}
+            onCancel={handleCloseModal}
+            loading={false}
+            error={formError}
+          />
+        )}
+      </FormModal>
       <WarningModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}

@@ -48,16 +48,16 @@ export const getAddButtonLabel = (tab: string): string => {
 };
 
 export const ROUTE_MAP: { [key: string]: string } = {
-  'employee': '/setup/employee/add-employee',
-  'zone': '/setup/zone/add-zone',
-  'cp-agent': '/setup/cp-agent/add-cp',
-  'bank-account': '/setup/bank-account/add-bank',
-  'vendor-supplier': '/setup/vendor-supplier/add-vendor',
-  'package-type': '/setup/package-type/add-package',
-  'phase': '/setup/phase/add-phase',
-  'fee-scale': '/setup/fee-scale/add-fee-scale',
-  'invoice': '/setup/invoice/add-invoice',
-  'tag': '/setup/tag/add-tag',
-  'tag-type': '/setup/tag-type/add-tagtype',
-  'tag-approval': '/setup/tag-approval/approval-request',
+  'employee': '/setup/employee?modal=add',
+  'zone': '/setup/zone?modal=add',
+  'cp-agent': '/setup/cp-agent?modal=add',
+  'bank-account': '/setup/bank-account?modal=add',
+  'vendor-supplier': '/setup/vendor-supplier?modal=add',
+  'package-type': '/setup/package-type?modal=add',
+  'phase': '/setup/phase?modal=add',
+  'fee-scale': '/setup/fee-scale?modal=add',
+  'invoice': '/setup/invoice?modal=add',
+  'tag': '/setup/tag?modal=add',
+  'tag-type': '/setup/tag-type?modal=add',
+  'tag-approval': '/setup/tag-approval?modal=add',
 };

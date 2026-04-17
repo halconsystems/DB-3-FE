@@ -1,15 +1,22 @@
 'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
 import CircularButton from '../../components/ui/CircularButton';
 import HostDetailsModal from '../../components/ui/components/HostDetailsModal';
 import WarningModal from '../../components/popup/WarningModal';
-import { saveTableRow } from '../../lib/tableRowStorage';
+import FormModal from '../../components/popup/FormModal';
+import CommonEntityForm, { ProfileFormData } from '../../components/forms/CommonEntityForm';
+import { saveTableRow, clearTableRow, getTableRow } from '../../lib/tableRowStorage';
 import { useVisitors } from '../../hooks/visitors/useVisitors';
+import { useVisitorById } from '../../hooks/visitors/useVisitorById';
+import { useCreateVisitor } from '../../hooks/visitors/useCreateVisitor';
+import { useUpdateVisitor } from '../../hooks/visitors/useUpdateVisitor';
 import { useDeleteVisitor } from '../../hooks/visitors/useDeleteVisitor';
 import { formatDateDisplay } from '../../lib/dateUtils';
+import { visitorFields } from './fields';
+import { getAllExternalUsers } from '../../services/user.service';
 import type { ExternalVisitorPass } from '../../services/visitor.service';
 
 interface Visitor {
@@ -38,15 +45,44 @@ const toVisitorPassTypeLabel = (passType?: string | number): string => {
 
 
 export default function VisitorsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [currentPage, setCurrentPage] = useState(1);
   const [hostModalOpen, setHostModalOpen] = useState(false);
   const [selectedHost, setSelectedHost] = useState<any>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedVisitor, setSelectedVisitor] = useState<SelectedVisitorRow | null>(null);
   const [localRemovedIds, setLocalRemovedIds] = useState<string[]>([]);
+  const [editVisitorId, setEditVisitorId] = useState<string | undefined>();
+  const [hasCheckedId, setHasCheckedId] = useState(false);
 
   const { data, isLoading, isError, error } = useVisitors();
+  const { data: editVisitorDetails, isLoading: isEditVisitorLoading } = useVisitorById(editVisitorId);
   const { mutateAsync: deleteVisitor, isPending: isDeleting } = useDeleteVisitor();
+  const { mutateAsync: createVisitor } = useCreateVisitor();
+  const { mutateAsync: updateVisitor } = useUpdateVisitor();
+
+  const [formError, setFormError] = useState('');
+
+  const modalMode = searchParams?.get('modal');
+  const modalId = searchParams?.get('id');
+
+  useEffect(() => {
+    if (modalMode === 'edit') {
+      if (modalId) {
+        setEditVisitorId(modalId);
+        setHasCheckedId(true);
+      } else {
+        const selected = getTableRow<any>('visitors');
+        if (selected?.id) {
+          setEditVisitorId(String(selected.id));
+          clearTableRow('visitors');
+          setHasCheckedId(true);
+        }
+      }
+    }
+  }, [modalMode, modalId]);
 
   console.log('Fetched visitors data:', data);
 
@@ -68,15 +104,153 @@ export default function VisitorsPage() {
     }));
 
 
-  const router = useRouter();
 
   const handleAddNew = () => {
-    router.push('/visitors/add-visitor');
+    router.push('/visitors?modal=add');
   };
 
   const handleEdit = (visitor: Visitor) => {
     saveTableRow('visitors', { id: visitor.id });
-    router.push('/visitors/edit-visitor');
+    router.push(`/visitors?modal=edit&id=${encodeURIComponent(visitor.id)}`);
+  };
+
+  const handleCloseModal = () => {
+    setEditVisitorId(undefined);
+    setHasCheckedId(false);
+    setFormError('');
+    router.push('/visitors');
+  };
+
+  const toDateInputValue = (value?: string) => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toISOString().split('T')[0];
+  };
+
+  const toIsoDate = (value?: string) => {
+    if (!value) return new Date().toISOString();
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+  };
+
+  const toVehicleLicensePlate = (vehicleNo?: string, vehicleNo2?: string) => {
+    const firstPart = (vehicleNo ?? '').trim();
+    const secondPart = (vehicleNo2 ?? '').trim();
+    if (!firstPart && !secondPart) return '';
+    return `${firstPart}-${secondPart}`;
+  };
+
+  const toVisitorPassType = (quickPick?: string): number | null => {
+    if (quickPick === 'LongStay') return 2;
+    if (quickPick === 'DayPass') return 1;
+    return null;
+  };
+
+  const toQuickPick = (passType?: string | number): string => {
+    if (passType === 2) return 'LongStay';
+    if (passType === 1) return 'DayPass';
+    return 'DayPass';
+  };
+
+  const handleAddVisitor = async (data: ProfileFormData) => {
+    setFormError('');
+    try {
+      const visitorPassType = toVisitorPassType(data.quickPick);
+      if (visitorPassType === null) {
+        throw new Error('Please select a Quick Pick option.');
+      }
+
+      let externalUserId = 'system';
+      try {
+        const users = await getAllExternalUsers();
+        const firstValid = users.find((u: any) => u.id);
+        if (firstValid && firstValid.id) {
+          externalUserId = firstValid.id;
+        }
+      } catch {
+        externalUserId = 'system';
+      }
+
+      await createVisitor({
+        name: data.fullName || '',
+        cnic: data.cnic || '',
+        vehicleLicensePlate: toVehicleLicensePlate(data.vehicleNo, data.vehicleNo2),
+        vehicleLicenseNo: Number(data.vehicleNo2 || 0),
+        visitorPassType: visitorPassType || 1,
+        validFrom: toIsoDate(data.fromDate),
+        validTo: toIsoDate(data.toDate),
+        externalUserId,
+      });
+      handleCloseModal();
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create visitor';
+      setFormError(message);
+    }
+  };
+
+  const initialVisitorValues = useMemo<ProfileFormData | null>(() => {
+    if (!editVisitorDetails?.data) return null;
+    const data = editVisitorDetails.data;
+    return {
+      fullName: data.name || '',
+      cnic: data.cnic || '',
+      vehicleNo: data.vehicleLicensePlate?.split('-')[0] || '',
+      vehicleNo2: String(data.vehicleLicenseNo || ''),
+      licensePlate: data.vehicleLicensePlate || '',
+      qrReference: data.qrCode || '',
+      quickPick: toQuickPick(data.visitorPassType),
+      fromDate: toDateInputValue(data.validFrom),
+      toDate: toDateInputValue(data.validTo),
+      isActive: data.isActive,
+      tagId: '',
+      tagNumber: '',
+      tagType: '',
+      validFrom: '',
+      validTo: '',
+      entityType: '',
+      entityId: '',
+    };
+  }, [editVisitorDetails]);
+
+  const handleUpdateVisitor = async (formData: ProfileFormData) => {
+    if (!editVisitorId || !editVisitorDetails?.data) return;
+    setFormError('');
+    try {
+      const visitorData = editVisitorDetails.data;
+      const visitorPassType = toVisitorPassType(formData.quickPick);
+
+      const userRaw = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+      let lastModifiedBy = 'system';
+      if (userRaw) {
+        try {
+          const user = JSON.parse(userRaw);
+          lastModifiedBy = user?.fullName || user?.name || user?.email || 'system';
+        } catch {
+          lastModifiedBy = 'system';
+        }
+      }
+
+      const isActive = formData.isActive ?? visitorData.isActive;
+
+      await updateVisitor({
+        id: editVisitorId,
+        name: formData.fullName || visitorData.name || '',
+        cnic: formData.cnic || visitorData.cnic || '',
+        vehicleLicensePlate: toVehicleLicensePlate(formData.vehicleNo, formData.vehicleNo2),
+        vehicleLicenseNo: Number(formData.vehicleNo2 || visitorData.vehicleLicenseNo || 0),
+        visitorPassType: visitorPassType || visitorData.visitorPassType || 1,
+        validFrom: toIsoDate(formData.fromDate),
+        validTo: toIsoDate(formData.toDate),
+        isActive,
+        isDeleted: !isActive,
+        lastModifiedBy,
+      });
+      handleCloseModal();
+    } catch (err: any) {
+      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update visitor';
+      setFormError(message);
+    }
   };
 
   const handleDelete = (visitor: SelectedVisitorRow) => {
@@ -167,6 +341,47 @@ export default function VisitorsPage() {
         getRowStatus={(row) => row.status ? 'Active' : 'Inactive'}
         error={isError ? `Failed to load visitors: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
       />
+
+      <FormModal
+        isOpen={modalMode === 'add'}
+        onClose={handleCloseModal}
+        title="Add New Visitor"
+      >
+        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
+        <CommonEntityForm
+          title="Please provide details below!"
+          onSave={handleAddVisitor}
+          onCancel={handleCloseModal}
+          fields={visitorFields.filter((f) => f.name !== 'description')}
+          saveButtonText="Create"
+          showStatusToggle={false}
+        />
+      </FormModal>
+
+      <FormModal
+        isOpen={modalMode === 'edit' && hasCheckedId}
+        onClose={handleCloseModal}
+        title="Edit Visitor"
+      >
+        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
+        {isEditVisitorLoading ? (
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
+        ) : initialVisitorValues ? (
+          <CommonEntityForm
+            key={editVisitorId}
+            title="Please update details below!"
+            onSave={handleUpdateVisitor}
+            onCancel={handleCloseModal}
+            fields={visitorFields.filter((f) => f.name !== 'description')}
+            initialValues={initialVisitorValues}
+            saveButtonText="Update"
+            showStatusToggle={false}
+          />
+        ) : (
+          <div style={{ padding: '20px', textAlign: 'center' }}>Error loading visitor details</div>
+        )}
+      </FormModal>
+
       <HostDetailsModal open={hostModalOpen} onClose={() => setHostModalOpen(false)} host={selectedHost || { id: '', name: '', phone: '', address: '', imageUrl: '' }} />
       <WarningModal
         isOpen={deleteModalOpen}
