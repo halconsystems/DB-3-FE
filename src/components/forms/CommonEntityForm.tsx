@@ -32,6 +32,7 @@ interface CommonEntityFormProps {
   fields?: ProfileField[];
   successTitle?: string;
   successMessage?: string;
+  error?: string;
 }
 
 const toVehicleLicensePlate = (vehicleNo?: string, vehicleNo2?: string) => {
@@ -68,6 +69,7 @@ export default function CommonEntityForm({
   fields = [],
   successTitle,
   successMessage,
+  error,
 }: CommonEntityFormProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -234,31 +236,42 @@ export default function CommonEntityForm({
 
     // Auto-fill validFrom and validTo when planType changes
     if (name === 'planType') {
+      console.log('[CommonEntityForm] planType changed to:', value, 'type:', typeof value);
       const today = new Date();
       const validFrom = today.toISOString().split('T')[0];
       let validTo = validFrom;
       let daysToAdd = 0;
-      switch (value) {
-        case 'Day':
+      
+      // Convert to number for comparison
+      const planTypeNum = Number(value);
+      console.log('[CommonEntityForm] planTypeNum:', planTypeNum);
+      
+      switch (planTypeNum) {
+        case 1: // Day
           daysToAdd = 1;
           break;
-        case 'Week':
+        case 2: // Week
           daysToAdd = 7;
           break;
-        case 'Month':
+        case 3: // Month
           daysToAdd = 30;
           break;
-        case 'Year':
+        case 4: // Year
           daysToAdd = 365;
           break;
         default:
           daysToAdd = 0;
       }
+      
+      console.log('[CommonEntityForm] daysToAdd:', daysToAdd);
+      
       if (daysToAdd > 0) {
         const toDate = new Date(today);
         toDate.setDate(toDate.getDate() + daysToAdd);
         validTo = toDate.toISOString().split('T')[0];
       }
+      
+      console.log('[CommonEntityForm] validFrom:', validFrom, 'validTo:', validTo);
       setFormData((prev) => withDerivedVehicleLicensePlate({ ...prev, [name]: value, validFrom, validTo }));
       return;
     }
@@ -565,6 +578,11 @@ export default function CommonEntityForm({
             </div>
           )}
         </div>
+        {error && (
+          <div style={{ padding: '12px', marginBottom: '16px', backgroundColor: '#fee', borderLeft: '4px solid #f44336', borderRadius: '4px', color: '#c62828', fontSize: '14px' }}>
+            {error}
+          </div>
+        )}
         <div className={styles.formGrid}>
           {renderedFields}
         </div>

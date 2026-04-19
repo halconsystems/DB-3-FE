@@ -2,7 +2,7 @@
 import { useSearchParams } from 'next/navigation';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import { useSetup } from '../SetupContext';
-import VendorSupplierTable from './components/VendorSupplierTable';
+import VendorTable from './components/VendorTable';
 
 export default function VendorSupplierPage() {
   const searchParams = useSearchParams();
@@ -10,7 +10,7 @@ export default function VendorSupplierPage() {
 
   return (
     <DashboardLayout pageTitle="Setup" showBackButton={false}>
-      <VendorSupplierTable
+      <VendorTable
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={handleTabChange}

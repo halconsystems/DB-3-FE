@@ -30,16 +30,18 @@ export interface Zone {
   phaseName?: string;
   devices: Device[];
   tagZoneAccesses: any[];
+  description?: string;
 }
 
 export interface UpdateZoneRequest {
   id: string;
   name: string;
-  phaseId: string;
-  isActive: boolean;
-  isDeleted: boolean;
-  lastModified: string;
-  lastModifiedBy: string;
+  phaseId: string | Number;
+  isActive?: boolean;
+  isDeleted?: boolean;
+  lastModified?: string;
+  lastModifiedBy?: string;
+  description?: string;
 }
 
 export interface UpdateZoneResponse {
@@ -64,11 +66,12 @@ export interface DeleteZoneResponse {
 
 export interface CreateZoneRequest {
   name: string;
-  createdBy: string;
-  phaseId: string;
-  created: string;
-  isDeleted: boolean;
-  isActive: boolean;
+  createdBy?: string;
+  phaseId: string | Number;
+  created?: string;
+  isDeleted?: boolean;
+  isActive?: boolean;
+  description?: string;
 }
 
 export interface CreateZoneResponse {

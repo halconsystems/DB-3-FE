@@ -1,7 +1,6 @@
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import type { ReadonlyURLSearchParams } from 'next/navigation';
 import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tables/DataTable';
 import CircularButton from '../../../../components/ui/CircularButton';
 import WarningModal from '../../../../components/popup/WarningModal';
@@ -28,7 +27,7 @@ interface TagTypeTableProps {
   onTabChange: (tab: string) => void;
   onAddNew: () => void;
   addButtonLabel: string;
-  searchParams?: ReadonlyURLSearchParams | null;
+  searchParams?: any | null;
 }
 
 export default function TagTypeTable({

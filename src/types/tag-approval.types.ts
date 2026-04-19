@@ -12,6 +12,7 @@ export interface TagApprovalRequest {
   notes: string;
   status: string;
   trialPeriod: string;
+  parentUserName?: string;
 }
 
 export interface GetTagApprovalRequestsResponse {

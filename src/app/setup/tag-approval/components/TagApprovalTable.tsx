@@ -5,6 +5,7 @@ import { useGetTagApprovalRequests } from '../../../../hooks/tag-approval/useGet
 import { saveTableRow, clearTableRow, getTableRow } from '../../../../lib/tableRowStorage';
 import WarningModal from '../../../../components/popup/WarningModal';
 import FormModal from '../../../../components/popup/FormModal';
+import ApprovalModal from '../../../../components/popup/ApprovalModal';
 import CommonEntityForm, { ProfileFormData } from '../../../../components/forms/CommonEntityForm';
 import { useRejectTagApprovalRequest } from '../../../../hooks/tag-approval/useRejectTagApprovalRequest';
 import { useRouter } from 'next/navigation';
@@ -23,7 +24,7 @@ interface TagTableProps {
   onTabChange: (tab: string) => void;
   onAddNew: () => void;
   addButtonLabel: string;
-  searchParams?: ReadonlyURLSearchParams | null;
+  searchParams?: any | null;
 }
 
 export default function TagApprovalTable({
@@ -43,6 +44,8 @@ export default function TagApprovalTable({
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [approveModalOpen, setApproveModalOpen] = useState(false);
+  const [selectedApprovalRequest, setSelectedApprovalRequest] = useState<TagApprovalRequest | null>(null);
   const [selectedTag, setSelectedTag] = useState<TagApprovalRequest | null>(null);
   const { data: tagTypesData, isLoading: tagLoading } = useGetAllTagTypes();
   const router = useRouter();
@@ -175,7 +178,10 @@ export default function TagApprovalTable({
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
             style={{ background: '#4CAF50', color: 'white', border: 'none', borderRadius: 4, padding: '4px 12px', cursor: 'pointer' }}
-            onClick={() => router.push(`tag-approval/approve?id=${row.id}`)}
+            onClick={() => {
+              setSelectedApprovalRequest(row);
+              setApproveModalOpen(true);
+            }}
           >
             Approve
           </button>
@@ -207,9 +213,8 @@ export default function TagApprovalTable({
         columns={TagColumns}
         data={Tags}
         loading={isLoading}
-        showAddButton={true}
+        showAddButton={false}
         addButtonLabel={addButtonLabel}
-        onAddClick={() => router.push('/setup/tag-approval?modal=add')}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status as 'Active' | 'Inactive' | 'Pending' | undefined}
@@ -218,46 +223,6 @@ export default function TagApprovalTable({
         }
       />
       
-      <FormModal
-        isOpen={modalMode === 'add'}
-        onClose={handleCloseModal}
-        title="Add Tag Approval Request"
-      >
-        <CommonEntityForm
-          title=""
-          fields={tagApprovalFields}
-          initialValues={{
-            tagNumber: '',
-            requestedBy: '',
-            requestDate: new Date().toISOString().split('T')[0],
-            status: 'Pending',
-          }}
-          onSave={handleAddTagApproval}
-          onCancel={handleCloseModal}
-          loading={false}
-          error={formError}
-        />
-      </FormModal>
-
-      <FormModal
-        isOpen={modalMode === 'edit' && hasCheckedId}
-        onClose={handleCloseModal}
-        title="Edit Tag Approval Request"
-      >
-        {isEditTagApprovalLoading ? (
-          <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
-        ) : (
-          <CommonEntityForm
-            title=""
-            fields={tagApprovalFields}
-            initialValues={initialTagApprovalValues || { tagNumber: '', requestedBy: '', requestDate: new Date().toISOString().split('T')[0], status: 'Pending' }}
-            onSave={handleAddTagApproval}
-            onCancel={handleCloseModal}
-            loading={false}
-            error={formError}
-          />
-        )}
-      </FormModal>
       <WarningModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
@@ -271,6 +236,14 @@ export default function TagApprovalTable({
         onConfirm={handleConfirmCancel}
         title="Cancel Tag Approval"
         message="Are you sure you want to cancel this tag approval request?"
+      />
+      <ApprovalModal
+        isOpen={approveModalOpen}
+        onClose={() => {
+          setApproveModalOpen(false);
+          setSelectedApprovalRequest(null);
+        }}
+        data={selectedApprovalRequest}
       />
     </>
   );

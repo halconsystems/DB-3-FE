@@ -13,6 +13,9 @@ export interface Tag {
   lastModifiedBy: string | null;
   isActive: boolean;
   isDeleted: boolean;
+  tagType?: string;
+  entityType?: string;
+  entityId?: string;
 }
 
 export interface GetAllTagsResponse {

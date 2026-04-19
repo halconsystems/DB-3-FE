@@ -21,13 +21,13 @@ export interface CreateFeeScalePayload {
   name: string;
   feeCategory: string;
   amount: number;
-  description: string;
+  description?: string;
   applicableUserTypes: string;
   applicableVehicleCategory: string;
   isTaxApplicable: boolean;
   taxPercentage: number;
   currency: string;
-  createdBy: string;
+  createdBy?: string;
 }
 
 export async function createFeeScale(payload: CreateFeeScalePayload): Promise<RemoveFeeScaleResponse> {
@@ -39,14 +39,14 @@ export interface UpdateFeeScalePayload {
   name: string;
   feeCategory: string;
   amount: number;
-  description: string;
-  isActive: boolean;
+  description?: string;
+  isActive?: boolean;
   applicableUserTypes: string;
   applicableVehicleCategory: string;
   isTaxApplicable: boolean;
   taxPercentage: number;
   currency: string;
-  lastModifiedBy: string;
+  lastModifiedBy?: string;
 }
 
 export async function updateFeeScale(payload: UpdateFeeScalePayload): Promise<RemoveFeeScaleResponse> {

@@ -35,6 +35,7 @@ interface PackageTableProps {
   onTabChange: (tab: string) => void;
   onAddNew: () => void;
   addButtonLabel: string;
+  searchParams?: any | null;
 }
 
 export default function PackageTable({
@@ -42,7 +43,8 @@ export default function PackageTable({
   activeTab,
   onTabChange,
   onAddNew,
-  addButtonLabel
+  addButtonLabel,
+  searchParams=null
 }: PackageTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [packages, setPackages] = useState(samplePackages);

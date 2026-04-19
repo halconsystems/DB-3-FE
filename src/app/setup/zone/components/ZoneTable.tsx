@@ -39,7 +39,7 @@ interface VendorTableProps {
   onTabChange: (tab: string) => void;
   onAddNew: () => void;
   addButtonLabel: string;
-  searchParams?: ReadonlyURLSearchParams | null;
+  searchParams?: any | null;
 }
 export default function ZoneTable({
   tabs,

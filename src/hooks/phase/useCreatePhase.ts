@@ -10,9 +10,9 @@ export function useCreatePhase() {
   return useMutation<
     CreatePhaseResponse,
     Error,
-    { data: CreatePhaseRequest; token: string }
+    CreatePhaseRequest
   >({
-    mutationFn: async ({ data }) => createPhase(data),
+    mutationFn: async (data) => createPhase(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["phases"] });
     },

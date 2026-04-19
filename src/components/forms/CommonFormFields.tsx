@@ -107,6 +107,13 @@ export function SelectInputField({ field, value, onChange, styles, wrapperClassN
     selectElement.click();
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    onChange(e);
+    if (field.onChange) {
+      field.onChange(e.target.value);
+    }
+  };
+
   return (
     <div className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()} style={getWrapperStyle(field)}>
       <label className={styles.labelGreen}>
@@ -121,7 +128,7 @@ export function SelectInputField({ field, value, onChange, styles, wrapperClassN
           className={styles.select}
           style={getInputStyle(field)}
           value={value}
-          onChange={onChange}
+          onChange={handleChange}
         >
           {field.options?.map((option) => (
             <option key={option.value} value={option.value} >

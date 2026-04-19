@@ -40,14 +40,17 @@ export async function removeInvoice(id: string): Promise<RemoveInvoiceResponse> 
 	return response.data;
 }
 export interface CreateInvoicePayload {
+	id: string;
+	paymentMethod: string;
+	transactionId: string;
 	invoiceNumber: string;
 	tagId: string;
 	entityType: string;
-	entityId: string;
-	amount: number;
-	taxAmount: number;
-	totalAmount: number;
-	createdBy: string;
+	entityId?: string;
+	amount?: number;
+	taxAmount?: number;
+	totalAmount?: number;
+	createdBy?: string;
 }
 
 export async function createInvoice(payload: CreateInvoicePayload): Promise<RemoveInvoiceResponse> {
@@ -56,17 +59,17 @@ export async function createInvoice(payload: CreateInvoicePayload): Promise<Remo
 }
 export interface UpdateInvoicePayload {
 	id: string;
-	status: string;
 	paymentMethod: string;
-	transactionId: string;
 	invoiceNumber: string;
 	tagId: string;
 	entityType: string;
-	lastModifiedBy: string;
-	entityId: string;
-	amount: number;
-	taxAmount: number;
-	totalAmount: number;
+	entityId?: string;
+	transactionId?: string;
+	status?: string;
+	lastModifiedBy?: string;
+	amount?: number;
+	taxAmount?: number;
+	totalAmount?: number;
 }
 
 export async function updateInvoice(payload: UpdateInvoicePayload): Promise<RemoveInvoiceResponse> {

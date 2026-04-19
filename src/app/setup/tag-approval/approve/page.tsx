@@ -26,6 +26,65 @@ export default function AddNewTag() {
   const approveTagMutation = useApproveTagApprovalRequest();
   const { data: tagTypeData, isLoading: isTagTypeLoading } = useGetAllTagTypes();
 
+  // State to track form data for auto-filling dates
+  const [planType, setPlanType] = useState<string>('');
+  const [calculatedDates, setCalculatedDates] = useState<{ validFrom: string; validTo: string }>({ validFrom: '', validTo: '' });
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Calculate dates based on plan type - returns an object with validFrom and validTo
+  const calculateDatesByPlanType = (type: string | Number) => {
+    if (!type) {
+      return { validFrom: '', validTo: '' };
+    }
+
+    const today = new Date();
+    const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    let daysToAdd = 0;
+
+    // Convert type to number for switch comparison
+    const typeNum = Number(type);
+
+    // Map plan types to days based on actual enum: Day(1), Week(2), Month(3), Year(4)
+    switch (typeNum) {
+      case 1: // Day
+        daysToAdd = 1;
+        break;
+      case 2: // Week
+        daysToAdd = 7;
+        break;
+      case 3: // Month
+        daysToAdd = 30;
+        break;
+      case 4: // Year
+        daysToAdd = 365;
+        break;
+      default:
+        daysToAdd = 0;
+    }
+
+    if (daysToAdd >= 0) {
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + daysToAdd);
+      console.log(endDate)
+
+      return {
+        validFrom: startDate.toISOString().split('T')[0],
+        validTo: endDate.toISOString().split('T')[0],
+      };
+    }
+
+    return { validFrom: '', validTo: '' };
+  };
+
+  // Update calculated dates whenever plan type changes
+  useEffect(() => {
+    if (planType) {
+      const dates = calculateDatesByPlanType(planType);
+      console.log('Plan Type Changed:', planType, 'Calculated Dates:', dates);
+      setCalculatedDates(dates);
+    }
+  }, [planType]);
+
   // PlanType enum options state
   const [planTypeOptions, setPlanTypeOptions] = useState([
     { value: '', label: 'Select Plan Type' }
@@ -157,9 +216,10 @@ export default function AddNewTag() {
       required: true,
       placeholder: 'Select Plan Type',
       options: planTypeOptions,
+      onChange: (value: string | number | boolean) => setPlanType(String(value)),
     },
-    { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: true, placeholder: 'Select Date' },
-    { name: 'validTo' as keyof ProfileFormData, label: 'Valid To', type: 'date', required: true, placeholder: 'Select Date' },
+    { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: true, placeholder: 'Select Date', readOnly: true },
+    { name: 'validTo' as keyof ProfileFormData, label: 'Valid To', type: 'date', required: true, placeholder: 'Select Date', readOnly: true },
     { name: 'status' as keyof ProfileFormData, label: 'Status', type: 'statusSwitch', required: false, placeholder: 'Status' },
     {
       name: 'trialPeriod' as keyof ProfileFormData,
@@ -215,14 +275,39 @@ export default function AddNewTag() {
   let initialValues: Partial<ProfileFormData> = {};
   if (data && data.data) {
     const tag = data.data;
+    
+    // Initialize planType only once during data load
+    if (!isInitialized && !planType && tag.planType) {
+      console.log('[approve page] Initializing planType from tag:', tag.planType);
+      setPlanType(String(tag.planType));
+      setIsInitialized(true);
+    }
+    
+    // Determine which dates to use: calculated dates from planType take priority
+    // If planType has calculated dates, use those. Otherwise use tag dates.
+    let validFromValue = '';
+    let validToValue = '';
+    
+    // If we have calculated dates (from plan type selection), use them
+    if (calculatedDates.validFrom && calculatedDates.validTo) {
+      console.log('[approve page] Using calculated dates:', calculatedDates);
+      validFromValue = calculatedDates.validFrom;
+      validToValue = calculatedDates.validTo;
+    } else {
+      // Otherwise use dates from the tag
+      console.log('[approve page] Using tag dates');
+      validFromValue = toDateInputValue(tag.validFrom);
+      validToValue = toDateInputValue(tag.validTo);
+    }
+
     initialValues = {
       tagApprovalRequestId: tag.id,
       name: tag.subjectName,
       entityId: tag.subjectId,
       tagType: tag.tagType || '',
       tagNumber: tag.tagNumber,
-      validFrom: toDateInputValue(tag.validFrom),
-      validTo: toDateInputValue(tag.validTo),
+      validFrom: validFromValue,
+      validTo: validToValue,
       feeScaleId: tag.feeScale,
       status: toStatusFlag(tag.status),
       planType: tag.planType || '',
@@ -231,6 +316,8 @@ export default function AddNewTag() {
       device: '',
       notes: tag.notes,
     };
+    
+    console.log('[approve page] Final initialValues:', initialValues);
   }
 
   return (

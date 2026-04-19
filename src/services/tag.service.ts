@@ -1,14 +1,17 @@
 export interface UpdateTagRequest {
 	id: string;
-	tagNumber: string;
-	tagTypeId: string;
-	status: number;
-	validFrom: string;
-	validTo: string;
-	assignedEntityType: string;
-	assignedEntityId: string;
-	lastModified: string;
-	lastModifiedBy: string;
+	tagNumber?: string;
+	tagTypeId?: string;
+	status?: number;
+	validFrom?: string;
+	validTo?: string;
+	assignedEntityType?: string;
+	assignedEntityId?: string;
+	lastModified?: string;
+	lastModifiedBy?: string;
+	tagType?: string;
+	entityType?: string;
+	entityId?: string;
 }
 export const updateTag = async (payload: UpdateTagRequest): Promise<any> => {
 	const response = await apiClient.post("/tag/updateTag", payload);
@@ -29,13 +32,16 @@ export const getTagById = async (id: string): Promise<GetTagByIdResponse> => {
 };
 export interface CreateTagRequest {
 	tagNumber: string;
-	tagTypeId: string;
-	status: number;
-	validFrom: string;
-	validTo: string;
-	assignedEntityType: string;
-	created: string;
-	createdBy: string;
+	tagTypeId?: string;
+	status?: number;
+	validFrom?: string;
+	validTo?: string;
+	assignedEntityType?: string;
+	created?: string;
+	createdBy?: string;
+	tagType?: string;
+	entityType?: string;
+	entityId?: string;
 }
 export interface CreateTagResponse {
 	statusCode: number;

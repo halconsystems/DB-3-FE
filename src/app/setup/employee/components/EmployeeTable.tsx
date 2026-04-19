@@ -30,7 +30,7 @@ interface EmployeeTableProps {
   onTabChange: (tab: string) => void;
   onAddNew: () => void;
   addButtonLabel: string;
-  searchParams?: ReadonlyURLSearchParams | null;
+  searchParams?: any | null;
 }
 
 export default function EmployeeTable({

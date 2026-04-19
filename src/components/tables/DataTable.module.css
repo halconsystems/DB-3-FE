@@ -32,9 +32,8 @@
   max-width: 75vw;
   padding: 0;
   width: 100%;
-  overflow-x: auto;
+  overflow-x: auto
 }
-
 
 .addButtonWrapper {
   display: flex;
@@ -62,6 +61,8 @@
 
 .tabsRow {
   padding: 0;
+  max-width: 90vw;
+  overflow-x: auto;
   /* border-bottom: 1px solid var(--border_first); */
 }
 
@@ -352,4 +353,10 @@
   color: #333;
   background: white;
   padding: 4px;
+}
+
+@media (max-width: 1024px) {
+  .container {
+    max-width: 90vw;
+  }
 }

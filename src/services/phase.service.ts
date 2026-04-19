@@ -1,13 +1,14 @@
 import apiClient from '../lib/apiClient';
 export interface Phase {
   id: string;
-  name: string;
+  phaseName: string;
   description: string;
   createdBy: string;
   modifiedBy: string | null;
   isActive: boolean;
   modified: string | null;
   created: string;
+  cardNo: string;
 }
 export interface GetAllPhaseResponse {
   statusCode: number;
@@ -23,7 +24,8 @@ export interface GetPhaseByIdResponse {
 }
 
 export interface CreatePhaseRequest {
-  name: string;
+  phaseName: string;
+  cardNo: string;
   description: string;
 }
 
@@ -36,7 +38,8 @@ export interface CreatePhaseResponse {
 
 export interface UpdatePhaseRequest {
   id: string;
-  name: string;
+  phaseName: string;
+  cardNo: string;
   description: string;
 }
 

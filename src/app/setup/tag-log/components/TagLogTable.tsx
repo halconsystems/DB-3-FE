@@ -11,6 +11,7 @@ interface TagLogTableProps {
   onTabChange: (tab: string) => void;
   onAddNew: () => void;
   addButtonLabel: string;
+  searchParams?: any | null;
 }
 
 export default function TagLogTable({
@@ -18,7 +19,8 @@ export default function TagLogTable({
   activeTab,
   onTabChange,
   onAddNew,
-  addButtonLabel
+  addButtonLabel,
+  searchParams=null
 }: TagLogTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const { data, isLoading } = useGetAllRequestedTags(currentPage, 10);

@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect } from "react";
+import { Menu, X } from "lucide-react";
 import { useExternalSearch } from "../../app/dashboard/hooks/useExternalSearch";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -42,6 +43,7 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const externalSearchMutation = useExternalSearch();
 
   // Optionally, handle results in state or UI
@@ -92,10 +94,16 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
 
   return (
     <div className={styles.dashboardWrapper}>
-      <aside className={styles.sidebar}>
-        <div className={styles.logoSection}>
-          <img src="/images/PDOHA.png" alt="Logo" className={styles.logo} />
-          <div className={styles.logoSeparator} />
+      <div className={styles.sidebarOverlay} onClick={() => setSidebarOpen(false)} style={{ display: sidebarOpen ? 'block' : 'none' }} />
+      <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
+        <div className={styles.sidebarHeader}>
+          <div className={styles.logoSection}>
+            <img src="/images/PDOHA.png" alt="Logo" className={styles.logo} />
+            <div className={styles.logoSeparator} />
+          </div>
+          <button className={styles.closeSidebarBtn} onClick={() => setSidebarOpen(false)}>
+            <X size={24} color="#27ae60" />
+          </button>
         </div>
         <nav className={styles.menu}>
           <Link 
@@ -107,6 +115,7 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
           </Link>
           <Link 
             href="/setup" 
+            onClick={()=>localStorage.setItem('activeTab','cp-agent')}
             className={`${activeMenuItem.includes('/setup') ? styles.menuItemActive : ''} ${styles.menuItemGap} ${styles.menuItem}`}
           >
             <span>Setup</span>
@@ -179,10 +188,14 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
           </button>
         </div>
       </aside>
-      <main className={styles.mainContent}>
+      <main className={`${styles.mainContent} ${sidebarOpen ? styles.mainContentShifted : ''}`}>
         <header className={styles.header}>
           <div className={styles.headerTitleWrapper}>
-            {(showBackButton !== false && (activeMenuItem.match(/\//g)?.length ?? 0) >= 2) || showBackButton === true ? (<img 
+            <button className={styles.toggleSidebarBtn} onClick={() => setSidebarOpen(!sidebarOpen)}>
+              <Menu size={24} color="#27ae60" />
+            </button>
+            {(showBackButton !== false && (activeMenuItem.match(/\//g)?.length ?? 0) >= 2) || showBackButton === true ? (
+              <img 
               src="/icons/arrow-back.png" 
               alt="Back" 
               className={styles.backArrowImg} 

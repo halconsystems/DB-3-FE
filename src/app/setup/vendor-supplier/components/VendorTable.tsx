@@ -39,6 +39,7 @@ interface VendorTableProps {
   onTabChange: (tab: string) => void;
   onAddNew: () => void;
   addButtonLabel: string;
+  searchParams?: any | null;
 }
 
 export default function VendorTable({
@@ -46,7 +47,8 @@ export default function VendorTable({
   activeTab,
   onTabChange,
   onAddNew,
-  addButtonLabel
+  addButtonLabel,
+  searchParams=null
 }: VendorTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [vendors, setVendors] = useState(sampleVendors);

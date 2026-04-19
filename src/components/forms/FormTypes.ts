@@ -143,4 +143,5 @@ export interface ProfileField {
   sameCellKey?: string;
   sameCellColumns?: number;
   isHidden?: boolean;
+  onChange?: (value: string | number | boolean) => void;
 }

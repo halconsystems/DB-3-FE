@@ -34,6 +34,7 @@ interface BankAccountTableProps {
   onTabChange: (tab: string) => void;
   onAddNew: () => void;
   addButtonLabel: string;
+  searchParams?: any | null;
 }
 
 export default function BankAccountTable({ 
@@ -41,7 +42,8 @@ export default function BankAccountTable({
   activeTab, 
   onTabChange, 
   onAddNew, 
-  addButtonLabel 
+  addButtonLabel,
+  searchParams = null
 }: BankAccountTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [bankAccounts, setBankAccounts] = useState(sampleBankAccounts);

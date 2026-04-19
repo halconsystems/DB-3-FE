@@ -6,20 +6,36 @@ const apiClient = axios.create({
 	timeout: 10000,
 	headers: {
 		"Content-Type": "application/json"
-	}
+	},
+	withCredentials: true, // Allow cookies to be sent with requests
 });
 
-// Logout utility: clears token and redirects to sign-in
+// Logout utility: clears all auth tokens and redirects to sign-in
 function logout() {
 	if (typeof window !== "undefined") {
 		localStorage.removeItem("token");
+		localStorage.removeItem("rememberMe");
+		localStorage.removeItem("rememberedEmail");
+		localStorage.removeItem("rememberedPassword");
+		localStorage.removeItem("fullName");
+		sessionStorage.removeItem("token");
+		sessionStorage.removeItem("fullName");
+		
+		// Clear cookie via document.cookie
+		document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+		
 		window.location.href = "/auth/sign-in";
 	}
 }
 
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 	if (typeof window !== "undefined") {
-		const token = localStorage.getItem("token");
+		// Try to get token from localStorage first (Remember Me case)
+		let token = localStorage.getItem("token");
+		// Fall back to sessionStorage (temporary session case)
+		if (!token) {
+			token = sessionStorage.getItem("token");
+		}
 		if (token && config.headers) {
 			config.headers.Authorization = `Bearer ${token}`;
 		}
@@ -44,6 +60,7 @@ apiClient.interceptors.response.use(
 
 		// Auto-logout on 401 Unauthorized
 		if (status === 401) {
+			console.warn('[API 401] Unauthorized - Logging out');
 			logout();
 		}
 
