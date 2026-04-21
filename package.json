@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "eslint": "eslint ."
+    "eslint": "eslint .",
+    "check-middleware": "certutil -hashfile src/app/middleware.ts SHA256 | findstr /v /c:\"certutil\" /c:\"SHA256\" /c:\"hash\" /c:\"file\" | findstr /v /c:\"\" > temp.hash && fc /b temp.hash middleware.hash > nul || (echo ERROR: middleware.ts has been modified! && exit 1)"
   },
   "dependencies": {
     "@microsoft/signalr": "^10.0.0",
