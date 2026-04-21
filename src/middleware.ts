@@ -1,39 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  
-  // Public routes that don't require authentication
+
   const publicRoutes = ['/auth/sign-in', '/auth/sign-up'];
-  
-  // Check if current route is public
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
-  
-  // Skip middleware for static assets
-  if (pathname.match(/^\/(_next|favicon\.ico|public|images|icons)/)) {
-    return NextResponse.next();
-  }
+  const isPublicRoute = publicRoutes.includes(pathname);
 
-  // Get token from cookies or headers
-  const token = request.cookies.get('token')?.value || request.headers.get('authorization')?.replace('Bearer ', '');
+  const token = request.cookies.get('token')?.value;
 
-  // If user is trying to access protected route without token
+  // Redirect unauthenticated users
   if (!isPublicRoute && !token) {
-    console.log('[Middleware] No token found, redirecting to sign-in:', pathname);
     return NextResponse.redirect(new URL('/auth/sign-in', request.url));
   }
 
-  // If user has token and tries to access auth pages, redirect to dashboard
+  // Redirect authenticated users away from auth pages
   if (isPublicRoute && token) {
-    console.log('[Middleware] User already authenticated, redirecting to dashboard');
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  if (!pathname.match(/^\/(_next|favicon\.ico|images|icons)/)) {
-    console.log('[Middleware] Allowing access to:', pathname);
-  }
-  
   return NextResponse.next();
 }
 

@@ -9,7 +9,7 @@ export function usePhases() {
 
       return res.data.map((item) => ({
         id: item.id,
-        phaseName: item.name,
+        phaseName: item.phaseName,
         description: item.description,
         status: item.isActive ? "Active" : "Inactive",
       }));
