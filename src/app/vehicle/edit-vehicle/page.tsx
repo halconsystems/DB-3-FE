@@ -143,6 +143,7 @@ export default function EditVehicle() {
         tagStatus: toTagStatus(formData.tagStatus),
         lastModifiedBy,
         externalUserId,
+        isActive: typeof formData.isActive === 'boolean' ? formData.isActive : data.data.isActive,
       });
     } catch (err: any) {
       const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update vehicle';

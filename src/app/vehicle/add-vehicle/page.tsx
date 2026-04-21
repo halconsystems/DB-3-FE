@@ -120,6 +120,7 @@ export default function AddNewVehicle() {
         tagStatus: Number(data.eTagStatus) || 0,
         createdBy,
         externalUserId,
+        isActive: true,
       });
     } catch (err: any) {
       const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create vehicle';

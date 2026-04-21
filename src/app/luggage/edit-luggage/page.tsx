@@ -135,6 +135,7 @@ export default function EditLuggage() {
         lastModifiedBy,
         isActive,
         isDeleted: !isActive,
+        externalUserId: data.data.externalUserId || '',
       });
     } catch (err: any) {
       const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update luggage';
