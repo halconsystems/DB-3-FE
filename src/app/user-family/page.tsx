@@ -35,7 +35,7 @@ export default function UserFamilyPage() {
   const { mutateAsync: updateUserFamily } = useUpdateUserFamily();
 
   // Modal state
-  const [editFamilyId, setEditFamilyId] = useState<string | undefined>();
+  const [editFamilyId, setEditFamilyId] = useState<string>('');
   const [hasCheckedId, setHasCheckedId] = useState(false);
   const { data: editFamilyDetails, isLoading: isEditFamilyLoading } = useUserFamilyById(editFamilyId);
 
@@ -46,7 +46,7 @@ export default function UserFamilyPage() {
   useEffect(() => {
     if (modalMode === 'edit') {
       if (modalId) {
-        setEditFamilyId(modalId);
+        setEditFamilyId(modalId || '');
         setHasCheckedId(true);
       } else {
         const selected = getTableRow<any>('userFamily');
@@ -69,7 +69,7 @@ export default function UserFamilyPage() {
   };
 
   const handleCloseModal = () => {
-    setEditFamilyId(undefined);
+    setEditFamilyId('');
     setHasCheckedId(false);
     setFormError('');
     router.push('/user-family');
@@ -174,7 +174,6 @@ export default function UserFamilyPage() {
         validTo: toIsoDate(data.validTo || editFamilyDetails.validTo),
         validFrom: toIsoDate(data.validFrom || editFamilyDetails.validFrom),
         cardStatus: editFamilyDetails.cardStatus,
-        externalUserId: editFamilyDetails.externalUserId || '',
         lastModifiedBy: 'system',
       });
       handleCloseModal();

@@ -20,11 +20,9 @@ export default function AddNewPhase() {
         return;
       }
       await createPhase({
-        data: {
-          name: data.phaseName || '',
-          description: data.description || '',
-        },
-        token,
+        phaseName: data.phaseName || '',
+        cardNo: '',
+        description: data.description || '',
       });
       setSuccessMsg('Phase created successfully!');
     } catch (err: any) {
