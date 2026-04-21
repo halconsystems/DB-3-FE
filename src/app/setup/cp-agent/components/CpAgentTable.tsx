@@ -100,11 +100,19 @@ export default function CpAgentTable({
     try {
       await createAgent({
         name: data.name || '',
-        controllerId: data.controllerId ? Number(data.controllerId) : 0,
-        zoneId: data.zoneId ? Number(data.zoneId) : 0,
-        interCommName: data.interCommName || '',
+        agentNumber: '',
+        controllerId: data.controllerId ? String(data.controllerId) : '',
+        zoneId: data.zoneId ? String(data.zoneId) : '',
+        syncAgentId: '',
         cpAgentType: data.cpAgentType ? Number(data.cpAgentType) : 0,
         serverIp: data.serverIp || '',
+        tagLimit: 0,
+        isFixedTagIdentity: false,
+        isTempTagIdentity: false,
+        interCommId: '',
+        interCommPassword: '',
+        interCommName: data.interCommName || '',
+        isActive: true,
       });
       handleCloseModal();
     } catch (err: any) {
@@ -132,11 +140,22 @@ export default function CpAgentTable({
       await updateAgent({
         id: editAgentId,
         name: formData.name || editAgentDetails.data.name || '',
-        controllerId: formData.controllerId ? Number(formData.controllerId) : editAgentDetails.data.controllerId,
-        zoneId: formData.zoneId ? Number(formData.zoneId) : editAgentDetails.data.zoneId,
-        interCommName: formData.interCommName || editAgentDetails.data.interCommName || '',
+        agentNumber: editAgentDetails.data.agentNumber || '',
+        controllerId: formData.controllerId ? String(formData.controllerId) : String(editAgentDetails.data.controllerId),
+        zoneId: formData.zoneId ? String(formData.zoneId) : String(editAgentDetails.data.zoneId),
+        syncAgentId: editAgentDetails.data.syncAgentId || '',
         cpAgentType: formData.cpAgentType ? Number(formData.cpAgentType) : editAgentDetails.data.cpAgentType,
         serverIp: formData.serverIp || editAgentDetails.data.serverIp || '',
+        tagLimit: editAgentDetails.data.tagLimit ?? 0,
+        isFixedTagIdentity: editAgentDetails.data.isFixedTagIdentity ?? false,
+        isTempTagIdentity: editAgentDetails.data.isTempTagIdentity ?? false,
+        interCommId: editAgentDetails.data.interCommId || '',
+        interCommPassword: editAgentDetails.data.interCommPassword || '',
+        interCommName: formData.interCommName || editAgentDetails.data.interCommName || '',
+        isActive: editAgentDetails.data.isActive ?? true,
+        isDeleted: editAgentDetails.data.isDeleted ?? false,
+        lastModified: editAgentDetails.data.lastModified || '',
+        lastModifiedBy: editAgentDetails.data.lastModifiedBy || '',
       });
       handleCloseModal();
     } catch (err: any) {
