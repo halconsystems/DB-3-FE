@@ -1,3 +1,5 @@
+import apiClient from "../lib/apiClient";
+import { LoginRequest, LoginResponse, GetAllUsersResponse, RegisterRequest, RegisterResponse } from "../types/auth.types";
 export const removeUser = async (id: string): Promise<{ statusCode: number; successMessage?: string; errorMessage?: string }> => {
 	let token = "";
 	if (typeof window !== "undefined") {
@@ -15,8 +17,6 @@ export const removeUser = async (id: string): Promise<{ statusCode: number; succ
 	);
 	return response.data;
 };
-import apiClient from "../lib/apiClient";
-import { LoginRequest, LoginResponse, GetAllUsersResponse, RegisterRequest, RegisterResponse } from "../types/auth.types";
 export const getAllUsers = async (): Promise<GetAllUsersResponse> => {
 	const response = await apiClient.get<GetAllUsersResponse>("/auth/GetAllUsers");
 	return response.data;

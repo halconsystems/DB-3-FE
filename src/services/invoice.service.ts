@@ -30,9 +30,32 @@ export interface RemoveInvoiceResponse {
 	errorMessage: string | null;
 }
 
-export async function getAllInvoices(): Promise<GetAllInvoicesResponse> {
-	const response = await apiClient.get("/invoices/GetAllInvoices");
-	return response.data;
+
+export interface GetAllInvoicesPayload {
+	pageNumber: number;
+	pageSize: number;
+	invoiceNumber?: string;
+	fromDate?: string;
+	toDate?: string;
+}
+
+export async function getAllInvoices(payload: GetAllInvoicesPayload): Promise<GetAllInvoicesResponse> {
+	// Only send pageNumber and pageSize in the payload
+	const fullPayload = {
+		pageNumber: payload.pageNumber ?? 1,
+		pageSize: payload.pageSize ?? 10,
+	};
+	const response = await apiClient.post("/invoices/GetAllInvoices", fullPayload);
+	
+	const apiData = response.data;
+	// If the API returns nested data, flatten it to match the expected response
+	if (apiData && apiData.data && apiData.data.data && Array.isArray(apiData.data.data.items)) {
+		return {
+			...apiData,
+			data: apiData.data.data.items,
+		};
+	}
+	return apiData;
 }
 
 export async function removeInvoice(id: string): Promise<RemoveInvoiceResponse> {

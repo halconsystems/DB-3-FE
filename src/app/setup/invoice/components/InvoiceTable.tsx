@@ -37,17 +37,12 @@ interface InvoiceTableProps {
   searchParams?: any | null;
 }
 
-export default function InvoiceTable({
-  tabs,
-  activeTab,
-  onTabChange,
-  onAddNew,
-  addButtonLabel,
-  searchParams
-}: InvoiceTableProps) {
+export default function InvoiceTable(props: InvoiceTableProps) {
+  const { tabs, activeTab, onTabChange, onAddNew, addButtonLabel, searchParams } = props;
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
-  const { data, isLoading } = useInvoices();
+  // Pass required payload to useInvoices
+  const { data, isLoading } = useInvoices({ pageNumber: currentPage, pageSize: 10 });
   const [editInvoiceId, setEditInvoiceId] = useState<string | undefined>();
   const [hasCheckedId, setHasCheckedId] = useState(false);
   const [formError, setFormError] = useState('');

@@ -1,32 +1,25 @@
 import { useEffect, useRef } from "react";
 import * as signalR from "@microsoft/signalr";
-// Update the import path below if your auth store is elsewhere
-
 import { useQueryClient } from "@tanstack/react-query";
 import { toast, toastOptions } from "../components/ui/toast";
 
 export const useSignalR = () => {
   const connectionRef = useRef<signalR.HubConnection | null>(null);
   const queryClient = useQueryClient();
-
   useEffect(() => {
     if (typeof window === "undefined") return; // only run on client
-
     const API_BASE = process.env.NEXT_PUBLIC_API_URL;
     if (!API_BASE) {
       console.error("NEXT_PUBLIC_API_URL is not set");
       return;
-    }
-
+    } 
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${API_BASE}/hubs/realtime-events`, {
         accessTokenFactory: () => (typeof window !== "undefined" ? localStorage.getItem("token") || "" : "")
       })
       .withAutomaticReconnect()
       .build();
-
     connection.on("notification.created", (payload: any) => {
-      // Show toast popup for new notification
       toast(
         payload?.title
           ? `${payload.title}: ${payload.message ?? "New notification received"}`
