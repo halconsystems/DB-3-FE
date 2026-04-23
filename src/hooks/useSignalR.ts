@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as signalR from "@microsoft/signalr";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast, toastOptions } from "../components/ui/toast";
+import { SignalRToast, toast, toastOptions } from "../components/ui/toast";
 
 export const useSignalR = () => {
   const connectionRef = useRef<signalR.HubConnection | null>(null);
@@ -20,12 +20,14 @@ export const useSignalR = () => {
       .withAutomaticReconnect()
       .build();
     connection.on("notification.created", (payload: any) => {
-      toast(
-        payload?.title
-          ? `${payload.title}: ${payload.message ?? "New notification received"}`
-          : "New notification received!",
-        toastOptions
-      );
+      toast(SignalRToast, {
+        ...toastOptions,
+        data: {
+          title: payload?.title,
+          message: payload?.message,
+          eventLabel: "SignalR Notification",
+        },
+      });
       // Invalidate or update notification queries
       queryClient.invalidateQueries({ queryKey: ["unread-notifications"] });
     });

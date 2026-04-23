@@ -333,7 +333,7 @@ export default function DataTable<T extends Record<string, any>>({
         )}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+      <div className={styles.footerBar}>
         {renderPagination()}
         <div className={styles.rowsPerPage}>
           <div>
