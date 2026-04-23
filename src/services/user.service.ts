@@ -5,7 +5,7 @@ export interface UpdateUserRequest {
   email: string;
   phoneNumber: string;
   cnic: string;
-  userType: number;
+  userType: string | number;
   rfidCardNumber: string;
   lastModifiedBy?: string;
   cardIssueDate: string;
@@ -26,7 +26,7 @@ export interface ExternalUser {
   email: string;
   phoneNumber: string;
   cnic: string;
-  userType: number;
+  userType: string | number;
   rfidCardNumber: string;
   cardIssueDate: string;
   cardExpiryDate: string;
@@ -55,7 +55,7 @@ export interface CreateUserRequest {
   email: string;
   phoneNumber: string;
   cnic: string;
-  userType: number;
+  userType: string | number;
   rfidCardNumber: string;
   createdBy?: string;
   cardIssueDate: string;

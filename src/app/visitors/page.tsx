@@ -25,7 +25,8 @@ interface Visitor {
   userName: string;
   vehicleInfo: string;
   visitDetail: string;
-  validity: string;
+  issueDate: string;
+  expiryDate: string;
   cnicNicopNo: string;
   hostDetails: string;
   status: boolean;
@@ -95,7 +96,8 @@ export default function VisitorsPage() {
       userName: item.externalUserName || '-',
       vehicleInfo: `${item.vehicleLicensePlate}`,
       visitDetail: toVisitorPassTypeLabel(item.visitorPassType),
-      validity: `${formatDateDisplay(item.validFrom)} - ${formatDateDisplay(item.validTo)}`,
+      issueDate: formatDateDisplay(item.validFrom),
+      expiryDate: formatDateDisplay(item.validTo),
       cnicNicopNo: item.cnic,
       hostDetails: item.externalUserName || 'host',
       status: item.isActive && !item.isDeleted,
@@ -297,7 +299,8 @@ export default function VisitorsPage() {
     { key: 'userName', header: 'User Name' },
     { key: 'vehicleInfo', header: 'Vehicle Info' },
     { key: 'visitDetail', header: 'Visit Detail' },
-    { key: 'validity', header: 'Validity' },
+    { key: 'issueDate', header: 'Issue Date' },
+    { key: 'expiryDate', header: 'Expiry Date' },
     { key: 'cnicNicopNo', header: 'CNIC/NICOP No.' },
     {
       key: 'hostDetails',

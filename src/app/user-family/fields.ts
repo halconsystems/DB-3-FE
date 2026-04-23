@@ -11,7 +11,7 @@ export const userFamilyFields: ProfileField[] = [
   { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: true, placeholder: 'Select Date' },
   { name: 'validTo' as keyof ProfileFormData, label: 'Valid To', type: 'date', required: true, placeholder: 'Select Date' },
   { name: 'status' as keyof ProfileFormData, label: 'User Family Status', type: 'statusSwitch', required: true },
-  { name: 'cardStatus' as keyof ProfileFormData, label: 'Card Status', type: 'statusSwitch', required: true },
+  { name: 'cardStatus' as keyof ProfileFormData, label: 'Card Status', type: 'select', required: true, placeholder: 'Select Card Status', options: [{ value: '', label: 'Select Card Status' }] },
 ];
 
 export const mockUserFamilyData: ProfileFormData = {

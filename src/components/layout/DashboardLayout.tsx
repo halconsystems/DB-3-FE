@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import styles from "./DashboardLayout.module.css";
 import CircularButton from "../ui/CircularButton";
+import { logout } from "../../lib/apiClient";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -69,7 +70,7 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
   }, [pathname]);
 
   const handleLogout = () => {
-    router.push('/auth/sign-in');
+    logout();
   };
 
   const handleSearch = () => {

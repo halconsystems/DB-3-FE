@@ -17,6 +17,7 @@ import { useUserFamilyById } from '../../hooks/user-family/useUserFamilyById';
 import { useCreateUserFamily } from '../../hooks/user-family/useCreateUserFamily';
 import { useUpdateUserFamily } from '../../hooks/user-family/useUpdateUserFamily';
 import type { UserFamily } from '../../services/user-family.service';
+import { useEnumMetadata } from '../../hooks/metadata/useEnumMetadata';
 
 export default function UserFamilyPage() {
   const router = useRouter();
@@ -33,6 +34,8 @@ export default function UserFamilyPage() {
   const removeUserFamilyMutation = useRemoveUserFamily();
   const { mutateAsync: createUserFamily } = useCreateUserFamily();
   const { mutateAsync: updateUserFamily } = useUpdateUserFamily();
+  const { data: relationEnum, isLoading: isRelationEnumLoading } = useEnumMetadata('RelationUserFamily');
+  const { data: cardStatusEnum, isLoading: isCardStatusEnumLoading } = useEnumMetadata('CardStatus');
 
   // Modal state
   const [editFamilyId, setEditFamilyId] = useState<string>('');
@@ -87,33 +90,71 @@ export default function UserFamilyPage() {
     return dateMatch ? dateMatch[0] : '';
   };
 
-  const relationIdByLabel: Record<string, number> = {
-    spouse: 0,
-    child: 1,
-    parent: 2,
-    sibling: 3,
-  };
-
-  const relationLabelById: Record<number, string> = {
-    0: 'spouse',
-    1: 'child',
-    2: 'parent',
-    3: 'sibling',
-  };
-
   const toRelationValue = (value?: number | string | null) => {
     if (value === null || value === undefined) return '';
-    if (typeof value === 'string') return value;
-    return relationLabelById[value] ?? '';
+    return String(value).trim();
   };
 
-  const toRelationNumber = (value?: string | number | null) => {
-    if (value === null || value === undefined || value === '') return 0;
-    if (typeof value === 'number') return value;
-    if (value in relationIdByLabel) return relationIdByLabel[value];
-    const numeric = Number(value);
+  const toRelationApiValue = (value?: string | number | null) => {
+    if (value === null || value === undefined || value === '') return '0';
+    return String(value).trim();
+  };
+
+  const toCardStatusValue = (value?: string | number | boolean | null) => {
+    if (value === null || value === undefined || value === '') return '';
+    return String(value).trim();
+  };
+
+  const toCardStatusApiValue = (value?: string | number | boolean | null, fallback?: string | number | boolean | null) => {
+    const resolved = value ?? fallback;
+    if (resolved === null || resolved === undefined || resolved === '') {
+      return 0;
+    }
+
+    const numeric = Number(resolved);
     return Number.isNaN(numeric) ? 0 : numeric;
   };
+
+  const dynamicUserFamilyFields = useMemo(() => {
+    const relationOptions = [{ value: '', label: 'Select Relation' }];
+    const cardStatusOptions = [{ value: '', label: 'Select Card Status' }];
+
+    if (relationEnum?.members) {
+      relationEnum.members.forEach((member) => {
+        relationOptions.push({
+          value: String(member.value),
+          label: member.name,
+        });
+      });
+    }
+
+    if (cardStatusEnum?.members) {
+      cardStatusEnum.members.forEach((member) => {
+        cardStatusOptions.push({
+          value: String(member.value),
+          label: member.name,
+        });
+      });
+    }
+
+    return userFamilyFields.map((field) => {
+      if (field.name === 'relation') {
+        return {
+          ...field,
+          options: relationOptions,
+        };
+      }
+
+      if (field.name === 'cardStatus') {
+        return {
+          ...field,
+          options: cardStatusOptions,
+        };
+      }
+
+      return field;
+    });
+  }, [cardStatusEnum, relationEnum]);
 
   const handleAddFamily = async (data: ProfileFormData) => {
     setFormError('');
@@ -126,11 +167,11 @@ export default function UserFamilyPage() {
         cnic: data.cnic || '',
         phoneNumber: data.cellNumber || '',
         fatherOrHusbandName: data.fatherHusbandName || '',
-        relation: toRelationNumber(data.relation),
+        relation: toRelationApiValue(data.relation),
         dateOfBirth: toIsoDate(data.dob),
         validTo: toIsoDate(data.validTo),
         validFrom: toIsoDate(data.validFrom),
-        cardStatus: null,
+        cardStatus: toCardStatusApiValue(data.cardStatus),
         externalUserId: '',
         createdBy: '',
       });
@@ -146,13 +187,14 @@ export default function UserFamilyPage() {
     return {
       name: editFamilyDetails.name || '',
       cellNumber: editFamilyDetails.phoneNumber || '',
-      cnic: editFamilyDetails.cnic || '',
-      relation: toRelationValue(editFamilyDetails.relation),
+        cnic: editFamilyDetails.cnic || '',
+        relation: toRelationValue(editFamilyDetails.relation),
       fatherHusbandName: editFamilyDetails.fatherOrHusbandName || '',
       residentCardNo: editFamilyDetails.residentCardNumber || '',
       dob: toDateInputValue(editFamilyDetails.dateOfBirth),
       validFrom: toDateInputValue(editFamilyDetails.validFrom),
       validTo: toDateInputValue(editFamilyDetails.validTo),
+      cardStatus: toCardStatusValue(editFamilyDetails.cardStatus),
     };
   }, [editFamilyDetails]);
 
@@ -169,11 +211,11 @@ export default function UserFamilyPage() {
         cnic: data.cnic || editFamilyDetails.cnic || '',
         phoneNumber: data.cellNumber || editFamilyDetails.phoneNumber || '',
         fatherOrHusbandName: data.fatherHusbandName || editFamilyDetails.fatherOrHusbandName || '',
-        relation: toRelationNumber(data.relation) ?? editFamilyDetails.relation,
+        relation: toRelationApiValue(data.relation ?? editFamilyDetails.relation),
         dateOfBirth: toIsoDate(data.dob || editFamilyDetails.dateOfBirth),
         validTo: toIsoDate(data.validTo || editFamilyDetails.validTo),
         validFrom: toIsoDate(data.validFrom || editFamilyDetails.validFrom),
-        cardStatus: editFamilyDetails.cardStatus,
+        cardStatus: toCardStatusApiValue(data.cardStatus, editFamilyDetails.cardStatus),
         lastModifiedBy: 'system',
       });
       handleCloseModal();
@@ -302,8 +344,9 @@ export default function UserFamilyPage() {
           title="Please provide details below!"
           onSave={handleAddFamily}
           onCancel={handleCloseModal}
-          fields={userFamilyFields}
+          fields={dynamicUserFamilyFields}
           saveButtonText="Create"
+          loading={isRelationEnumLoading || isCardStatusEnumLoading || isLoading}
           showStatusToggle={false}
         />
       </FormModal>
@@ -322,9 +365,10 @@ export default function UserFamilyPage() {
             title="Please update details below!"
             onSave={handleUpdateFamily}
             onCancel={handleCloseModal}
-            fields={userFamilyFields}
+            fields={dynamicUserFamilyFields}
             initialValues={initialValues}
             saveButtonText="Update"
+            loading={isEditFamilyLoading || isRelationEnumLoading || isCardStatusEnumLoading}
             showStatusToggle={false}
           />
         ) : (

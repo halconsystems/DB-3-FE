@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useUserById } from '../../../hooks/user/useUserById';
 import { useUpdateUser } from '../../../hooks/user/useUpdateUser';
 import { useEnumMetadata } from '../../../hooks/metadata/useEnumMetadata';
+import type { EnumMetadata } from '../../../services/metadata.service';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
@@ -45,24 +46,59 @@ const toIsoDate = (value?: string | null) => {
   return dateMatch ? dateMatch[0] : '';
 };
 
-const toCardStatusValue = (value?: string | number | boolean | null) => {
-  if (value === null || value === undefined) {
+const toUserTypeValue = (value?: string | number | null, enumMetadata?: EnumMetadata | null) => {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+
+  const asString = String(value).trim();
+
+  if (!enumMetadata?.members?.length) {
+    return asString;
+  }
+
+  const matchedMember = enumMetadata.members.find(
+    (member) => String(member.value) === asString || member.name.toLowerCase() === asString.toLowerCase()
+  );
+
+  return matchedMember ? String(matchedMember.value) : asString;
+};
+
+const toUserTypeApiValue = (value?: string | number | null, fallback?: string | number | null, enumMetadata?: EnumMetadata | null) => {
+  const resolved = value ?? fallback;
+  if (resolved === null || resolved === undefined || resolved === '') {
     return 0;
   }
 
-  if (typeof value === 'boolean') {
-    return value ? 1 : 0;
+  const asString = String(resolved).trim();
+  const matchedMember = enumMetadata?.members?.find(
+    (member) => String(member.value) === asString || member.name.toLowerCase() === asString.toLowerCase()
+  );
+
+  if (matchedMember) {
+    return matchedMember.value;
   }
 
-  if (typeof value === 'number') {
-    return value === 1 ? 1 : 0;
+  const numeric = Number(asString);
+  return Number.isNaN(numeric) ? 0 : numeric;
+};
+
+const toCardStatusValue = (value?: string | number | boolean | null) => {
+  if (value === null || value === undefined || value === '') {
+    return '';
   }
 
-  if (value === 'active' || value === '1') {
-    return 1;
+  return String(value).trim();
+};
+
+const toCardStatusApiValue = (value?: string | number | boolean | null, fallback?: string | number | boolean | null) => {
+  const resolved = value ?? fallback;
+  if (resolved === null || resolved === undefined || resolved === '') {
+    return 0;
   }
 
-  return 0;
+  const numeric = Number(resolved);
+  return Number.isNaN(numeric) ? 0 : numeric;
 };
 
 export default function EditUser() {
@@ -72,7 +108,8 @@ export default function EditUser() {
   const [hasCheckedId, setHasCheckedId] = useState(false);
   const [formError, setFormError] = useState('');
   const updateUserMutation = useUpdateUser();
-  const { data: userTypesEnum, isLoading: isEnumLoading } = useEnumMetadata('UserType');
+  const { data: userTypesEnum, isLoading: isUserTypesEnumLoading } = useEnumMetadata('UserType');
+  const { data: cardStatusEnum, isLoading: isCardStatusEnumLoading } = useEnumMetadata('CardStatus');
 
   useEffect(() => {
     const selected = getTableRow<any>('user');
@@ -98,10 +135,20 @@ export default function EditUser() {
   // Build dynamic userType options from enum
   const dynamicUserFields = useMemo(() => {
     const userTypeOptions = [{ value: '', label: 'Select User Type' }];
+    const cardStatusOptions = [{ value: '', label: 'Select Card Status' }];
     
     if (userTypesEnum?.members) {
       userTypesEnum.members.forEach((member) => {
         userTypeOptions.push({
+          value: String(member.value),
+          label: member.name,
+        });
+      });
+    }
+
+    if (cardStatusEnum?.members) {
+      cardStatusEnum.members.forEach((member) => {
+        cardStatusOptions.push({
           value: String(member.value),
           label: member.name,
         });
@@ -115,9 +162,15 @@ export default function EditUser() {
           options: userTypeOptions,
         };
       }
+      if (field.name === 'cardStatus') {
+        return {
+          ...field,
+          options: cardStatusOptions,
+        };
+      }
       return field;
     });
-  }, [userTypesEnum]);
+  }, [cardStatusEnum, userTypesEnum]);
 
   const initialValues = useMemo<ProfileFormData | null>(() => {
     if (!userDetails) {
@@ -129,14 +182,14 @@ export default function EditUser() {
       emailAddress: userDetails.email || '',
       cellNumber: userDetails.phoneNumber || '',
       cnic: userDetails.cnic || '',
-      userType: userDetails.userType !== null && userDetails.userType !== undefined ? String(userDetails.userType) : '',
+      userType: toUserTypeValue(userDetails.userType, userTypesEnum),
       rfidCardNo: userDetails.rfidCardNumber || '',
       cardIssueDate: toDateInputValue(userDetails.cardIssueDate),
       cardExpiryDate: toDateInputValue(userDetails.cardExpiryDate),
-      cardStatus: userDetails.cardStatus === 1,
+      cardStatus: toCardStatusValue(userDetails.cardStatus),
       status: !!userDetails.isActive,
     };
-  }, [userDetails]);
+  }, [userDetails, userTypesEnum]);
 
   const handleUpdate = async (formData: ProfileFormData) => {
     if (!userId || !userDetails) {
@@ -164,12 +217,12 @@ export default function EditUser() {
         email: formData.emailAddress || userDetails.email || '',
         phoneNumber: formData.cellNumber || userDetails.phoneNumber || '',
         cnic: formData.cnic || userDetails.cnic || '',
-        userType: Number(formData.userType) || userDetails.userType,
+        userType: toUserTypeApiValue(formData.userType, userDetails.userType, userTypesEnum),
         rfidCardNumber: formData.rfidCardNo || userDetails.rfidCardNumber || '',
         lastModifiedBy,
         cardIssueDate: toIsoDate(formData.cardIssueDate || userDetails.cardIssueDate),
         cardExpiryDate: toIsoDate(formData.cardExpiryDate || userDetails.cardExpiryDate),
-        cardStatus: toCardStatusValue(formData.cardStatus),
+        cardStatus: toCardStatusApiValue(formData.cardStatus, userDetails.cardStatus),
       });
     } catch (err: any) {
       const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update user';
@@ -192,7 +245,7 @@ export default function EditUser() {
             fields={dynamicUserFields}
             initialValues={initialValues || undefined}
             saveButtonText="Edit"
-            loading={isLoading || isEnumLoading || updateUserMutation.isPending}
+            loading={isLoading || isUserTypesEnumLoading || isCardStatusEnumLoading || updateUserMutation.isPending}
             showStatusToggle={false}
           />
         )}

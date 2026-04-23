@@ -79,8 +79,22 @@ export default function CommonEntityForm({
     pageName = 'Member';
   } else pageName = '';
 
+  const normalizedInitialValues = React.useMemo(() => {
+    const statusFieldNames = fields
+      .filter((field) => field.type === 'statusSwitch')
+      .map((field) => String(field.name));
+
+    if ('isActive' in initialValues) {
+      statusFieldNames.push('isActive');
+    }
+
+    return withDerivedVehicleLicensePlate(
+      normalizeFormStatuses({ ...initialValues }, statusFieldNames)
+    );
+  }, [fields, initialValues]);
+
   const [formData, setFormData] = useState<ProfileFormData>(
-    withDerivedVehicleLicensePlate(normalizeFormStatuses({ ...initialValues }))
+    normalizedInitialValues
   );
   const [isActive, setIsActive] = useState(initialValues.isActive ?? true);
   React.useEffect(() => {
@@ -92,12 +106,12 @@ export default function CommonEntityForm({
         prevKeys.length !== initKeys.length || 
         prevKeys.some((k) => prev[k as keyof ProfileFormData] !== initialValues[k as keyof ProfileFormData])
       ) {
-        return withDerivedVehicleLicensePlate(normalizeFormStatuses({ ...initialValues }));
+        return normalizedInitialValues;
       }
       return prev;
     });
     setIsActive(initialValues.isActive ?? true);
-  }, [JSON.stringify(initialValues)]);
+  }, [initialValues, normalizedInitialValues]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showWarning, setShowWarning] = useState(false);

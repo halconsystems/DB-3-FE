@@ -11,7 +11,7 @@ const apiClient = axios.create({
 });
 
 // Logout utility: clears all auth tokens and redirects to sign-in
-function logout() {
+export function logout() {
 	if (typeof window !== "undefined") {
 		localStorage.removeItem("token");
 		localStorage.removeItem("rememberMe");
@@ -24,7 +24,7 @@ function logout() {
 		// Clear cookie via document.cookie
 		document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
 		
-		window.location.href = "/auth/sign-in";
+		window.location.replace("/auth/sign-in");
 	}
 }
 

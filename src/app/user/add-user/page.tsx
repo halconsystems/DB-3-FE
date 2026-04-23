@@ -11,15 +11,26 @@ import { useEnumMetadata } from '../../../hooks/metadata/useEnumMetadata';
 
 export default function AddNewUser() {
   const createUserMutation = useCreateUser();
-  const { data: userTypesEnum, isLoading: isEnumLoading } = useEnumMetadata('UserType');
+  const { data: userTypesEnum, isLoading: isUserTypesEnumLoading } = useEnumMetadata('UserType');
+  const { data: cardStatusEnum, isLoading: isCardStatusEnumLoading } = useEnumMetadata('CardStatus');
 
   // Build dynamic userType options from enum
   const dynamicUserFields = useMemo(() => {
     const userTypeOptions = [{ value: '', label: 'Select User Type' }];
+    const cardStatusOptions = [{ value: '', label: 'Select Card Status' }];
     
     if (userTypesEnum?.members) {
       userTypesEnum.members.forEach((member) => {
         userTypeOptions.push({
+          value: String(member.value),
+          label: member.name,
+        });
+      });
+    }
+
+    if (cardStatusEnum?.members) {
+      cardStatusEnum.members.forEach((member) => {
+        cardStatusOptions.push({
           value: String(member.value),
           label: member.name,
         });
@@ -33,15 +44,17 @@ export default function AddNewUser() {
           options: userTypeOptions,
         };
       }
+      if (field.name === 'cardStatus') {
+        return {
+          ...field,
+          options: cardStatusOptions,
+        };
+      }
       return field;
     });
-  }, [userTypesEnum]);
+  }, [cardStatusEnum, userTypesEnum]);
 
   const handleSave = (data: ProfileFormData) => {
-    const cardStatus = typeof data.cardStatus === 'string'
-      ? data.cardStatus === 'active'
-      : !!data.cardStatus;
-
     // Map form data to API shape
     const user = {
       name: data.name || '',
@@ -53,7 +66,7 @@ export default function AddNewUser() {
       createdBy: 'admin', // or get from context/auth
       cardIssueDate: data.cardIssueDate || '',
       cardExpiryDate: data.cardExpiryDate || '',
-      cardStatus: cardStatus ? 1 : 0,
+      cardStatus: Number(data.cardStatus) || 0,
     };
     createUserMutation.mutate(user, {
       onSuccess: () => {
@@ -71,7 +84,7 @@ export default function AddNewUser() {
             rfidCardNo: '',
             cardIssueDate: '',
             cardExpiryDate: '',
-            cardStatus: true,
+            cardStatus: '',
             status: true,
           }
 
@@ -83,7 +96,7 @@ export default function AddNewUser() {
           onCancel={() => window.history.back()}
           fields={dynamicUserFields}
           initialValues={initVal}
-          loading={isEnumLoading || createUserMutation.isPending}
+          loading={isUserTypesEnumLoading || isCardStatusEnumLoading || createUserMutation.isPending}
           showStatusToggle={false}
         />
     </DashboardLayout>

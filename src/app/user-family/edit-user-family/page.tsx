@@ -7,6 +7,7 @@ import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
 import { userFamilyFields } from '../fields';
 import { useUserFamilyById } from '../../../hooks/user-family/useUserFamilyById';
 import { useUpdateUserFamily } from '../../../hooks/user-family/useUpdateUserFamily';
+import { useEnumMetadata } from '../../../hooks/metadata/useEnumMetadata';
 
 interface SelectedUserFamilyRow {
   id: number;
@@ -44,91 +45,44 @@ const toIsoDate = (value?: string | null) => {
   return dateMatch ? dateMatch[0] : '';
 };
 
-const relationLabelById: Record<number, string> = {
-  0: 'spouse',
-  1: 'child',
-  2: 'parent',
-  3: 'sibling',
-};
-
-const relationIdByLabel: Record<string, number> = {
-  spouse: 0,
-  child: 1,
-  parent: 2,
-  sibling: 3,
-};
-
-const toRelationValue = (value?: number | null) => {
+const toRelationValue = (value?: string | number | null, availableValues: Set<string> = new Set()) => {
   if (value === null || value === undefined) {
     return '';
   }
 
   const asString = String(value);
-  const relationField = userFamilyFields.find((field) => field.name === 'relation');
-  const availableValues = new Set((relationField?.options ?? []).map((option) => option.value));
 
-  if (availableValues.has(asString)) {
+  if (availableValues.size === 0 || availableValues.has(asString)) {
     return asString;
   }
 
-  return relationLabelById[value] ?? '';
+  return asString;
 };
 
-const toRelationNumber = (value?: string | number | null) => {
+const toRelationApiValue = (value?: string | number | null) => {
   if (value === null || value === undefined || value === '') {
-    return 0;
-  }
-
-  if (typeof value === 'number') {
-    return value;
-  }
-
-  if (value in relationIdByLabel) {
-    return relationIdByLabel[value];
-  }
-
-  const numeric = Number(value);
-  return Number.isNaN(numeric) ? 0 : numeric;
-};
-
-const toCardStatusFlag = (value?: string | number | boolean | null) => {
-  if (value === null || value === undefined) {
-    return false;
-  }
-
-  if (typeof value === 'boolean') {
-    return value;
-  }
-
-  if (typeof value === 'number') {
-    return value === 1;
-  }
-
-  return value === '1';
-};
-
-const toCardStatusValue = (value?: string | number | boolean | null, fallback?: string | null) => {
-  if (value === null || value === undefined) {
-    return fallback ?? null;
-  }
-
-  if (typeof value === 'boolean') {
-    return value ? '1' : '0';
-  }
-
-  if (typeof value === 'number') {
-    return value === 1 ? '1' : '0';
-  }
-
-  if (value === 'active' || value === '1') {
-    return '1';
-  }
-
-  if (value === 'inactive' || value === '0') {
     return '0';
   }
 
-  return fallback ?? null;
+  return String(value);
+};
+
+const toCardStatusValue = (value?: string | number | boolean | null) => {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+
+  return String(value).trim();
+};
+
+const toCardStatusApiValue = (value?: string | number | boolean | null, fallback?: string | number | boolean | null) => {
+  const resolved = value ?? fallback;
+  if (resolved === null || resolved === undefined || resolved === '') {
+    return 0;
+  }
+
+  const numeric = Number(resolved);
+  return Number.isNaN(numeric) ? 0 : numeric;
 };
 
 export default function EditUserFamily() {
@@ -138,6 +92,8 @@ export default function EditUserFamily() {
   const [hasCheckedId, setHasCheckedId] = useState(false);
   const [formError, setFormError] = useState('');
   const updateUserFamilyMutation = useUpdateUserFamily();
+  const { data: relationEnum, isLoading: isRelationEnumLoading } = useEnumMetadata('RelationUserFamily');
+  const { data: cardStatusEnum, isLoading: isCardStatusEnumLoading } = useEnumMetadata('CardStatus');
 
   useEffect(() => {
     const selected = getTableRow<{ id?: string }>('userFamily');
@@ -159,25 +115,69 @@ export default function EditUserFamily() {
 
   const { data, isLoading, isError } = useUserFamilyById(userId || '', !!userId);
 
+  const dynamicUserFamilyFields = useMemo(() => {
+    const relationOptions = [{ value: '', label: 'Select Relation' }];
+    const cardStatusOptions = [{ value: '', label: 'Select Card Status' }];
+
+    if (relationEnum?.members) {
+      relationEnum.members.forEach((member) => {
+        relationOptions.push({
+          value: String(member.value),
+          label: member.name,
+        });
+      });
+    }
+
+    if (cardStatusEnum?.members) {
+      cardStatusEnum.members.forEach((member) => {
+        cardStatusOptions.push({
+          value: String(member.value),
+          label: member.name,
+        });
+      });
+    }
+
+    return userFamilyFields.map((field) => {
+      if (field.name === 'relation') {
+        return {
+          ...field,
+          options: relationOptions,
+        };
+      }
+
+      if (field.name === 'cardStatus') {
+        return {
+          ...field,
+          options: cardStatusOptions,
+        };
+      }
+
+      return field;
+    });
+  }, [cardStatusEnum, relationEnum]);
+
   const initialValues = useMemo<ProfileFormData | null>(() => {
     if (!data) {
       return null;
     }
 
+    const relationField = dynamicUserFamilyFields.find((field) => field.name === 'relation');
+    const availableRelationValues = new Set((relationField?.options ?? []).map((option) => option.value));
+
     return {
       name: data.name || '',
       cellNumber: data.phoneNumber || '',
       cnic: data.cnic || '',
-      relation: toRelationValue(data.relation),
+      relation: toRelationValue(data.relation, availableRelationValues),
       fatherHusbandName: data.fatherOrHusbandName || '',
       residentCardNo: data.residentCardNumber || '',
       dob: toDateInputValue(data.dateOfBirth),
       validFrom: toDateInputValue(data.validFrom),
       validTo: toDateInputValue(data.validTo),
       status: !!data.isActive,
-      cardStatus: toCardStatusFlag(data.cardStatus),
+      cardStatus: toCardStatusValue(data.cardStatus),
     };
-  }, [data]);
+  }, [data, dynamicUserFamilyFields]);
 
   const handleSave = async (formData: ProfileFormData) => {
     if (!userId || !data) {
@@ -199,7 +199,7 @@ export default function EditUserFamily() {
     }
 
     const relationValue = formData.relation ?? data.relation ?? '';
-    const cardStatus = toCardStatusValue(formData.cardStatus, data.cardStatus);
+    const cardStatus = toCardStatusApiValue(formData.cardStatus, data.cardStatus);
 
     try {
       await updateUserFamilyMutation.mutateAsync({
@@ -212,7 +212,7 @@ export default function EditUserFamily() {
         phoneNumber: formData.cellNumber || data.phoneNumber || '',
         fatherOrHusbandName: formData.fatherHusbandName || data.fatherOrHusbandName || null,
         lastModifiedBy,
-        relation: toRelationNumber(relationValue),
+        relation: toRelationApiValue(relationValue),
         dateOfBirth: toIsoDate(formData.dob || data.dateOfBirth),
         validFrom: toIsoDate(formData.validFrom || data.validFrom),
         validTo: toIsoDate(formData.validTo || data.validTo),
@@ -236,8 +236,8 @@ export default function EditUserFamily() {
         <CommonEntityForm
           title="Edit User Family"
           initialValues={initialValues || undefined}
-          loading={isLoading || updateUserFamilyMutation.isPending}
-          fields={userFamilyFields}
+          loading={isLoading || isRelationEnumLoading || isCardStatusEnumLoading || updateUserFamilyMutation.isPending}
+          fields={dynamicUserFamilyFields}
           onSave={handleSave}
           onCancel={() => router.back()}
           saveButtonText='Edit'

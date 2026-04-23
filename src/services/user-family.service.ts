@@ -8,11 +8,11 @@ export interface UserFamily {
 	cnic: string;
 	phoneNumber: string;
 	fatherOrHusbandName: string | null;
-	relation: number;
+	relation: string | number;
 	dateOfBirth: string;
 	validTo: string | null;
 	validFrom: string | null;
-	cardStatus: string | null;
+	cardStatus: string | number | null;
 	externalUserId: string;
 	externalUserName: string | null;
 	created: string;
@@ -65,11 +65,11 @@ export interface CreateUserFamilyRequest {
 	cnic: string;
 	phoneNumber: string;
 	fatherOrHusbandName: string | null;
-	relation: number;
+	relation: string | number;
 	dateOfBirth: string;
 	validTo: string | null;
 	validFrom: string | null;
-	cardStatus: string | null;
+	cardStatus: string | number | null;
 	externalUserId: string;
 	createdBy: string;
 }
@@ -91,11 +91,11 @@ export interface UpdateUserFamilyRequest {
 	phoneNumber: string;
 	fatherOrHusbandName: string | null;
 	lastModifiedBy: string;
-	relation: number;
+	relation: string | number;
 	dateOfBirth: string;
 	validTo: string | null;
 	validFrom: string | null;
-	cardStatus: string | null;
+	cardStatus: string | number | null;
 }
 
 export const updateUserFamily = async (data: UpdateUserFamilyRequest): Promise<any> => {

@@ -7,6 +7,7 @@ import { useUserById } from '../../hooks/user/useUserById';
 import { useCreateUser } from '../../hooks/user/useCreateUser';
 import { useUpdateUser } from '../../hooks/user/useUpdateUser';
 import { useEnumMetadata } from '../../hooks/metadata/useEnumMetadata';
+import type { EnumMetadata } from '../../services/metadata.service';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DataTable, { StatusBadge, Column } from '../../components/tables/DataTable';
 import CircularButton from '../../components/ui/CircularButton';
@@ -38,7 +39,8 @@ export default function UserPage() {
   const { data, isLoading } = useExternalUsers();
   const { mutateAsync: createUser } = useCreateUser();
   const { mutateAsync: updateUser } = useUpdateUser();
-  const { data: userTypesEnum } = useEnumMetadata('UserType');
+  const { data: userTypesEnum, isLoading: isUserTypesEnumLoading } = useEnumMetadata('UserType');
+  const { data: cardStatusEnum, isLoading: isCardStatusEnumLoading } = useEnumMetadata('CardStatus');
 
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -55,10 +57,20 @@ export default function UserPage() {
   // Build dynamic userType options from enum
   const dynamicUserFields = useMemo(() => {
     const userTypeOptions = [{ value: '', label: 'Select User Type' }];
+    const cardStatusOptions = [{ value: '', label: 'Select Card Status' }];
     
     if (userTypesEnum?.members) {
       userTypesEnum.members.forEach((member) => {
         userTypeOptions.push({
+          value: String(member.value),
+          label: member.name,
+        });
+      });
+    }
+
+    if (cardStatusEnum?.members) {
+      cardStatusEnum.members.forEach((member) => {
+        cardStatusOptions.push({
           value: String(member.value),
           label: member.name,
         });
@@ -72,9 +84,15 @@ export default function UserPage() {
           options: userTypeOptions,
         };
       }
+      if (field.name === 'cardStatus') {
+        return {
+          ...field,
+          options: cardStatusOptions,
+        };
+      }
       return field;
     });
-  }, [userTypesEnum]);
+  }, [cardStatusEnum, userTypesEnum]);
 
   // Detect modal state from URL
   const modalMode = searchParams?.get('modal');
@@ -124,12 +142,48 @@ export default function UserPage() {
     return dateMatch ? dateMatch[0] : '';
   };
 
+  const toUserTypeValue = (value?: string | number | null, enumMetadata?: EnumMetadata | null) => {
+    if (value === null || value === undefined || value === '') return '';
+    const asString = String(value).trim();
+
+    if (!enumMetadata?.members?.length) {
+      return asString;
+    }
+
+    const matchedMember = enumMetadata.members.find(
+      (member) => String(member.value) === asString || member.name.toLowerCase() === asString.toLowerCase()
+    );
+
+    return matchedMember ? String(matchedMember.value) : asString;
+  };
+
+  const toUserTypeApiValue = (value?: string | number | null, fallback?: string | number | null, enumMetadata?: EnumMetadata | null) => {
+    const resolved = value ?? fallback;
+    if (resolved === null || resolved === undefined || resolved === '') return 0;
+
+    const asString = String(resolved).trim();
+    const matchedMember = enumMetadata?.members?.find(
+      (member) => String(member.value) === asString || member.name.toLowerCase() === asString.toLowerCase()
+    );
+
+    if (matchedMember) {
+      return matchedMember.value;
+    }
+
+    const numeric = Number(asString);
+    return Number.isNaN(numeric) ? 0 : numeric;
+  };
+
   const toCardStatusValue = (value?: string | number | boolean | null) => {
-    if (value === null || value === undefined) return 0;
-    if (typeof value === 'boolean') return value ? 1 : 0;
-    if (typeof value === 'number') return value === 1 ? 1 : 0;
-    if (value === 'active' || value === '1') return 1;
-    return 0;
+    if (value === null || value === undefined || value === '') return '';
+    return String(value).trim();
+  };
+
+  const toCardStatusApiValue = (value?: string | number | boolean | null, fallback?: string | number | boolean | null) => {
+    const resolved = value ?? fallback;
+    if (resolved === null || resolved === undefined || resolved === '') return 0;
+    const numeric = Number(resolved);
+    return Number.isNaN(numeric) ? 0 : numeric;
   };
 
   const handleAddUser = async (data: ProfileFormData) => {
@@ -140,11 +194,11 @@ export default function UserPage() {
         email: data.emailAddress || '',
         phoneNumber: data.cellNumber || '',
         cnic: data.cnic || '',
-        userType: Number(data.userType) || 0,
+        userType: toUserTypeApiValue(data.userType, undefined, userTypesEnum),
         rfidCardNumber: data.rfidCardNo || '',
         cardIssueDate: toIsoDate(data.cardIssueDate),
         cardExpiryDate: toIsoDate(data.cardExpiryDate),
-        cardStatus: toCardStatusValue(data.cardStatus),
+        cardStatus: toCardStatusApiValue(data.cardStatus),
       });
       handleCloseModal();
     } catch (err: any) {
@@ -160,14 +214,14 @@ export default function UserPage() {
       emailAddress: editUserDetails.email || '',
       cellNumber: editUserDetails.phoneNumber || '',
       cnic: editUserDetails.cnic || '',
-      userType: editUserDetails.userType !== null && editUserDetails.userType !== undefined ? String(editUserDetails.userType) : '',
+      userType: toUserTypeValue(editUserDetails.userType, userTypesEnum),
       rfidCardNo: editUserDetails.rfidCardNumber || '',
       cardIssueDate: toDateInputValue(editUserDetails.cardIssueDate),
       cardExpiryDate: toDateInputValue(editUserDetails.cardExpiryDate),
-      cardStatus: editUserDetails.cardStatus === 1,
+      cardStatus: toCardStatusValue(editUserDetails.cardStatus),
       status: !!editUserDetails.isActive,
     };
-  }, [editUserDetails]);
+  }, [editUserDetails, userTypesEnum]);
 
   const handleUpdateUser = async (data: ProfileFormData) => {
     if (!editUserId || !editUserDetails) return;
@@ -179,11 +233,11 @@ export default function UserPage() {
         email: data.emailAddress || editUserDetails.email || '',
         phoneNumber: data.cellNumber || editUserDetails.phoneNumber || '',
         cnic: data.cnic || editUserDetails.cnic || '',
-        userType: Number(data.userType) || editUserDetails.userType,
+        userType: toUserTypeApiValue(data.userType, editUserDetails.userType, userTypesEnum),
         rfidCardNumber: data.rfidCardNo || editUserDetails.rfidCardNumber || '',
         cardIssueDate: toIsoDate(data.cardIssueDate || editUserDetails.cardIssueDate),
         cardExpiryDate: toIsoDate(data.cardExpiryDate || editUserDetails.cardExpiryDate),
-        cardStatus: toCardStatusValue(data.cardStatus),
+        cardStatus: toCardStatusApiValue(data.cardStatus, editUserDetails.cardStatus),
       });
       handleCloseModal();
     } catch (err: any) {
@@ -296,6 +350,7 @@ export default function UserPage() {
           onCancel={handleCloseModal}
           fields={dynamicUserFields}
           saveButtonText="Create"
+          loading={isUserTypesEnumLoading || isCardStatusEnumLoading}
           showStatusToggle={false}
         />
       </FormModal>
@@ -318,6 +373,7 @@ export default function UserPage() {
             fields={dynamicUserFields}
             initialValues={initialValues}
             saveButtonText="Update"
+            loading={isEditUserLoading || isUserTypesEnumLoading || isCardStatusEnumLoading}
             showStatusToggle={false}
           />
         ) : (
