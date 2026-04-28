@@ -71,6 +71,10 @@ export default function UserPage() {
   const [hasCheckedId, setHasCheckedId] = useState(false);
   const { data: editUserDetails, isLoading: isEditUserLoading } = useUserById(editUserId);
 
+  // Detect modal state from URL
+  const modalMode = searchParams?.get('modal');
+  const modalId = searchParams?.get('id');
+
   // Build dynamic userType options from enum
   const dynamicUserFields = useMemo(() => {
     const userTypeOptions = [{ value: '', label: 'Select User Type' }];
@@ -95,6 +99,13 @@ export default function UserPage() {
     }
 
     return userFields.map((field) => {
+      if (modalMode === 'edit' && ['name', 'emailAddress', 'cnic', 'cellNumber'].includes(String(field.name))) {
+        return {
+          ...field,
+          readOnly: true,
+        };
+      }
+
       if (field.name === 'userType') {
         return {
           ...field,
@@ -109,11 +120,7 @@ export default function UserPage() {
       }
       return field;
     });
-  }, [cardStatusEnum, userTypesEnum]);
-
-  // Detect modal state from URL
-  const modalMode = searchParams?.get('modal');
-  const modalId = searchParams?.get('id');
+  }, [cardStatusEnum, modalMode, userTypesEnum]);
 
   useEffect(() => {
     if (modalMode === 'edit') {
@@ -237,7 +244,6 @@ export default function UserPage() {
       cardIssueDate: toDateInputValue(editUserDetails.cardIssueDate),
       cardExpiryDate: toDateInputValue(editUserDetails.cardExpiryDate),
       cardStatus: toCardStatusValue(editUserDetails.cardStatus),
-      status: !!editUserDetails.isActive,
     };
   }, [editUserDetails, userTypesEnum]);
 
@@ -292,7 +298,7 @@ export default function UserPage() {
 
   // Map API data to table data
   const filteredData = (data || [])
-    .filter(user => !localRemovedIds.includes(String(user.id)) && user.isActive)
+    .filter(user => !localRemovedIds.includes(String(user.id)))
     .map((user, idx) => ({
       sno: idx + 1,
       id: String(user.id),
@@ -305,7 +311,6 @@ export default function UserPage() {
       cardIssueDate: user.cardIssueDate || '',
       cardExpiryDate: user.cardExpiryDate || '',
       cardStatus: user.cardStatus,
-      status: user.isActive,
     }));
 
   const columns: Column<any>[] = [
@@ -322,11 +327,6 @@ export default function UserPage() {
       key: 'cardStatus',
       header: 'Card Status',
       render: (value: number) => <StatusBadge type="cardStatus" value={value} />
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      render: (value: boolean) => <StatusBadge type="activeInactive" value={value} />
     },
     {
       key: 'action',
@@ -351,7 +351,6 @@ export default function UserPage() {
         addButtonLabel="Add New"
         currentPage={currentPage}
         onPageChange={setCurrentPage}
-        getRowStatus={(row) => row.status ? 'Active' : 'Inactive'}
         loading={isLoading}
         emptyMessage={isLoading ? 'Loading users...' : 'No users found'}
       />

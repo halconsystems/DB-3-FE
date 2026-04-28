@@ -44,6 +44,171 @@
   padding: 16px 0;
 }
 
+.controlsBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 8px 0 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.controlLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  padding-left: 0;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.filterInput {
+  min-width: 220px;
+  max-width: 360px;
+  width: 280px;
+  margin-right: auto;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  padding-left: 38px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.75);
+  background: rgba(245, 247, 250, 0.95);
+  outline: none;
+}
+
+.filterInput:focus {
+  background: rgba(245, 247, 250, 0.95);
+  border: 1px solid transparent;
+  box-shadow: 0 4px 10px rgba(16,24,40,0.06);
+}
+
+/* Put visible border on the actual control elements instead of wrapper */
+.filterGroup .filterInput,
+.filterGroup .sortSelect {
+  border: 1px solid rgba(222,226,232,0.9);
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.98);
+}
+
+.filterGroup .filterInput {
+  padding-left: 38px; /* preserve search icon spacing */
+}
+
+/* Ensure standalone search input receives same bordered styling */
+.searchWrapper .filterInput,
+.searchWrapper input {
+  border: 1px solid rgba(222,226,232,0.9);
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.98);
+  padding-left: 38px;
+}
+
+.searchWrapper .filterInput:focus,
+.searchWrapper input:focus {
+  box-shadow: 0 4px 10px rgba(16,24,40,0.06);
+}
+
+.sortControls {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.sortSelect {
+  min-width: 130px;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(245, 247, 250, 0.95);
+  color: rgba(0, 0, 0, 0.75);
+  outline: none;
+}
+
+.searchWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  color: var(--primary);
+}
+
+.addButton svg {
+  vertical-align: middle;
+}
+
+.sortSelect:focus {
+  box-shadow: 0 4px 10px rgba(16,24,40,0.06);
+  background: rgba(245, 247, 250, 0.95);
+}
+
+.leftControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.rightControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+.sortSelect:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sortToggleButton {
+  width: 33px;
+  height: 33px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(222,226,232,0.9);
+  border-radius: 8px;
+  padding: 0;
+  background: rgba(255,255,255,0.98);
+  color: rgba(0, 0, 0, 0.75);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.sortToggleButton:hover:not(:disabled) {
+  box-shadow: 0 4px 10px rgba(16,24,40,0.06);
+}
+
+.sortToggleButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sortToggleButton svg {
+  flex-shrink: 0;
+}
+
 .addButton {
   min-width: 140px;
   background: var(--primary);
@@ -58,7 +223,7 @@
 }
 
 .addButton:hover {
-  background: #00df1a;
+  background: color-mix(in srgb, var(--primary) 16%, black 8%);
 }
 
 
@@ -124,7 +289,7 @@
   overflow-x: auto;
   padding: 0;
   border-radius: 16px;
-  background: #fff;
+  /* background: #fff;   */
 }
 
 .table {
@@ -340,8 +505,8 @@
   height: 25px;
   border-radius: 50%;
   border: none;
-  box-shadow: -13.8px -13.8px 27.6px 0px #FFFFFF, 4.14px 4.14px 27.6px 0px #AAAACC80;
-  background: white;
+  box-shadow: none;
+  background: rgba(230, 251, 232, 0.6);
   color: transparent;
   font-size: 13px;
   font-weight: 600;

@@ -1,9 +1,10 @@
 'use client';
-import React, { useEffect, useState, ReactNode } from 'react';
+import React, { useEffect, useMemo, useState, ReactNode } from 'react';
 import styles from './DataTable.module.css';
 import Loader from '../ui/loader';
 import { usePathname } from 'next/navigation';
 import { getStatusConfig } from '@/lib/statusMapping';
+import { Search, ArrowLeft, ArrowRight, Plus, ArrowUp, ArrowDown } from 'lucide-react';
 
 export interface Column<T> {
   key: keyof T | string;
@@ -34,6 +35,10 @@ export interface DataTableProps<T> {
   showAddButton?: boolean;
   getRowStatus?: (row: T) => 'Active' | 'Inactive' | 'Pending' | undefined;
   headerContent?: React.ReactNode;
+  enableFiltering?: boolean;
+  enableSorting?: boolean;
+  enableCardStatusFilter?: boolean;
+  filterPlaceholder?: string;
 }
 
 export function StatusBadge({
@@ -129,12 +134,134 @@ export default function DataTable<T extends Record<string, any>>({
   showAddButton = true,
   getRowStatus,
   headerContent,
+  enableFiltering = true,
+  enableSorting = true,
+  enableCardStatusFilter = true,
+  filterPlaceholder = 'Search',
 }: DataTableProps<T>) {
+  const [filterTerm, setFilterTerm] = useState('');
+  const [sortKey, setSortKey] = useState<string>('');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [cardStatusFilter, setCardStatusFilter] = useState<string>('all');
+
+  const hasCardStatusColumn = useMemo(
+    () => columns.some((column) => String(column.key) === 'cardStatus'),
+    [columns]
+  );
+
+  useEffect(() => {
+    if (!enableSorting) return;
+    if (hasCardStatusColumn && !sortKey) {
+      setSortKey('cardStatus');
+      setSortDirection('desc');
+    }
+  }, [hasCardStatusColumn, enableSorting, sortKey]);
+
+  const cardStatusOptions = useMemo(() => {
+    if (!hasCardStatusColumn) {
+      return [];
+    }
+
+    const uniqueValues = Array.from(
+      new Set(
+        data
+          .map((row) => row.cardStatus)
+          .filter((value) => value !== null && value !== undefined)
+          .map((value) => String(value))
+      )
+    );
+
+    return uniqueValues
+      .map((value) => {
+        const numericValue = Number(value);
+        const config = getStatusConfig('cardStatus', Number.isNaN(numericValue) ? value : numericValue);
+        return {
+          value,
+          label: config?.label || value,
+        };
+      })
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [data, hasCardStatusColumn]);
+
+  const getRawCellValue = (column: Column<T>, row: T) => {
+    if (column.key.toString().includes('.')) {
+      return column.key
+        .toString()
+        .split('.')
+        .reduce((obj, key) => obj?.[key], row as any);
+    }
+
+    return row[column.key as keyof T];
+  };
+
+  const filteredAndSortedData = useMemo(() => {
+    let result = [...data];
+
+    if (enableCardStatusFilter && hasCardStatusColumn && cardStatusFilter !== 'all') {
+      result = result.filter((row) => String(row.cardStatus) === cardStatusFilter);
+    }
+
+    const trimmedFilter = filterTerm.trim().toLowerCase();
+    if (enableFiltering && trimmedFilter) {
+      result = result.filter((row) =>
+        columns.some((column) => {
+          const value = getRawCellValue(column, row);
+          if (value === null || value === undefined) {
+            return false;
+          }
+
+          return String(value).toLowerCase().includes(trimmedFilter);
+        })
+      );
+    }
+
+    if (enableSorting && sortKey) {
+      const selectedColumn = columns.find((column) => String(column.key) === sortKey);
+      if (selectedColumn) {
+        result.sort((a, b) => {
+          const aValue = getRawCellValue(selectedColumn, a);
+          const bValue = getRawCellValue(selectedColumn, b);
+
+          if (aValue === bValue) return 0;
+          if (aValue === null || aValue === undefined) return sortDirection === 'asc' ? -1 : 1;
+          if (bValue === null || bValue === undefined) return sortDirection === 'asc' ? 1 : -1;
+
+          const aNumber = Number(aValue);
+          const bNumber = Number(bValue);
+          const bothNumbers = !Number.isNaN(aNumber) && !Number.isNaN(bNumber);
+
+          if (bothNumbers) {
+            return sortDirection === 'asc' ? aNumber - bNumber : bNumber - aNumber;
+          }
+
+          const aString = String(aValue);
+          const bString = String(bValue);
+          return sortDirection === 'asc'
+            ? aString.localeCompare(bString, undefined, { numeric: true, sensitivity: 'base' })
+            : bString.localeCompare(aString, undefined, { numeric: true, sensitivity: 'base' });
+        });
+      }
+    }
+
+    return result;
+  }, [
+    cardStatusFilter,
+    columns,
+    data,
+    enableCardStatusFilter,
+    enableFiltering,
+    enableSorting,
+    filterTerm,
+    hasCardStatusColumn,
+    sortDirection,
+    sortKey,
+  ]);
+
   const isPaginationControlled = typeof currentPage === 'number';
   const [internalRowsPerPage, setInternalRowsPerPage] = useState(rowsPerPage);
   const effectiveRowsPerPage = Math.max(1, internalRowsPerPage);
   const safeRowsPerPage = Math.max(1, effectiveRowsPerPage);
-  const calculatedTotalPages = Math.max(1, Math.ceil(data.length / safeRowsPerPage));
+  const calculatedTotalPages = Math.max(1, Math.ceil(filteredAndSortedData.length / safeRowsPerPage));
   const resolvedTotalPages = Math.max(calculatedTotalPages, Math.max(1, totalPages ?? 1));
 
   const [internalCurrentPage, setInternalCurrentPage] = useState(1);
@@ -168,7 +295,7 @@ export default function DataTable<T extends Record<string, any>>({
     setInternalCurrentPage(1); 
   };
 
-  const paginatedData = data.slice((safeCurrentPage - 1) * safeRowsPerPage, safeCurrentPage * safeRowsPerPage);
+  const paginatedData = filteredAndSortedData.slice((safeCurrentPage - 1) * safeRowsPerPage, safeCurrentPage * safeRowsPerPage);
 
   const getRowClassName = (row: T) => {
     const status = getRowStatus?.(row);
@@ -178,9 +305,7 @@ export default function DataTable<T extends Record<string, any>>({
   };
   
   const renderCell = (column: Column<T>, row: T) => {
-    const value = column.key.toString().includes('.') 
-      ? column.key.toString().split('.').reduce((obj, key) => obj?.[key], row as any)
-      : row[column.key as keyof T];
+    const value = getRawCellValue(column, row);
     
     if (column.render) {
       return column.render(value, row);
@@ -218,12 +343,12 @@ export default function DataTable<T extends Record<string, any>>({
 
     return (
       <div className={styles.pagination}>
-        <button 
+        <button
           className={styles.paginationButton}
           onClick={() => handlePageChange(safeCurrentPage - 1)}
           disabled={safeCurrentPage === 1}
         >
-          <img src="/icons/leftArrow.svg" alt="" />
+          <ArrowLeft size={16} />
         </button>
         {pages.map((page, index) => (
           <button
@@ -235,12 +360,12 @@ export default function DataTable<T extends Record<string, any>>({
             {page}
           </button>
         ))}
-        <button 
+        <button
           className={styles.paginationButton}
           onClick={() => handlePageChange(safeCurrentPage + 1)}
           disabled={safeCurrentPage === resolvedTotalPages}
         >
-         <img src="/icons/rightArrow.svg" alt="" />
+          <ArrowRight size={16} />
         </button>
       </div>
     );
@@ -290,13 +415,101 @@ export default function DataTable<T extends Record<string, any>>({
       })()}
 
       {headerContent}
-       {showAddButton && (
+
+      {showAddButton && (
         <div className={styles.addButtonWrapper}>
           <button className={styles.addButton} onClick={onAddClick}>
+            <Plus size={14} style={{ marginRight: 8 }} />
             {addButtonLabel}
           </button>
         </div>
       )}
+
+      {(enableFiltering || enableSorting || (enableCardStatusFilter && hasCardStatusColumn)) && (
+        <div className={styles.controlsBar}>
+          <div className={styles.leftControls}>
+            {enableFiltering && (
+              <div className={styles.searchWrapper}>
+                <Search size={16} className={styles.searchIcon} />
+                <input
+                  type="text"
+                  className={styles.filterInput}
+                  placeholder={filterPlaceholder}
+                  value={filterTerm}
+                  onChange={(e) => {
+                    setFilterTerm(e.target.value);
+                    if (!isPaginationControlled) {
+                      setInternalCurrentPage(1);
+                    }
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          {((enableCardStatusFilter && hasCardStatusColumn) || enableSorting) && (
+            <div className={styles.rightControls}>
+              {enableCardStatusFilter && hasCardStatusColumn && (
+                <div className={styles.filterGroup}>
+                  <label className={styles.controlLabel} htmlFor="cardStatusFilterSelect">Card Status</label>
+                  <select
+                    id="cardStatusFilterSelect"
+                    className={styles.sortSelect}
+                    value={cardStatusFilter}
+                    onChange={(e) => {
+                      setCardStatusFilter(e.target.value);
+                      if (!isPaginationControlled) {
+                        setInternalCurrentPage(1);
+                      }
+                    }}
+                  >
+                    <option value="all">All</option>
+                    {cardStatusOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {enableSorting && (
+                <div className={styles.sortControls}>
+                  <div className={styles.filterGroup}>
+                    <label className={styles.controlLabel} htmlFor="sortBySelect">Sort By</label>
+                    <select
+                      id="sortBySelect"
+                      className={styles.sortSelect}
+                      value={sortKey}
+                      onChange={(e) => setSortKey(e.target.value)}
+                    >
+                      <option value="">None</option>
+                      {columns.map((column) => (
+                        <option key={String(column.key)} value={String(column.key)}>
+                          {column.header}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className={styles.filterGroup}>
+                    <button
+                      id="sortDirectionSelect"
+                      type="button"
+                      className={styles.sortToggleButton}
+                      onClick={() => setSortDirection((current) => (current === 'asc' ? 'desc' : 'asc'))}
+                      disabled={!sortKey}
+                      aria-label={`Sort direction ${sortDirection === 'asc' ? 'ascending' : 'descending'}`}
+                    >
+                      {sortDirection === 'asc' ? <ArrowUp size={18} /> : <ArrowDown size={18} />}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+      
 
       <div className={styles.tableWrapper}>
         {error ? (

@@ -10,6 +10,8 @@ import CommonEntityForm, { ProfileFormData } from '../../../components/forms/Com
 import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
 import { userFields } from '../fields';
 
+
+
 interface SelectedUserRow {
   id: number;
   name: string;
@@ -21,7 +23,6 @@ interface SelectedUserRow {
   cardIssueDate?: string;
   cardExpiryDate?: string;
   cardStatus: 'Active' | 'Inactive';
-  status: 'Active' | 'Inactive';
 }
 
 // Extract YYYY-MM-DD from any date format without timezone conversion
@@ -155,6 +156,13 @@ export default function EditUser() {
     }
 
     return userFields.map((field) => {
+      if (['name', 'emailAddress', 'cnic', 'cellNumber'].includes(String(field.name))) {
+        return {
+          ...field,
+          readOnly: true,
+        };
+      }
+
       if (field.name === 'userType') {
         return {
           ...field,

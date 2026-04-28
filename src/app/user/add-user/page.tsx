@@ -75,18 +75,18 @@ export default function AddNewUser() {
     });
   };
 
-  const initVal = {
-            name: '',
-            emailAddress: '',
-            cellNumber: '',
-            cnic: '',
-            userType: '',
-            rfidCardNo: '',
-            cardIssueDate: '',
-            cardExpiryDate: '',
-            cardStatus: '',
-            status: true,
-          }
+  const initVal = useMemo(() => ({
+    name: '',
+    emailAddress: '',
+    cellNumber: '',
+    cnic: '',
+    userType: '',
+    rfidCardNo: '',
+    cardIssueDate: '',
+    cardExpiryDate: '',
+    cardStatus: '',
+    status: true,
+  }), []);
 
   return (
     <DashboardLayout pageTitle="Add New User">

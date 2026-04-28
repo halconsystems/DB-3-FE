@@ -63,10 +63,27 @@ const getInputStyle = (field: ProfileField): React.CSSProperties => ({
   height: toCssSize(field.inputHeight),
 });
 
+const getReadOnlyStyle = (field: ProfileField): React.CSSProperties => (
+  field.readOnly
+    ? {
+        cursor: 'not-allowed',
+        opacity: 0.7,
+      }
+    : {}
+);
+
+const getReadOnlyWrapperStyle = (field: ProfileField): React.CSSProperties => (
+  field.readOnly
+    ? {
+        cursor: 'not-allowed',
+      }
+    : {}
+);
+
 // Add disabled prop for phone/cell auto-disable
 export function TextInputField({ field, value, onChange, styles, wrapperClassName, maxLength }: InputFieldProps & { maxLength?: number }) {
   return (
-    <div className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()} style={getWrapperStyle(field)}>
+    <div className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()} style={{ ...getWrapperStyle(field), ...getReadOnlyWrapperStyle(field) }}>
       <label className={styles.labelGreen}>
         {field.label}
         {field.required && <span style={{ color: '#ff1744', marginLeft: '4px' }}>*</span>}
@@ -76,9 +93,9 @@ export function TextInputField({ field, value, onChange, styles, wrapperClassNam
         name={String(field.name)}
         placeholder={field.placeholder}
         className={styles.input}
-        style={getInputStyle(field)}
+        style={{ ...getInputStyle(field), ...getReadOnlyStyle(field) }}
         value={value}
-        onChange={onChange}
+        onChange={field.readOnly ? undefined : onChange}
         readOnly={field.readOnly}
         maxLength={maxLength}
       />
@@ -90,6 +107,10 @@ export function SelectInputField({ field, value, onChange, styles, wrapperClassN
   const selectRef = React.useRef<HTMLSelectElement>(null);
 
   const openSelectDropdown = () => {
+    if (field.readOnly) {
+      return;
+    }
+
     const selectElement = selectRef.current;
 
     if (!selectElement) {
@@ -115,7 +136,7 @@ export function SelectInputField({ field, value, onChange, styles, wrapperClassN
   };
 
   return (
-    <div className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()} style={getWrapperStyle(field)}>
+    <div className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()} style={{ ...getWrapperStyle(field), ...getReadOnlyWrapperStyle(field) }}>
       <label className={styles.labelGreen}>
         {field.label}
         {field.required && <span style={{ color: '#ff1744', marginLeft: '4px' }}>*</span>}
@@ -126,9 +147,10 @@ export function SelectInputField({ field, value, onChange, styles, wrapperClassN
           id={String(field.name)}
           name={String(field.name)}
           className={styles.select}
-          style={getInputStyle(field)}
+          style={{ ...getInputStyle(field), ...getReadOnlyStyle(field) }}
           value={value}
-          onChange={handleChange}
+          onChange={field.readOnly ? undefined : handleChange}
+          disabled={field.readOnly}
         >
           {field.options?.map((option) => (
             <option key={option.value} value={option.value} >
@@ -136,7 +158,7 @@ export function SelectInputField({ field, value, onChange, styles, wrapperClassN
             </option>
           ))}
         </select>
-        <div style={{ position: 'absolute', right: '0', top: '-150%' }}>
+        <div style={{ position: 'absolute', right: '0', top: '-150%', cursor: field.readOnly ? 'not-allowed' : 'pointer' }}>
           <CircularButton imagePath='/icons/DownArrow.svg' width="24px" height="24px" onClick={openSelectDropdown} />
         </div>
       </div>
@@ -148,6 +170,10 @@ export function DateInputField({ field, value, onChange, styles, wrapperClassNam
   const dateInputRef = React.useRef<HTMLInputElement>(null);
 
   const openDatePicker = () => {
+    if (field.readOnly) {
+      return;
+    }
+
     const dateInput = dateInputRef.current;
 
     if (!dateInput) {
@@ -168,7 +194,7 @@ export function DateInputField({ field, value, onChange, styles, wrapperClassNam
   return (
     <div
       className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()}
-      style={{ ...getWrapperStyle(field), position: 'relative' }}
+      style={{ ...getWrapperStyle(field), ...getReadOnlyWrapperStyle(field), position: 'relative' }}
     >
       <label className={styles.labelGreen}>
         {field.label}
@@ -179,12 +205,14 @@ export function DateInputField({ field, value, onChange, styles, wrapperClassNam
         type="date"
         name={String(field.name)}
         className={styles.input + " " + styles.dateInput}
-        style={getInputStyle(field)}
+        style={{ ...getInputStyle(field), ...getReadOnlyStyle(field) }}
         value={value}
-        onChange={onChange}
+        onChange={field.readOnly ? undefined : onChange}
         placeholder={field.placeholder || field.label}
+        readOnly={field.readOnly}
+        disabled={field.readOnly}
       />
-      <div style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)' }}>
+      <div style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: field.readOnly ? 'not-allowed' : 'pointer' }}>
         <CircularButton imagePath='/icons/Calendar.svg' width="24px" height="24px" onClick={openDatePicker} />
       </div> 
     </div>

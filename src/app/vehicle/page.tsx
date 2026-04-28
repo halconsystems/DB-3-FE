@@ -279,6 +279,19 @@ export default function VehiclePage() {
     if (!editVehicleId || !editVehicleDetails?.data) throw new Error('Vehicle ID or details not found');
     try {
       const vehicleData = editVehicleDetails.data;
+      
+      // Get lastModifiedBy from localStorage
+      let lastModifiedBy = 'system';
+      try {
+        const userRaw = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+        if (userRaw) {
+          const user = JSON.parse(userRaw);
+          lastModifiedBy = user?.fullName || user?.name || user?.email || 'system';
+        }
+      } catch {
+        lastModifiedBy = 'system';
+      }
+      
       const response = await updateVehicle({
         id: editVehicleId,
         license: data.vehicleNo || vehicleData.license || '',
@@ -291,6 +304,7 @@ export default function VehiclePage() {
         validFrom: toIsoDate(data.issueDate),
         validTo: toIsoDate(data.expiryDate),
         tagStatus: data.eTagStatus === 'active' ? 1 : 0,
+        lastModifiedBy: lastModifiedBy || 'system',
         isActive: data.isActive ?? vehicleData.isActive,
         externalUserId: vehicleData.externalUserId,
       });

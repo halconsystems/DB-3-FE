@@ -97,19 +97,13 @@ export default function CommonEntityForm({
     normalizedInitialValues
   );
   const [isActive, setIsActive] = useState(initialValues.isActive ?? true);
+  const lastSyncedInitialValuesRef = React.useRef(JSON.stringify(normalizedInitialValues));
   React.useEffect(() => {
-    // Only update if initialValues actually changed (shallow compare)
-    setFormData((prev) => {
-      const prevKeys = Object.keys(prev);
-      const initKeys = Object.keys(initialValues);
-      if (
-        prevKeys.length !== initKeys.length || 
-        prevKeys.some((k) => prev[k as keyof ProfileFormData] !== initialValues[k as keyof ProfileFormData])
-      ) {
-        return normalizedInitialValues;
-      }
-      return prev;
-    });
+    const serialized = JSON.stringify(normalizedInitialValues);
+    if (serialized !== lastSyncedInitialValuesRef.current) {
+      setFormData(normalizedInitialValues);
+      lastSyncedInitialValuesRef.current = serialized;
+    }
     setIsActive(initialValues.isActive ?? true);
   }, [initialValues, normalizedInitialValues]);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -644,7 +638,8 @@ export default function CommonEntityForm({
     );
   }
 
-  const isEditMode = saveButtonText.toLowerCase().includes('edit');
+  const normalizedSaveAction = saveButtonText.toLowerCase();
+  const isEditMode = normalizedSaveAction.includes('edit') || normalizedSaveAction.includes('update');
 
   if (loading || isSubmitting) {
     return <Loader />;

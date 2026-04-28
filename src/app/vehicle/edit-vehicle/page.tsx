@@ -126,7 +126,6 @@ export default function EditVehicle() {
     try {
       await updateVehicleMutation.mutateAsync({
         id: vehicleId,
-        ser: data.data.ser,
         licenseNo: Number(formData.vehicleNo2 || data.data.licenseNo || 0),
         license: formData.vehicleNo || data.data.license || '',
         year: formData.year || data.data.year || '',
@@ -138,7 +137,7 @@ export default function EditVehicle() {
         validFrom: toIsoDate(formData.issueDate),
         validTo: toIsoDate(formData.expiryDate),
         tagStatus: toTagStatus(formData.tagStatus),
-        lastModifiedBy,
+        lastModifiedBy: lastModifiedBy || 'system',
         externalUserId,
         isActive: typeof formData.isActive === 'boolean' ? formData.isActive : data.data.isActive,
       });

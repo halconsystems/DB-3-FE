@@ -18,6 +18,7 @@ export default function AddNewCpAgent() {
   const { data: syncAgentsData, isLoading: isSyncAgentsLoading } = useGetAllSyncAgents();
 
   const fields = React.useMemo(() => {
+    console.log('Zones:', zonesData);
     const zoneOptions = (zonesData?.data || []).map((zone) => ({ value: zone.id, label: zone.name }));
     const controllerOptions = (controllersData?.data || []).map((controller: any) => ({ value: controller.id, label: controller.name || controller.id }));
     const syncAgentOptions = (syncAgentsData?.data || []).map((agent: any) => ({ value: agent.id, label: agent.name || agent.id }));
