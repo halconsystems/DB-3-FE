@@ -77,10 +77,8 @@ const toAttachmentString = (value?: File | null): string => {
 
 export default function AddNewWorker() {
   const { mutateAsync: createWorker, isPending } = useCreateWorker();
-  const [formError, setFormError] = React.useState('');
 
   const handleSave = async (data: ProfileFormData) => {
-    setFormError('');
 
   let externalUserId = 'system';
   let createdBy = 'system';
@@ -118,7 +116,6 @@ export default function AddNewWorker() {
       });
     } catch (err: any) {
       const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create worker';
-      setFormError(message);
       throw new Error(message);
     }
   };
@@ -126,7 +123,6 @@ export default function AddNewWorker() {
   return (
     <DashboardLayout pageTitle="Add New Worker">
       <div style={{ margin: '0 auto' }}>
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         <CommonEntityForm
           title="Please provide details below!"
           onSave={handleSave}

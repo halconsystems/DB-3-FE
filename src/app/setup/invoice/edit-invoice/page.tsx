@@ -9,7 +9,6 @@ import { invoiceFields } from '../fields';
 export default function EditInvoice() {
   const [invoiceId, setInvoiceId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [formError, setFormError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [initialValues, setInitialValues] = useState<ProfileFormData | undefined>(undefined);
 
@@ -27,24 +26,18 @@ export default function EditInvoice() {
   }, []);
 
   const handleUpdate = async (formData: ProfileFormData) => {
-    setFormError("");
     setSuccessMsg("");
 
     if (!invoiceId) {
-      setFormError('Invoice ID not found');
-      return;
+      throw new Error('Invoice ID not found');
     }
 
-    try {
-      // Demo mode - just log the data
-      console.log('Invoice updated (Demo):', { id: invoiceId, ...formData });
-      setSuccessMsg('Invoice updated successfully!');
-      setTimeout(() => {
-        setSuccessMsg("");
-      }, 2000);
-    } catch (error: any) {
-      setFormError(error.message || 'Failed to update Invoice');
-    }
+    // Demo mode - just log the data
+    console.log('Invoice updated (Demo):', { id: invoiceId, ...formData });
+    setSuccessMsg('Invoice updated successfully!');
+    setTimeout(() => {
+      setSuccessMsg("");
+    }, 2000);
   };
 
   if (isLoading) {
@@ -66,7 +59,6 @@ export default function EditInvoice() {
         successTitle="Success"
         successMessage={successMsg}
       />
-      {formError && <div style={{ color: 'red', padding: '16px' }}>{formError}</div>}
     </DashboardLayout>
   );
 }

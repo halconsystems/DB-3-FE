@@ -11,7 +11,6 @@ import { feeScaleFields } from '../fields';
 export default function EditFeeScale() {
 
   const [feeScaleId, setFeeScaleId] = useState<string | null>(null);
-  const [formError, setFormError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [initialValues, setInitialValues] = useState<ProfileFormData | undefined>(undefined);
   const updateFeeScaleMutation = useUpdateFeeScale();
@@ -50,12 +49,10 @@ export default function EditFeeScale() {
   }, [data]);
 
   const handleUpdate = async (formData: ProfileFormData) => {
-    setFormError("");
     setSuccessMsg("");
 
     if (!feeScaleId) {
-      setFormError('Fee Scale ID not found');
-      return;
+      throw new Error('Fee Scale ID not found');
     }
 
     const payload = {
@@ -81,7 +78,7 @@ export default function EditFeeScale() {
         }, 2000);
       },
       onError: (error: any) => {
-        setFormError(error?.message || 'Failed to update Fee Scale');
+        throw new Error(error?.message || 'Failed to update Fee Scale');
       }
     });
   };
@@ -106,7 +103,6 @@ export default function EditFeeScale() {
         successTitle="Success"
         successMessage={successMsg}
       />
-      {formError && <div style={{ color: 'red', padding: '16px' }}>{formError}</div>}
     </DashboardLayout>
   );
 }

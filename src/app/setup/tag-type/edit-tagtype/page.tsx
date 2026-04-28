@@ -13,7 +13,6 @@ const tagTypeFields: ProfileField[] = [
 export default function EditTagType() {
   const [tagTypeId, setTagTypeId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [formError, setFormError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [initialValues, setInitialValues] = useState<ProfileFormData | undefined>(undefined);
 
@@ -31,23 +30,17 @@ export default function EditTagType() {
   }, []);
 
   const handleUpdate = async (formData: ProfileFormData) => {
-    setFormError("");
     setSuccessMsg("");
 
     if (!tagTypeId) {
-      setFormError('Tag Type ID not found');
-      return;
+      throw new Error('Tag Type ID not found');
     }
 
-    try {
-      console.log('Tag Type updated (Demo):', { id: tagTypeId, ...formData });
-      setSuccessMsg('Tag Type updated successfully!');
-      setTimeout(() => {
-        setSuccessMsg("");
-      }, 2000);
-    } catch (error: any) {
-      setFormError(error.message || 'Failed to update Tag Type');
-    }
+    console.log('Tag Type updated (Demo):', { id: tagTypeId, ...formData });
+    setSuccessMsg('Tag Type updated successfully!');
+    setTimeout(() => {
+      setSuccessMsg("");
+    }, 2000);
   };
 
   if (isLoading) {
@@ -69,7 +62,6 @@ export default function EditTagType() {
         successTitle="Success"
         successMessage={successMsg}
       />
-      {formError && <div style={{ color: 'red', padding: '16px' }}>{formError}</div>}
     </DashboardLayout>
   );
 }

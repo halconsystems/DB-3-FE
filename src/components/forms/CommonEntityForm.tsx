@@ -22,7 +22,7 @@ export type { ProfileField, ProfileFormData } from './FormTypes';
 
 interface CommonEntityFormProps {
   onCancel?: () => void;
-  onSave?: (data: ProfileFormData) => void | Promise<void>;
+  onSave?: (data: ProfileFormData) => void | boolean | Record<string, any> | Promise<void | boolean | Record<string, any>>;
   initialValues?: Partial<ProfileFormData> | any;
   title?: string;
   saveButtonText?: string;
@@ -115,7 +115,16 @@ export default function CommonEntityForm({
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
+  const [warningTitle, setWarningTitle] = useState('Required Fields Missing');
   const [warningMessage, setWarningMessage] = useState('');
+
+  React.useEffect(() => {
+    if (error) {
+      setWarningTitle('Request Failed');
+      setWarningMessage(error);
+      setShowWarning(true);
+    }
+  }, [error]);
   
 
   // Helper for phone number masking and blocking further input
@@ -297,7 +306,62 @@ export default function CommonEntityForm({
     setFormData((prev) => ({ ...prev, [field]: file }));
   };
 
+  const isApiSuccess = (response: any) => {
+    if (response === undefined || response === null) {
+      return true;
+    }
+
+    if (typeof response === 'boolean') {
+      return response;
+    }
+
+    if (typeof response?.statusCode === 'number') {
+      return [0, 200, 201, 204].includes(response.statusCode);
+    }
+
+    if (typeof response?.success === 'boolean') {
+      return response.success;
+    }
+
+    if (typeof response?.status === 'number') {
+      return response.status >= 200 && response.status < 300;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async () => {
+
+    const missingRequiredFields = fields
+      .filter((field) => field.required)
+      .filter((field) => {
+        const value = formData[field.name];
+
+        if (value === null || value === undefined) {
+          return true;
+        }
+
+        if (typeof value === 'boolean') {
+          return false;
+        }
+
+        if (typeof value === 'number') {
+          return false;
+        }
+
+        if (value instanceof File) {
+          return false;
+        }
+
+        return String(value).trim() === '';
+      });
+
+    if (missingRequiredFields.length > 0) {
+      setWarningTitle('Required Fields Missing');
+      setWarningMessage(`Please fill all required fields: ${missingRequiredFields.map((field) => field.label).join(', ')}.`);
+      setShowWarning(true);
+      return;
+    }
 
 
     // eTagId (RFID) and tagNumber validation: must be exactly 16 digits, formatted as 1234 5678 1234 5678
@@ -305,11 +369,13 @@ export default function CommonEntityForm({
       if (formData[field]) {
         const digits = formData[field].replace(/\D/g, '');
         if (digits.length !== 16) {
+          setWarningTitle('Validation Error');
           setWarningMessage(`${field === 'eTagId' ? 'Vehicle E-Tag ID (RFID)' : 'Tag Number'} must be exactly 16 digits.`);
           setShowWarning(true);
           return;
         }
         if (!/^\d{4}( \d{4}){3}$/.test(formData[field])) {
+          setWarningTitle('Validation Error');
           setWarningMessage(`${field === 'eTagId' ? 'Vehicle E-Tag ID (RFID)' : 'Tag Number'} must be in the format 1234 5678 1234 5678.`);
           setShowWarning(true);
           return;
@@ -319,6 +385,7 @@ export default function CommonEntityForm({
 
     // Card No validation: 1234 5678 1234 5678
     if (formData.cardNo && !/^\d{4} \d{4} \d{4} \d{4}$/.test(formData.cardNo)) {
+      setWarningTitle('Validation Error');
       setWarningMessage('Card No must be in the format 1234 5678 1234 5678.');
       setShowWarning(true);
       return;
@@ -326,22 +393,24 @@ export default function CommonEntityForm({
 
     // Tag Number 18-digit validation removed as requested
     console.log('[CommonEntityForm] submit clicked', formData);
-    // Skipping required fields validation as requested
 
     // Custom validations
     // Contact No: 11 digits (phoneNumber or cellNumber)
     if (formData.phoneNumber && !/^\d{11}$/.test(formData.phoneNumber) && !/^\+92 3\d{2} \d{7}$/.test(formData.phoneNumber) && !/^03\d{2}-\d{7}$/.test(formData.phoneNumber)) {
+      setWarningTitle('Validation Error');
       setWarningMessage('Contact Number must be exactly 11 digits.');
       setShowWarning(true);
       return;
     }
     if (formData.cellNumber && !/^\d{11}$/.test(formData.cellNumber) && !/^\+92 3\d{2} \d{7}$/.test(formData.cellNumber) && !/^03\d{2}-\d{7}$/.test(formData.cellNumber)) {
+      setWarningTitle('Validation Error');
       setWarningMessage('Contact Number must be exactly 11 digits.');
       setShowWarning(true);
       return;
     }
     // CNIC: 13 digits
     if (formData.cnic && (!/^\d{13}$/.test(formData.cnic) && !/^\d{5}-\d{7}-\d{1}$/.test(formData.cnic))) {
+      setWarningTitle('Validation Error');
       setWarningMessage('CNIC must be exactly 13 digits.');
       setShowWarning(true);
       return;
@@ -350,12 +419,14 @@ export default function CommonEntityForm({
     // Email validation for both 'email' and 'emailAddress' fields
     const emailToValidate = formData.email || formData.emailAddress;
     if (emailToValidate && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailToValidate)) {
+      setWarningTitle('Validation Error');
       setWarningMessage('Please enter a valid email address.');
       setShowWarning(true);
       return;
     }
 
     if(formData.licensePlate && !/^[A-Za-z]+-\d+$/.test(formData.licensePlate)) {
+      setWarningTitle('Validation Error');
       setWarningMessage('License Plate must be in format ABC-123.');
       setShowWarning(true);
       return;
@@ -363,10 +434,18 @@ export default function CommonEntityForm({
 
     setIsSubmitting(true);
     try {
+      let saveResult: void | boolean | Record<string, any> = true;
       if (onSave) {
-        await onSave(withDerivedVehicleLicensePlate({ ...formData, isActive }));
+        saveResult = await onSave(withDerivedVehicleLicensePlate({ ...formData, isActive }));
       }
-      setShowSuccess(true);
+
+      if (isApiSuccess(saveResult)) {
+        setShowSuccess(true);
+      }
+    } catch (err: any) {
+      setWarningTitle('Request Failed');
+      setWarningMessage(err?.response?.data?.errorMessage || err?.message || 'Failed to save record.');
+      setShowWarning(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -592,11 +671,6 @@ export default function CommonEntityForm({
             </div>
           )}
         </div>
-        {error && (
-          <div style={{ padding: '12px', marginBottom: '16px', backgroundColor: '#fee', borderLeft: '4px solid #f44336', borderRadius: '4px', color: '#c62828', fontSize: '14px' }}>
-            {error}
-          </div>
-        )}
         <div className={styles.formGrid}>
           {renderedFields}
         </div>
@@ -624,7 +698,7 @@ export default function CommonEntityForm({
       isOpen={showWarning}
       onClose={() => setShowWarning(false)}
       onConfirm={() => setShowWarning(false)}
-      title="Required Fields Missing"
+      title={warningTitle}
       message={warningMessage}
       confirmText="OK"
       cancelText=""

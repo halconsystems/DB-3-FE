@@ -43,6 +43,23 @@ const toVisitorPassTypeLabel = (passType?: string | number): string => {
   return '-';
 };
 
+const isApiSuccess = (response: any) => {
+  const statusCode = response?.statusCode;
+  if (typeof statusCode === 'number') {
+    return [0, 200, 201, 204].includes(statusCode);
+  }
+
+  if (typeof response?.success === 'boolean') {
+    return response.success;
+  }
+
+  if (typeof response?.status === 'number') {
+    return response.status >= 200 && response.status < 300;
+  }
+
+  return true;
+};
+
 
 
 export default function VisitorsPage() {
@@ -156,7 +173,6 @@ export default function VisitorsPage() {
   };
 
   const handleAddVisitor = async (data: ProfileFormData) => {
-    setFormError('');
     try {
       const visitorPassType = toVisitorPassType(data.quickPick);
       if (visitorPassType === null) {
@@ -174,7 +190,7 @@ export default function VisitorsPage() {
         externalUserId = 'system';
       }
 
-      await createVisitor({
+      const response = await createVisitor({
         name: data.fullName || '',
         cnic: data.cnic || '',
         vehicleLicensePlate: toVehicleLicensePlate(data.vehicleNo, data.vehicleNo2),
@@ -184,10 +200,12 @@ export default function VisitorsPage() {
         validTo: toIsoDate(data.toDate),
         externalUserId,
       });
-      handleCloseModal();
+
+      if (!isApiSuccess(response)) {
+        throw new Error(response?.errorMessage || response?.message || 'Failed to create visitor');
+      }
     } catch (err: any) {
-      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create visitor';
-      setFormError(message);
+      throw err;
     }
   };
 
@@ -216,8 +234,7 @@ export default function VisitorsPage() {
   }, [editVisitorDetails]);
 
   const handleUpdateVisitor = async (formData: ProfileFormData) => {
-    if (!editVisitorId || !editVisitorDetails?.data) return;
-    setFormError('');
+    if (!editVisitorId || !editVisitorDetails?.data) throw new Error('Visitor ID or details not found');
     try {
       const visitorData = editVisitorDetails.data;
       const visitorPassType = toVisitorPassType(formData.quickPick);
@@ -235,7 +252,7 @@ export default function VisitorsPage() {
 
       const isActive = formData.isActive ?? visitorData.isActive;
 
-      await updateVisitor({
+      const response = await updateVisitor({
         id: editVisitorId,
         name: formData.fullName || visitorData.name || '',
         cnic: formData.cnic || visitorData.cnic || '',
@@ -248,10 +265,12 @@ export default function VisitorsPage() {
         isDeleted: !isActive,
         lastModifiedBy,
       });
-      handleCloseModal();
+
+      if (!isApiSuccess(response)) {
+        throw new Error(response?.errorMessage || response?.message || 'Failed to update visitor');
+      }
     } catch (err: any) {
-      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update visitor';
-      setFormError(message);
+      throw err;
     }
   };
 
@@ -350,7 +369,6 @@ export default function VisitorsPage() {
         onClose={handleCloseModal}
         title="Add New Visitor"
       >
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         <CommonEntityForm
           title="Please provide details below!"
           onSave={handleAddVisitor}
@@ -366,7 +384,6 @@ export default function VisitorsPage() {
         onClose={handleCloseModal}
         title="Edit Visitor"
       >
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {isEditVisitorLoading ? (
           <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
         ) : initialVisitorValues ? (

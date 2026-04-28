@@ -9,7 +9,6 @@ import { packageFields } from '../fields';
 export default function EditPackageType() {
   const [packageId, setPackageId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [formError, setFormError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [initialValues, setInitialValues] = useState<ProfileFormData | undefined>(undefined);
 
@@ -27,23 +26,17 @@ export default function EditPackageType() {
   }, []);
 
   const handleUpdate = async (formData: ProfileFormData) => {
-    setFormError("");
     setSuccessMsg("");
 
     if (!packageId) {
-      setFormError('Package ID not found');
-      return;
+      throw new Error('Package ID not found');
     }
 
-    try {
-      console.log('Package Type updated (Demo):', { id: packageId, ...formData });
-      setSuccessMsg('Package Type updated successfully!');
-      setTimeout(() => {
-        setSuccessMsg("");
-      }, 2000);
-    } catch (error: any) {
-      setFormError(error.message || 'Failed to update Package Type');
-    }
+    console.log('Package Type updated (Demo):', { id: packageId, ...formData });
+    setSuccessMsg('Package Type updated successfully!');
+    setTimeout(() => {
+      setSuccessMsg("");
+    }, 2000);
   };
 
   if (isLoading) {
@@ -65,7 +58,6 @@ export default function EditPackageType() {
         successTitle="Success"
         successMessage={successMsg}
       />
-      {formError && <div style={{ color: 'red', padding: '16px' }}>{formError}</div>}
     </DashboardLayout>
   );
 }

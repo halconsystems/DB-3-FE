@@ -9,7 +9,6 @@ import { tagFields } from '../fields';
 export default function EditTag() {
   const [tagId, setTagId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [formError, setFormError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [initialValues, setInitialValues] = useState<ProfileFormData | undefined>(undefined);
 
@@ -27,23 +26,17 @@ export default function EditTag() {
   }, []);
 
   const handleUpdate = async (formData: ProfileFormData) => {
-    setFormError("");
     setSuccessMsg("");
 
     if (!tagId) {
-      setFormError('Tag ID not found');
-      return;
+      throw new Error('Tag ID not found');
     }
 
-    try {
-      console.log('Tag updated (Demo):', { id: tagId, ...formData });
-      setSuccessMsg('Tag updated successfully!');
-      setTimeout(() => {
-        setSuccessMsg("");
-      }, 2000);
-    } catch (error: any) {
-      setFormError(error.message || 'Failed to update Tag');
-    }
+    console.log('Tag updated (Demo):', { id: tagId, ...formData });
+    setSuccessMsg('Tag updated successfully!');
+    setTimeout(() => {
+      setSuccessMsg("");
+    }, 2000);
   };
 
   if (isLoading) {
@@ -65,7 +58,6 @@ export default function EditTag() {
         successTitle="Success"
         successMessage={successMsg}
       />
-      {formError && <div style={{ color: 'red', padding: '16px' }}>{formError}</div>}
     </DashboardLayout>
   );
 }

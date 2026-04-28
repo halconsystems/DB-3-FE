@@ -130,7 +130,6 @@ export default function EditWorker() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [workerId, setWorkerId] = useState<string | undefined>();
-  const [formError, setFormError] = useState('');
   const updateWorkerMutation = useUpdateWorker();
 
   const { data, isLoading, isError } = useWorkerById(workerId);
@@ -175,8 +174,6 @@ export default function EditWorker() {
       return;
     }
 
-    setFormError('');
-
     const userRaw = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
     let lastModifiedBy = 'system';
 
@@ -213,7 +210,6 @@ export default function EditWorker() {
       });
     } catch (err: any) {
       const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update worker';
-      setFormError(message);
       throw new Error(message);
     }
   };
@@ -221,7 +217,6 @@ export default function EditWorker() {
   return (
     <DashboardLayout pageTitle="Edit Worker">
       <div style={{ margin: '0 auto' }}>
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {!workerId && <div style={{ color: 'red', marginBottom: 12 }}>No worker id found for editing.</div>}
         {isError && <div style={{ color: 'red', marginBottom: 12 }}>Failed to load worker details.</div>}
         {(isLoading || initialValues) && (

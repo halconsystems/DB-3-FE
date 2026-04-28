@@ -9,7 +9,6 @@ import { bankAccountFields } from '../fields';
 export default function EditBankAccount() {
   const [bankAccountId, setBankAccountId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [formError, setFormError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [initialValues, setInitialValues] = useState<ProfileFormData | undefined>(undefined);
 
@@ -27,23 +26,17 @@ export default function EditBankAccount() {
   }, []);
 
   const handleUpdate = async (formData: ProfileFormData) => {
-    setFormError("");
     setSuccessMsg("");
 
     if (!bankAccountId) {
-      setFormError('Bank Account ID not found');
-      return;
+      throw new Error('Bank Account ID not found');
     }
 
-    try {
-      console.log('Bank Account updated (Demo):', { id: bankAccountId, ...formData });
-      setSuccessMsg('Bank Account updated successfully!');
-      setTimeout(() => {
-        setSuccessMsg("");
-      }, 2000);
-    } catch (error: any) {
-      setFormError(error.message || 'Failed to update Bank Account');
-    }
+    console.log('Bank Account updated (Demo):', { id: bankAccountId, ...formData });
+    setSuccessMsg('Bank Account updated successfully!');
+    setTimeout(() => {
+      setSuccessMsg("");
+    }, 2000);
   };
 
   if (isLoading) {
@@ -65,7 +58,6 @@ export default function EditBankAccount() {
         successTitle="Success"
         successMessage={successMsg}
       />
-      {formError && <div style={{ color: 'red', padding: '16px' }}>{formError}</div>}
     </DashboardLayout>
   );
 }

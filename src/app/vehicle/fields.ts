@@ -15,9 +15,9 @@ export const vehicleFields: ProfileField[] = [
     { value: 'lost', label: 'Lost' },
     { value: 'damaged', label: 'Damaged' },
   ] },
-  { name: 'eTagId' as keyof ProfileFormData, label: 'Vehicle E-Tag ID', type: 'text', required: true, placeholder: '996952346550' },
-  { name: 'issueDate' as keyof ProfileFormData, label: 'Issue Date', type: 'date', required: true, placeholder: 'Select Date' },
-  { name: 'expiryDate' as keyof ProfileFormData, label: 'Expiry Date', type: 'date', required: true, placeholder: 'Select Date' },
+  { name: 'eTagId' as keyof ProfileFormData, label: 'Vehicle E-Tag ID', type: 'text', required: false, placeholder: '996952346550' },
+  { name: 'issueDate' as keyof ProfileFormData, label: 'Issue Date', type: 'date', required: false, placeholder: 'Select Date' },
+  { name: 'expiryDate' as keyof ProfileFormData, label: 'Expiry Date', type: 'date', required: false, placeholder: 'Select Date' },
   { name: 'tagStatus' as keyof ProfileFormData, label: 'Tag Status', type: 'statusSwitch', required: false },
   { name: 'attachment' as keyof ProfileFormData, label: 'Attachment', type: 'file', required: false},
 ];

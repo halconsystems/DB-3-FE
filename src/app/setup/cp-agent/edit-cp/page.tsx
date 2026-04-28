@@ -9,7 +9,6 @@ import { cpAgentFields } from '../fields';
 export default function EditCpAgent() {
   const [cpAgentId, setCpAgentId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [formError, setFormError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [initialValues, setInitialValues] = useState<ProfileFormData | undefined>(undefined);
 
@@ -27,23 +26,17 @@ export default function EditCpAgent() {
   }, []);
 
   const handleUpdate = async (formData: ProfileFormData) => {
-    setFormError("");
     setSuccessMsg("");
 
     if (!cpAgentId) {
-      setFormError('CP Agent ID not found');
-      return;
+      throw new Error('CP Agent ID not found');
     }
 
-    try {
-      console.log('CP Agent updated (Demo):', { id: cpAgentId, ...formData });
-      setSuccessMsg('CP Agent updated successfully!');
-      setTimeout(() => {
-        setSuccessMsg("");
-      }, 2000);
-    } catch (error: any) {
-      setFormError(error.message || 'Failed to update CP Agent');
-    }
+    console.log('CP Agent updated (Demo):', { id: cpAgentId, ...formData });
+    setSuccessMsg('CP Agent updated successfully!');
+    setTimeout(() => {
+      setSuccessMsg("");
+    }, 2000);
   };
 
   if (isLoading) {
@@ -65,7 +58,6 @@ export default function EditCpAgent() {
         successTitle="Success"
         successMessage={successMsg}
       />
-      {formError && <div style={{ color: 'red', padding: '16px' }}>{formError}</div>}
     </DashboardLayout>
   );
 }

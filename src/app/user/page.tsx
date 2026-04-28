@@ -29,6 +29,23 @@ const mapUserType = (type: number | string) => {
   }
 };
 
+const isApiSuccess = (response: any) => {
+  const statusCode = response?.statusCode;
+  if (typeof statusCode === 'number') {
+    return [0, 200, 201, 204].includes(statusCode);
+  }
+
+  if (typeof response?.success === 'boolean') {
+    return response.success;
+  }
+
+  if (typeof response?.status === 'number') {
+    return response.status >= 200 && response.status < 300;
+  }
+
+  return true;
+};
+
 
 
 export default function UserPage() {
@@ -187,9 +204,8 @@ export default function UserPage() {
   };
 
   const handleAddUser = async (data: ProfileFormData) => {
-    setFormError('');
     try {
-      await createUser({
+      const response = await createUser({
         name: data.name || '',
         email: data.emailAddress || '',
         phoneNumber: data.cellNumber || '',
@@ -200,10 +216,12 @@ export default function UserPage() {
         cardExpiryDate: toIsoDate(data.cardExpiryDate),
         cardStatus: toCardStatusApiValue(data.cardStatus),
       });
-      handleCloseModal();
+
+      if (!isApiSuccess(response)) {
+        throw new Error(response?.errorMessage || response?.message || 'Failed to create user');
+      }
     } catch (err: any) {
-      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create user';
-      setFormError(message);
+      throw err;
     }
   };
 
@@ -224,10 +242,9 @@ export default function UserPage() {
   }, [editUserDetails, userTypesEnum]);
 
   const handleUpdateUser = async (data: ProfileFormData) => {
-    if (!editUserId || !editUserDetails) return;
-    setFormError('');
+    if (!editUserId || !editUserDetails) throw new Error('User ID or details not found');
     try {
-      await updateUser({
+      const response = await updateUser({
         id: editUserId,
         name: data.name || editUserDetails.name || '',
         email: data.emailAddress || editUserDetails.email || '',
@@ -239,10 +256,12 @@ export default function UserPage() {
         cardExpiryDate: toIsoDate(data.cardExpiryDate || editUserDetails.cardExpiryDate),
         cardStatus: toCardStatusApiValue(data.cardStatus, editUserDetails.cardStatus),
       });
-      handleCloseModal();
+
+      if (!isApiSuccess(response)) {
+        throw new Error(response?.errorMessage || response?.message || 'Failed to update user');
+      }
     } catch (err: any) {
-      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update user';
-      setFormError(message);
+      throw err;
     }
   };
 
@@ -343,7 +362,6 @@ export default function UserPage() {
         onClose={handleCloseModal}
         title="Add New User"
       >
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         <CommonEntityForm
           title="Please provide details below!"
           onSave={handleAddUser}
@@ -361,7 +379,6 @@ export default function UserPage() {
         onClose={handleCloseModal}
         title="Edit User"
       >
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {isEditUserLoading ? (
           <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
         ) : initialValues ? (

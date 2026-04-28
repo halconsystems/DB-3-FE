@@ -68,7 +68,6 @@ export default function EditVehicle() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [vehicleId, setVehicleId] = useState<string | undefined>();
-  const [formError, setFormError] = useState('');
   const updateVehicleMutation = useUpdateVehicle();
 
   const { data, isLoading, isError } = useVehicleById(vehicleId);
@@ -106,10 +105,8 @@ export default function EditVehicle() {
 
   const handleUpdate = async (formData: ProfileFormData) => {
     if (!vehicleId || !data?.data) {
-      return;
+      throw new Error('Vehicle ID or details not found');
     }
-
-    setFormError('');
 
     const userRaw = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
     let lastModifiedBy = 'system';
@@ -147,7 +144,6 @@ export default function EditVehicle() {
       });
     } catch (err: any) {
       const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update vehicle';
-      setFormError(message);
       throw new Error(message);
     }
   };
@@ -155,7 +151,6 @@ export default function EditVehicle() {
   return (
     <DashboardLayout pageTitle="Edit Vehicle">
       <div style={{ margin: '0 auto' }}>
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {!vehicleId && <div style={{ color: 'red', marginBottom: 12 }}>No vehicle id found for editing.</div>}
         {isError && <div style={{ color: 'red', marginBottom: 12 }}>Failed to load vehicle details.</div>}
         {(isLoading || initialValues) && (

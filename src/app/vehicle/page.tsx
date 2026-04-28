@@ -62,6 +62,23 @@ const formatLicensePlate = (license?: string | null, licenseNo?: number | null) 
   return `${first}-${second}`;
 };
 
+const isApiSuccess = (response: any) => {
+  const statusCode = response?.statusCode;
+  if (typeof statusCode === 'number') {
+    return [0, 200, 201, 204].includes(statusCode);
+  }
+
+  if (typeof response?.success === 'boolean') {
+    return response.success;
+  }
+
+  if (typeof response?.status === 'number') {
+    return response.status >= 200 && response.status < 300;
+  }
+
+  return true;
+};
+
 export default function VehiclePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -192,7 +209,6 @@ export default function VehiclePage() {
   };
 
   const handleAddVehicle = async (data: ProfileFormData) => {
-    setFormError('');
     try {
       const userRaw = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
       let createdBy = 'system';
@@ -216,7 +232,7 @@ export default function VehiclePage() {
         externalUserId = 'system';
       }
 
-      await createVehicle({
+      const response = await createVehicle({
         license: data.vehicleNo || '',
         licenseNo: Number(data.vehicleNo2),
         make: data.make || '',
@@ -231,10 +247,12 @@ export default function VehiclePage() {
         externalUserId,
         createdBy,
       });
-      handleCloseModal();
+
+      if (!isApiSuccess(response)) {
+        throw new Error(response?.errorMessage || 'Failed to create vehicle');
+      }
     } catch (err: any) {
-      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create vehicle';
-      setFormError(message);
+      throw err;
     }
   };
 
@@ -258,11 +276,10 @@ export default function VehiclePage() {
   }, [editVehicleDetails]);
 
   const handleUpdateVehicle = async (data: ProfileFormData) => {
-    if (!editVehicleId || !editVehicleDetails?.data) return;
-    setFormError('');
+    if (!editVehicleId || !editVehicleDetails?.data) throw new Error('Vehicle ID or details not found');
     try {
       const vehicleData = editVehicleDetails.data;
-      await updateVehicle({
+      const response = await updateVehicle({
         id: editVehicleId,
         license: data.vehicleNo || vehicleData.license || '',
         licenseNo: data.vehicleNo2 ? Number(data.vehicleNo2) : vehicleData.licenseNo,
@@ -277,10 +294,12 @@ export default function VehiclePage() {
         isActive: data.isActive ?? vehicleData.isActive,
         externalUserId: vehicleData.externalUserId,
       });
-      handleCloseModal();
+
+      if (!isApiSuccess(response)) {
+        throw new Error(response?.errorMessage || 'Failed to update vehicle');
+      }
     } catch (err: any) {
-      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update vehicle';
-      setFormError(message);
+      throw err;
     }
   };
 
@@ -366,7 +385,6 @@ export default function VehiclePage() {
         onClose={handleCloseModal}
         title="Add New Vehicle"
       >
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         <CommonEntityForm
           title="Please provide details below!"
           onSave={handleAddVehicle}
@@ -383,7 +401,6 @@ export default function VehiclePage() {
         onClose={handleCloseModal}
         title="Edit Vehicle"
       >
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {isEditVehicleLoading || loadingEnums ? (
           <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
         ) : initialVehicleValues ? (

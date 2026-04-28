@@ -5,24 +5,18 @@ import CommonEntityForm, { ProfileFormData } from '../../../../components/forms/
 import { invoiceFields } from '../fields';
 
 export default function AddInvoice() {
-  const [formError, setFormError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
   const handleSave = async (formData: ProfileFormData) => {
-    setFormError("");
     setSuccessMsg("");
 
-    try {
-      // Demo mode - just log the data
-      console.log('Invoice submitted (Demo):', formData);
-      setSuccessMsg('Invoice added successfully!');
-      // Reset after 2 seconds
-      setTimeout(() => {
-        setSuccessMsg("");
-      }, 2000);
-    } catch (error: any) {
-      setFormError(error.message || 'Failed to add Invoice');
-    }
+    // Demo mode - just log the data
+    console.log('Invoice submitted (Demo):', formData);
+    setSuccessMsg('Invoice added successfully!');
+    // Reset after 2 seconds
+    setTimeout(() => {
+      setSuccessMsg("");
+    }, 2000);
   };
 
   return (
@@ -35,7 +29,6 @@ export default function AddInvoice() {
         successTitle="Success"
         successMessage={successMsg}
       />
-      {formError && <div style={{ color: 'red', padding: '16px' }}>{formError}</div>}
     </DashboardLayout>
   );
 }

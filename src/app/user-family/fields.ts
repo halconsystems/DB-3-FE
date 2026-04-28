@@ -8,9 +8,9 @@ export const userFamilyFields: ProfileField[] = [
   { name: 'fatherHusbandName' as keyof ProfileFormData, label: 'Father/Husband Name', type: 'text', required: true, placeholder: 'Father or Husband Name' },
   { name: 'residentCardNo' as keyof ProfileFormData, label: 'Resident Card No.', type: 'text', required: true, placeholder: 'Resident Card Number' },
   { name: 'dob' as keyof ProfileFormData, label: 'Date of Birth', type: 'date', required: true, placeholder: 'Select DOB' },
-  { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: true, placeholder: 'Select Date' },
-  { name: 'validTo' as keyof ProfileFormData, label: 'Valid To', type: 'date', required: true, placeholder: 'Select Date' },
-  { name: 'status' as keyof ProfileFormData, label: 'User Family Status', type: 'statusSwitch', required: true },
+  { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: false, placeholder: 'Select Date' },
+  { name: 'validTo' as keyof ProfileFormData, label: 'Valid To', type: 'date', required: false, placeholder: 'Select Date' },
+  { name: 'status' as keyof ProfileFormData, label: 'User Family Status', type: 'statusSwitch', required: false },
   { name: 'cardStatus' as keyof ProfileFormData, label: 'Card Status', type: 'select', required: true, placeholder: 'Select Card Status', options: [{ value: '', label: 'Select Card Status' }] },
 ];
 

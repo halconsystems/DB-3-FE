@@ -9,7 +9,6 @@ import { vendorFields } from '../fields';
 export default function EditVendor() {
   const [vendorId, setVendorId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [formError, setFormError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [initialValues, setInitialValues] = useState<ProfileFormData | undefined>(undefined);
 
@@ -27,23 +26,17 @@ export default function EditVendor() {
   }, []);
 
   const handleUpdate = async (formData: ProfileFormData) => {
-    setFormError("");
     setSuccessMsg("");
 
     if (!vendorId) {
-      setFormError('Vendor ID not found');
-      return;
+      throw new Error('Vendor ID not found');
     }
 
-    try {
-      console.log('Vendor updated (Demo):', { id: vendorId, ...formData });
-      setSuccessMsg('Vendor updated successfully!');
-      setTimeout(() => {
-        setSuccessMsg("");
-      }, 2000);
-    } catch (error: any) {
-      setFormError(error.message || 'Failed to update Vendor');
-    }
+    console.log('Vendor updated (Demo):', { id: vendorId, ...formData });
+    setSuccessMsg('Vendor updated successfully!');
+    setTimeout(() => {
+      setSuccessMsg("");
+    }, 2000);
   };
 
   if (isLoading) {
@@ -65,7 +58,6 @@ export default function EditVendor() {
         successTitle="Success"
         successMessage={successMsg}
       />
-      {formError && <div style={{ color: 'red', padding: '16px' }}>{formError}</div>}
     </DashboardLayout>
   );
 }

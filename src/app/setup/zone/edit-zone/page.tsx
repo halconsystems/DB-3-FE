@@ -9,7 +9,6 @@ import { zoneFields } from '../fields';
 export default function EditZone() {
   const [zoneId, setZoneId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [formError, setFormError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [initialValues, setInitialValues] = useState<ProfileFormData | undefined>(undefined);
 
@@ -27,24 +26,18 @@ export default function EditZone() {
   }, []);
 
   const handleUpdate = async (formData: ProfileFormData) => {
-    setFormError("");
     setSuccessMsg("");
 
     if (!zoneId) {
-      setFormError('Zone ID not found');
-      return;
+      throw new Error('Zone ID not found');
     }
 
-    try {
-      // Demo mode - just log the data
-      console.log('Zone updated (Demo):', { id: zoneId, ...formData });
-      setSuccessMsg('Zone updated successfully!');
-      setTimeout(() => {
-        setSuccessMsg("");
-      }, 2000);
-    } catch (error: any) {
-      setFormError(error.message || 'Failed to update Zone');
-    }
+    // Demo mode - just log the data
+    console.log('Zone updated (Demo):', { id: zoneId, ...formData });
+    setSuccessMsg('Zone updated successfully!');
+    setTimeout(() => {
+      setSuccessMsg("");
+    }, 2000);
   };
 
   if (isLoading) {
@@ -66,7 +59,6 @@ export default function EditZone() {
           title="Edit Zone Details"
           loading={false}
         />
-        {formError && <div style={{ color: 'red', padding: '16px', marginTop: '16px' }}>{formError}</div>}
         {successMsg && <div style={{ color: 'green', padding: '16px', marginTop: '16px' }}>{successMsg}</div>}
       </div>
     </DashboardLayout>

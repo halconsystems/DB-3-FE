@@ -13,7 +13,6 @@ const isValidUuid = (value: string) => UUID_REGEX.test(value.trim());
 
 export default function AddNewCpAgent() {
   const { mutateAsync: createCpAgent, isPending } = useCreateCpAgent();
-  const [formError, setFormError] = React.useState('');
   const { data: zonesData, isLoading: isZonesLoading } = useZones();
   const { data: controllersData, isLoading: isControllersLoading } = useGetAllControllers();
   const { data: syncAgentsData, isLoading: isSyncAgentsLoading } = useGetAllSyncAgents();
@@ -28,7 +27,6 @@ export default function AddNewCpAgent() {
   }, [zonesData, controllersData, syncAgentsData]);
 
   const handleSave = async (formData: ProfileFormData) => {
-    setFormError('');
 
     const cpTypeValue = Number(formData.cpType ?? 0);
     const tagLimitValue = Number(formData.tagLimit ?? 0);
@@ -73,16 +71,13 @@ export default function AddNewCpAgent() {
     try {
       await createCpAgent(payload);
     } catch (err: any) {
-      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create CP Agent';
-      setFormError(message);
-      throw new Error(message);
+      throw new Error(err?.response?.data?.errorMessage || err?.message || 'Failed to create CP Agent');
     }
   };
 
   return (
     <DashboardLayout pageTitle="Add New CP Agent">
       <div style={{ margin: '0 auto' }}>
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         <CommonEntityForm
           title="Please provide details below!"
           onSave={handleSave}

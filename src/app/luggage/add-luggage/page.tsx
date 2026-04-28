@@ -33,17 +33,11 @@ const toLuggagePassType = (quickPick?: string): number | null => {
 export default function AddNewLuggage() {
   const { mutateAsync: createLuggage, isPending } = useCreateLuggage();
 
-  const [formError, setFormError] = React.useState('');
-  // Removed modal state
-
   const handleSave = async (data: ProfileFormData) => {
-    setFormError('');
-
     const luggagePassType = toLuggagePassType(data.quickPick);
 
     if (luggagePassType === null) {
       const message = 'Please select a Quick Pick option.';
-      setFormError(message);
       throw new Error(message);
     }
 
@@ -80,7 +74,6 @@ export default function AddNewLuggage() {
         err?.response?.data?.errorMessage ||
         err?.message ||
         'Failed to create luggage';
-      setFormError(message);
       throw new Error(message);
     }
   };
@@ -90,12 +83,6 @@ export default function AddNewLuggage() {
   return (
     <DashboardLayout pageTitle="Add New Luggage">
       <div style={{ margin: '0 auto' }}>
-        {formError && (
-          <div style={{ color: 'red', marginBottom: 12 }}>
-            {formError}
-          </div>
-        )}
-
         <CommonEntityForm
           title="Please provide details below!"
           onSave={handleSave}

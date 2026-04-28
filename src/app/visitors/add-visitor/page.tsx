@@ -43,16 +43,13 @@ const toVisitorPassType = (quickPick?: string): number | null => {
 
 export default function AddNewVisitor() {
   const { mutateAsync: createVisitor, isPending } = useCreateVisitor();
-  const [formError, setFormError] = React.useState('');
   const [lastPayload, setLastPayload] = React.useState<any>(null);
 
   const handleSave = async (data: ProfileFormData) => {
-    setFormError('');
     const visitorPassType = toVisitorPassType(data.quickPick);
 
     if (visitorPassType === null) {
       const message = 'Please select a Quick Pick option.';
-      setFormError(message);
       throw new Error(message);
     }
 
@@ -82,7 +79,6 @@ export default function AddNewVisitor() {
       await createVisitor(payload);
     } catch (err: any) {
       const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create visitor';
-      setFormError(message);
       throw new Error(message);
     }
   };
@@ -90,7 +86,6 @@ export default function AddNewVisitor() {
   return (
     <DashboardLayout pageTitle="Add New Visitor">
       <div style={{ margin: '0 auto' }}>
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         <CommonEntityForm
           title="Please provide details below!"
           onSave={handleSave}

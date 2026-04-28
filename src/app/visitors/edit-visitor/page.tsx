@@ -59,7 +59,6 @@ const toVisitorPassType = (quickPick?: string): number | null => {
 export default function EditVisitor() {
   const router = useRouter();
   const [visitorId, setVisitorId] = useState<string | undefined>();
-  const [formError, setFormError] = useState('');
   const updateVisitorMutation = useUpdateVisitor();
 
   const { data, isLoading, isError } = useVisitorById(visitorId);
@@ -101,12 +100,10 @@ export default function EditVisitor() {
       return;
     }
 
-    setFormError('');
     const visitorPassType = toVisitorPassType(formData.quickPick);
 
     if (visitorPassType === null) {
       const message = 'Please select a Quick Pick option.';
-      setFormError(message);
       throw new Error(message);
     }
 
@@ -139,7 +136,6 @@ export default function EditVisitor() {
       });
     } catch (err: any) {
       const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update visitor';
-      setFormError(message);
       throw new Error(message);
     }
   };
@@ -147,7 +143,6 @@ export default function EditVisitor() {
   return (
     <DashboardLayout pageTitle="Edit Visitor">
       <div style={{ margin: '0 auto' }}>
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {!visitorId && <div style={{ color: 'red', marginBottom: 12 }}>No visitor id found for editing.</div>}
         {isError && <div style={{ color: 'red', marginBottom: 12 }}>Failed to load visitor details.</div>}
         {(isLoading || initialValues) && (

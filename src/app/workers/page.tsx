@@ -56,6 +56,23 @@ const toJobTypeLabel = (jobType?: number) => {
   }
 };
 
+const isApiSuccess = (response: any) => {
+  const statusCode = response?.statusCode;
+  if (typeof statusCode === 'number') {
+    return [0, 200, 201, 204].includes(statusCode);
+  }
+
+  if (typeof response?.success === 'boolean') {
+    return response.success;
+  }
+
+  if (typeof response?.status === 'number') {
+    return response.status >= 200 && response.status < 300;
+  }
+
+  return true;
+};
+
 export default function WorkersPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -192,7 +209,6 @@ export default function WorkersPage() {
   };
 
   const handleAddWorker = async (data: ProfileFormData) => {
-    setFormError('');
     try {
       let externalUserId = 'system';
       let createdBy = 'system';
@@ -208,7 +224,7 @@ export default function WorkersPage() {
         createdBy = 'system';
       }
 
-      await createWorker({
+      const response = await createWorker({
         ser: 0,
         jobType: toJobType(data.jobType),
         cnic: data.cnic || '',
@@ -226,10 +242,12 @@ export default function WorkersPage() {
         externalUserId,
         createdBy,
       });
-      handleCloseModal();
+
+      if (!isApiSuccess(response)) {
+        throw new Error(response?.errorMessage || 'Failed to create worker');
+      }
     } catch (err: any) {
-      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create worker';
-      setFormError(message);
+      throw err;
     }
   };
 
@@ -254,11 +272,10 @@ export default function WorkersPage() {
   }, [editWorkerDetails]);
 
   const handleUpdateWorker = async (formData: ProfileFormData) => {
-    if (!editWorkerId || !editWorkerDetails?.data) return;
-    setFormError('');
+    if (!editWorkerId || !editWorkerDetails?.data) throw new Error('Worker ID or details not found');
     try {
       const workerData = editWorkerDetails.data;
-      await updateWorker({
+      const response = await updateWorker({
         id: editWorkerId,
         ser: workerData.ser || 0,
         jobType: toJobType(formData.jobType) ?? workerData.jobType,
@@ -276,10 +293,12 @@ export default function WorkersPage() {
         isActive: formData.isActive ?? workerData.isActive,
         externalUserId: workerData.externalUserId,
       });
-      handleCloseModal();
+
+      if (!isApiSuccess(response)) {
+        throw new Error(response?.errorMessage || 'Failed to update worker');
+      }
     } catch (err: any) {
-      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update worker';
-      setFormError(message);
+      throw err;
     }
   };
 
@@ -365,7 +384,6 @@ export default function WorkersPage() {
         onClose={handleCloseModal}
         title="Add New Worker"
       >
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         <CommonEntityForm
           title="Please provide details below!"
           onSave={handleAddWorker}
@@ -381,7 +399,6 @@ export default function WorkersPage() {
         onClose={handleCloseModal}
         title="Edit Worker"
       >
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {isEditWorkerLoading ? (
           <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
         ) : initialWorkerValues ? (

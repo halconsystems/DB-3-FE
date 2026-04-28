@@ -6,12 +6,10 @@ import CommonEntityForm, { ProfileFormData } from '../../../../components/forms/
 import { feeScaleFields } from '../fields';
 
 export default function AddFeeScale() {
-  const [formError, setFormError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const createFeeScaleMutation = useCreateFeeScale();
 
   const handleSave = async (formData: ProfileFormData) => {
-    setFormError("");
     setSuccessMsg("");
 
     createFeeScaleMutation.mutate(formData as any, {
@@ -22,7 +20,7 @@ export default function AddFeeScale() {
         }, 2000);
       },
       onError: (error: any) => {
-        setFormError(error?.message || 'Failed to add Fee Scale');
+        throw new Error(error?.message || 'Failed to add Fee Scale');
       }
     });
   };
@@ -37,7 +35,6 @@ export default function AddFeeScale() {
         successTitle="Success"
         successMessage={successMsg}
       />
-      {formError && <div style={{ color: 'red', padding: '16px' }}>{formError}</div>}
     </DashboardLayout>
   );
 }

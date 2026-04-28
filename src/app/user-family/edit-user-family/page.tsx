@@ -90,7 +90,6 @@ export default function EditUserFamily() {
   const searchParams = useSearchParams();
   const [userId, setUserId] = useState<string | undefined>();
   const [hasCheckedId, setHasCheckedId] = useState(false);
-  const [formError, setFormError] = useState('');
   const updateUserFamilyMutation = useUpdateUserFamily();
   const { data: relationEnum, isLoading: isRelationEnumLoading } = useEnumMetadata('RelationUserFamily');
   const { data: cardStatusEnum, isLoading: isCardStatusEnumLoading } = useEnumMetadata('CardStatus');
@@ -184,8 +183,6 @@ export default function EditUserFamily() {
       return;
     }
 
-    setFormError('');
-
     const userRaw = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
     let lastModifiedBy = 'system';
 
@@ -220,14 +217,12 @@ export default function EditUserFamily() {
       });
     } catch (err: any) {
       const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update user family';
-      setFormError(message);
       throw new Error(message);
     }
   };
 
   return (
     <DashboardLayout pageTitle="Edit User Family">
-      {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
       {hasCheckedId && !userId && (
         <div style={{ color: 'red', marginBottom: 12 }}>No user family id found for editing.</div>
       )}

@@ -7,17 +7,14 @@ import { useCreatePhase } from '../../../../hooks/phase/useCreatePhase';
 
 export default function AddNewPhase() {
   const { mutateAsync: createPhase, isPending, isSuccess, isError, error } = useCreatePhase();
-  const [formError, setFormError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
   const handleSave = async (data: ProfileFormData) => {
-    setFormError('');
     setSuccessMsg('');
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
       if (!token) {
-        setFormError('No auth token found. Please sign in.');
-        return;
+        throw new Error('No auth token found. Please sign in.');
       }
       await createPhase({
         phaseName: data.phaseName || '',
@@ -26,14 +23,13 @@ export default function AddNewPhase() {
       });
       setSuccessMsg('Phase created successfully!');
     } catch (err: any) {
-      setFormError(err?.response?.data?.errorMessage || err?.message || 'Failed to create phase');
+      throw new Error(err?.response?.data?.errorMessage || err?.message || 'Failed to create phase');
     }
   };
 
   return (
     <DashboardLayout pageTitle="Add New Phase">
       <div style={{ margin: '0 auto' }}>
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {successMsg && <div style={{ color: 'green', marginBottom: 12 }}>{successMsg}</div>}
         <CommonEntityForm
           title="Please provide details below!"

@@ -19,6 +19,23 @@ import { useUpdateUserFamily } from '../../hooks/user-family/useUpdateUserFamily
 import type { UserFamily } from '../../services/user-family.service';
 import { useEnumMetadata } from '../../hooks/metadata/useEnumMetadata';
 
+const isApiSuccess = (response: any) => {
+  const statusCode = response?.statusCode;
+  if (typeof statusCode === 'number') {
+    return [0, 200, 201, 204].includes(statusCode);
+  }
+
+  if (typeof response?.success === 'boolean') {
+    return response.success;
+  }
+
+  if (typeof response?.status === 'number') {
+    return response.status >= 200 && response.status < 300;
+  }
+
+  return true;
+};
+
 export default function UserFamilyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -157,9 +174,8 @@ export default function UserFamilyPage() {
   }, [cardStatusEnum, relationEnum]);
 
   const handleAddFamily = async (data: ProfileFormData) => {
-    setFormError('');
     try {
-      await createUserFamily({
+      const response = await createUserFamily({
         ser: 0,
         name: data.name || '',
         residentCardNumber: data.residentCardNo || null,
@@ -175,10 +191,12 @@ export default function UserFamilyPage() {
         externalUserId: '',
         createdBy: '',
       });
-      handleCloseModal();
+
+      if (!isApiSuccess(response)) {
+        throw new Error(response?.errorMessage || response?.message || 'Failed to create user family');
+      }
     } catch (err: any) {
-      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create user family';
-      setFormError(message);
+      throw err;
     }
   };
 
@@ -199,10 +217,9 @@ export default function UserFamilyPage() {
   }, [editFamilyDetails]);
 
   const handleUpdateFamily = async (data: ProfileFormData) => {
-    if (!editFamilyId || !editFamilyDetails) return;
-    setFormError('');
+    if (!editFamilyId || !editFamilyDetails) throw new Error('Family ID or details not found');
     try {
-      await updateUserFamily({
+      const response = await updateUserFamily({
         id: editFamilyId,
         ser: editFamilyDetails.ser || 0,
         name: data.name || editFamilyDetails.name || '',
@@ -218,10 +235,12 @@ export default function UserFamilyPage() {
         cardStatus: toCardStatusApiValue(data.cardStatus, editFamilyDetails.cardStatus),
         lastModifiedBy: 'system',
       });
-      handleCloseModal();
+
+      if (!isApiSuccess(response)) {
+        throw new Error(response?.errorMessage || response?.message || 'Failed to update user family');
+      }
     } catch (err: any) {
-      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update user family';
-      setFormError(message);
+      throw err;
     }
   };
 
@@ -339,7 +358,6 @@ export default function UserFamilyPage() {
         onClose={handleCloseModal}
         title="Add New User Family"
       >
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         <CommonEntityForm
           title="Please provide details below!"
           onSave={handleAddFamily}
@@ -356,7 +374,6 @@ export default function UserFamilyPage() {
         onClose={handleCloseModal}
         title="Edit User Family"
       >
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {isEditFamilyLoading ? (
           <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
         ) : initialValues ? (

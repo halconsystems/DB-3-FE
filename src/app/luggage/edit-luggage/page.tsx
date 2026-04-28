@@ -58,7 +58,6 @@ export default function EditLuggage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [luggageId, setLuggageId] = useState<string | undefined>();
-  const [formError, setFormError] = useState('');
   const updateLuggageMutation = useUpdateLuggage();
 
   const { data, isLoading, isError } = useLuggageById(luggageId);
@@ -99,12 +98,10 @@ export default function EditLuggage() {
       return;
     }
 
-    setFormError('');
     const luggagePassType = toLuggagePassType(formData.quickPick);
 
     if (luggagePassType === null) {
       const message = 'Please select a Quick Pick option.';
-      setFormError(message);
       throw new Error(message);
     }
 
@@ -139,7 +136,6 @@ export default function EditLuggage() {
       });
     } catch (err: any) {
       const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update luggage';
-      setFormError(message);
       throw new Error(message);
     }
   };
@@ -147,7 +143,6 @@ export default function EditLuggage() {
   return (
     <DashboardLayout pageTitle="Edit Luggage">
       <div style={{ margin: '0 auto' }}>
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {!luggageId && <div style={{ color: 'red', marginBottom: 12 }}>No luggage id found for editing.</div>}
         {isError && <div style={{ color: 'red', marginBottom: 12 }}>Failed to load luggage details.</div>}
         {(isLoading || initialValues) && (

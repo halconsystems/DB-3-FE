@@ -9,7 +9,6 @@ import { useCreateZone } from '../../../../hooks/zone/useCreateZone';
 
 export default function AddZone() {
   const { mutateAsync: createZone, isPending } = useCreateZone();
-  const [formError, setFormError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const { options: phaseOptions, isLoading: phasesLoading } = usePhaseOptions();
 
@@ -27,7 +26,6 @@ export default function AddZone() {
 
   // Pass initialValues to CommonEntityForm
   const handleSave = async (formData: ProfileFormData) => {
-    setFormError("");
     setSuccessMsg("");
 
     let fullName = '';
@@ -50,8 +48,7 @@ export default function AddZone() {
     }
 
     if (!fullName) {
-      setFormError('User fullName not found. Please sign in again.');
-      return;
+      throw new Error('User fullName not found. Please sign in again.');
     }
 
     const isActive = formData.isActive !== undefined ? formData.isActive : true;
@@ -65,8 +62,7 @@ export default function AddZone() {
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
       if (!token) {
-        setFormError("No auth token found. Please sign in.");
-        return;
+        throw new Error("No auth token found. Please sign in.");
       }
       await createZone({
         name: formData.zoneName || '',
@@ -78,14 +74,13 @@ export default function AddZone() {
       });
       setSuccessMsg("Zone created successfully!");
     } catch (err: any) {
-      setFormError(err?.response?.data?.errorMessage || err?.message || "Failed to create zone");
+      throw new Error(err?.response?.data?.errorMessage || err?.message || "Failed to create zone");
     }
   };
 
   return (
     <DashboardLayout pageTitle="Add New Zone">
       <div style={{ margin: '0 auto' }}>
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {successMsg && <div style={{ color: 'green', marginBottom: 12 }}>{successMsg}</div>}
         <CommonEntityForm
           title="Please provide details below!"

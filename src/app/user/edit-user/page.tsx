@@ -106,7 +106,6 @@ export default function EditUser() {
   const searchParams = useSearchParams();
   const [userId, setUserId] = useState<string | undefined>();
   const [hasCheckedId, setHasCheckedId] = useState(false);
-  const [formError, setFormError] = useState('');
   const updateUserMutation = useUpdateUser();
   const { data: userTypesEnum, isLoading: isUserTypesEnumLoading } = useEnumMetadata('UserType');
   const { data: cardStatusEnum, isLoading: isCardStatusEnumLoading } = useEnumMetadata('CardStatus');
@@ -196,8 +195,6 @@ export default function EditUser() {
       return;
     }
 
-    setFormError('');
-
     const userRaw = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
     let lastModifiedBy = 'system';
 
@@ -226,7 +223,6 @@ export default function EditUser() {
       });
     } catch (err: any) {
       const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update user';
-      setFormError(message);
       throw new Error(message);
     }
   };
@@ -234,7 +230,6 @@ export default function EditUser() {
   return (
     <DashboardLayout pageTitle="Edit User">
       <div style={{ margin: '0 auto' }}>
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {hasCheckedId && !userId && <div style={{ color: 'red', marginBottom: 12 }}>No user id found for editing.</div>}
         {(isLoading || initialValues) && (
           <CommonEntityForm

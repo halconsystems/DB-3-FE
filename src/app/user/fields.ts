@@ -9,7 +9,6 @@ export const userFields: ProfileField[] = [
   { name: 'rfidCardNo' as keyof ProfileFormData, label: 'RFID Card No.', type: 'text', required: true, placeholder: 'RFID Card Number' },
   { name: 'cardIssueDate' as keyof ProfileFormData, label: 'Card Issue Date', type: 'date', required: false, placeholder: 'Select Date' },
   { name: 'cardExpiryDate' as keyof ProfileFormData, label: 'Card Expiry Date', type: 'date', required: false, placeholder: 'Select Date' },
-  { name: 'status' as keyof ProfileFormData, label: 'User Status', type: 'statusSwitch', required: true },
   { name: 'cardStatus' as keyof ProfileFormData, label: 'Card Status', type: 'select', required: true, placeholder: 'Select Card Status', options: [{ value: '', label: 'Select Card Status' }] },
 ];
 

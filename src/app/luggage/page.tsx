@@ -51,6 +51,23 @@ const toLuggagePassTypeLabel = (passType?: string | number): string => {
   return '-';
 };
 
+const isApiSuccess = (response: any) => {
+  const statusCode = response?.statusCode;
+  if (typeof statusCode === 'number') {
+    return [0, 200, 201, 204].includes(statusCode);
+  }
+
+  if (typeof response?.success === 'boolean') {
+    return response.success;
+  }
+
+  if (typeof response?.status === 'number') {
+    return response.status >= 200 && response.status < 300;
+  }
+
+  return true;
+};
+
 // ============================================================================
 // COMPONENT
 // ============================================================================
@@ -142,7 +159,6 @@ export default function LuggagePage() {
   // Form Handlers
   // -----------------------------------------------------------------------
   const handleAddLuggage = async (data: ProfileFormData) => {
-    setFormError('');
     try {
       const luggagePassType = toLuggagePassType(data.quickPick);
       if (luggagePassType === null) {
@@ -160,7 +176,7 @@ export default function LuggagePage() {
         externalUserId = 'system';
       }
 
-      await createLuggage({
+      const response = await createLuggage({
         name: data.fullName || '',
         cnic: data.cnic || '',
         vehicleLicensePlate: toVehicleLicensePlate(data.vehicleNo, data.vehicleNo2),
@@ -171,10 +187,12 @@ export default function LuggagePage() {
         description: data.description || '',
         externalUserId,
       });
-      handleCloseModal();
+
+      if (!isApiSuccess(response)) {
+        throw new Error(response?.errorMessage || response?.message || 'Failed to create luggage');
+      }
     } catch (err: any) {
-      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create luggage';
-      setFormError(message);
+      throw err;
     }
   };
 
@@ -198,13 +216,12 @@ export default function LuggagePage() {
   }, [editLuggageDetails]);
 
   const handleUpdateLuggage = async (formData: ProfileFormData) => {
-    if (!editLuggageId || !editLuggageDetails?.data) return;
-    setFormError('');
+    if (!editLuggageId || !editLuggageDetails?.data) throw new Error('Luggage ID or details not found');
     try {
       const luggageData = editLuggageDetails.data;
       const luggagePassType = toLuggagePassType(formData.quickPick);
 
-      await updateLuggage({
+      const response = await updateLuggage({
         id: editLuggageId,
         name: formData.fullName || luggageData.name || '',
         cnic: formData.cnic || luggageData.cnic || '',
@@ -216,10 +233,12 @@ export default function LuggagePage() {
         description: formData.description || luggageData.description || '',
         externalUserId: luggageData.externalUserId,
       });
-      handleCloseModal();
+
+      if (!isApiSuccess(response)) {
+        throw new Error(response?.errorMessage || response?.message || 'Failed to update luggage');
+      }
     } catch (err: any) {
-      const message = err?.response?.data?.errorMessage || err?.message || 'Failed to update luggage';
-      setFormError(message);
+      throw err;
     }
   };
 
@@ -343,7 +362,6 @@ export default function LuggagePage() {
         onClose={handleCloseModal}
         title="Add New Luggage"
       >
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         <CommonEntityForm
           title="Please provide details below!"
           onSave={handleAddLuggage}
@@ -360,7 +378,6 @@ export default function LuggagePage() {
         onClose={handleCloseModal}
         title="Edit Luggage"
       >
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         {isEditLuggageLoading ? (
           <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
         ) : initialLuggageValues ? (

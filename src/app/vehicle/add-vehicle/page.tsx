@@ -43,7 +43,6 @@ const toAttachmentString = (value?: File | null): string => {
 
 export default function AddNewVehicle() {
   const { mutateAsync: createVehicle, isPending } = useCreateVehicle();
-  const [formError, setFormError] = React.useState('');
   const [fields, setFields] = React.useState(vehicleFields);
   const [loadingEnums, setLoadingEnums] = React.useState(true);
 
@@ -78,8 +77,6 @@ export default function AddNewVehicle() {
   }, []);
 
   const handleSave = async (data: ProfileFormData) => {
-    setFormError('');
-
     // Get createdBy from localStorage as before
     const userRaw = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
     let createdBy = 'system';
@@ -124,7 +121,6 @@ export default function AddNewVehicle() {
       });
     } catch (err: any) {
       const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create vehicle';
-      setFormError(message);
       throw new Error(message);
     }
   };
@@ -132,7 +128,6 @@ export default function AddNewVehicle() {
   return (
     <DashboardLayout pageTitle="Add New Vehicle">
       <div style={{ margin: '0 auto' }}>
-        {formError && <div style={{ color: 'red', marginBottom: 12 }}>{formError}</div>}
         <CommonEntityForm
           title="Please provide details below!"
           onSave={handleSave}
