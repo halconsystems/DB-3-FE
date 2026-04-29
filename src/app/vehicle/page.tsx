@@ -214,6 +214,18 @@ export default function VehiclePage() {
     return { vehicleNo: firstPart || '', vehicleNo2: secondPart || '' };
   };
 
+  const toTagStatusToggleValue = (value: unknown): boolean => {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'number') return value === 1;
+    const normalized = String(value ?? '').trim().toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'active';
+  };
+
+  const toTagStatusSelectValue = (value: unknown): string => {
+    if (value === null || value === undefined || value === '') return '';
+    return String(value).trim();
+  };
+
   const handleAddVehicle = async (data: ProfileFormData) => {
     try {
       const userRaw = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
@@ -248,7 +260,7 @@ export default function VehiclePage() {
         eTagId: data.eTagId || '',
         validFrom: toIsoDate(data.issueDate),
         validTo: toIsoDate(data.expiryDate),
-        tagStatus: data.eTagStatus === 'active' ? 1 : 0,
+        tagStatus: Number(data.eTagStatus) || 0,
         isActive: true,
         externalUserId,
         createdBy,
@@ -276,10 +288,16 @@ export default function VehiclePage() {
       eTagId: data.eTagId || '',
       issueDate: toDateInputValue(data.validFrom),
       expiryDate: toDateInputValue(data.validTo),
-      eTagStatus: data.tagStatus === 1 ? 'active' : 'inactive',
+      eTagStatus: toTagStatusSelectValue(data.tagStatus),
+      tagStatus: toTagStatusToggleValue(data.tagStatus),
       isActive: data.isActive,
     };
   }, [editVehicleDetails]);
+
+  const modalFields = useMemo(
+    () => (isViewMode ? enumFields.filter((field) => field.name !== 'tagStatus') : enumFields),
+    [enumFields, isViewMode]
+  );
 
   const handleUpdateVehicle = async (data: ProfileFormData) => {
     if (!editVehicleId || !editVehicleDetails?.data) throw new Error('Vehicle ID or details not found');
@@ -309,7 +327,7 @@ export default function VehiclePage() {
         eTagId: data.eTagId || vehicleData.eTagId || '',
         validFrom: toIsoDate(data.issueDate),
         validTo: toIsoDate(data.expiryDate),
-        tagStatus: data.eTagStatus === 'active' ? 1 : 0,
+        tagStatus: Number(data.eTagStatus) || 0,
         lastModifiedBy: lastModifiedBy || 'system',
         isActive: data.isActive ?? vehicleData.isActive,
         externalUserId: vehicleData.externalUserId,
@@ -429,7 +447,7 @@ export default function VehiclePage() {
             title={isViewMode ? 'Please review details below!' : 'Please update details below!'}
             onSave={handleUpdateVehicle}
             onCancel={handleCloseModal}
-            fields={enumFields}
+            fields={modalFields}
             initialValues={initialVehicleValues}
             saveButtonText="Update"
             isViewMode={isViewMode}

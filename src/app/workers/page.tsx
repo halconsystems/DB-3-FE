@@ -17,6 +17,7 @@ import { workerFields } from './fields';
 import { getAllExternalUsers } from '../../services/user.service';
 import type { ExternalWorker } from '../../services/worker.service';
 import CircularButton from '../../components/ui/CircularButton';
+import { useEnumMetadata } from '../../hooks/metadata/useEnumMetadata';
 
 interface Worker {
   id: string;
@@ -89,6 +90,7 @@ export default function WorkersPage() {
   const { mutateAsync: deleteWorker, isPending: isDeleting } = useDeleteWorker();
   const { mutateAsync: createWorker } = useCreateWorker();
   const { mutateAsync: updateWorker } = useUpdateWorker();
+  const { data: cardStatusEnum, isLoading: isCardStatusEnumLoading } = useEnumMetadata('CardStatus');
 
   const [formError, setFormError] = useState('');
 
@@ -171,7 +173,8 @@ export default function WorkersPage() {
   };
 
   const toJobType = (value?: string): number => {
-    switch (value) {
+    const normalized = String(value ?? '').trim().toLowerCase();
+    switch (normalized) {
       case 'driver': return 0;
       case 'cook': return 1;
       case 'guard': return 2;
@@ -181,7 +184,14 @@ export default function WorkersPage() {
     }
   };
 
-  const toJobTypeFormValue = (value?: number): string => {
+  const toJobTypeFormValue = (value?: number | string): string => {
+    if (typeof value === 'string') {
+      const normalized = value.trim().toLowerCase();
+      if (['driver', 'cook', 'guard', 'peon', 'gardener'].includes(normalized)) {
+        return normalized;
+      }
+    }
+
     switch (value) {
       case 0: return 'driver';
       case 1: return 'cook';
@@ -195,19 +205,33 @@ export default function WorkersPage() {
   const toCardStatus = (value?: string | number | boolean): number => {
     if (value === undefined || value === null) return 0;
     if (typeof value === 'boolean') return value ? 1 : 0;
-    if (typeof value === 'number') return value === 1 ? 1 : 0;
-    if (value === 'active' || value === '1') return 1;
+    if (typeof value === 'number') return Number.isNaN(value) ? 0 : value;
+    const numeric = Number(String(value).trim());
+    if (!Number.isNaN(numeric)) return numeric;
+    if (String(value).trim().toLowerCase() === 'active') return 1;
     return 0;
   };
 
   const toCardStatusFormValue = (value?: number): string => {
-    return value === 1 ? 'active' : 'inactive';
+    if (value === undefined || value === null) return '';
+    return String(value);
   };
 
   const toWorkerCardDeliveryType = (value?: string): number => {
-    if (value === 'owner') return 0;
-    if (value === 'self') return 1;
+    const normalized = String(value ?? '').trim().toLowerCase();
+    if (normalized === 'owner' || normalized === 'owneroremployeeraddress') return 0;
+    if (normalized === 'self' || normalized === 'selfpickup') return 1;
     return 0;
+  };
+
+  const toWorkerCardDeliveryFormValue = (value?: number | string): string => {
+    if (typeof value === 'number') {
+      return value === 1 ? 'self' : 'owner';
+    }
+
+    const normalized = String(value ?? '').trim().toLowerCase();
+    if (normalized === 'selfpickup' || normalized === 'self') return 'self';
+    return 'owner';
   };
 
   const toPoliceVerification = (value?: string): boolean => {
@@ -263,19 +287,52 @@ export default function WorkersPage() {
     return {
       jobType: toJobTypeFormValue(data.jobType),
       cnic: data.cnic || '',
-      name: data.name || '',
+      fullName: data.name || '',
       cellNumber: data.phoneNumber || '',
       dob: toDateInputValue(data.dateOfBirth),
-      fatherOrHusbandName: data.fatherOrHusbandName || '',
+      fatherOrHusband: data.fatherOrHusbandName || '',
       policeVerification: data.policeVerification ? 'yes' : 'no',
-      workerCardDelivery: data.workerCardDeliveryType === 0 ? 'owner' : 'self',
-      workerCardNo: data.workerCardNumber || '',
-      issuedDate: toDateInputValue(data.validFrom),
+      cardDelivery: toWorkerCardDeliveryFormValue(data.workerCardDeliveryType),
+      cardNo: data.workerCardNumber || '',
+      issueDate: toDateInputValue(data.validFrom),
       expiryDate: toDateInputValue(data.validTo),
       cardStatus: toCardStatusFormValue(data.cardStatus),
+      profilePicture: data.profilePicture || '',
+      policeVerificationFile: data.policeVerificationAttachment || '',
+      cnicFront: data.cnicFront || '',
+      cnicBack: data.cnicBack || '',
       isActive: data.isActive,
     };
   }, [editWorkerDetails]);
+
+  const dynamicWorkerFields = useMemo(() => {
+    const cardStatusOptions = [{ value: '', label: 'Select Card Status' }];
+
+    if (cardStatusEnum?.members) {
+      cardStatusEnum.members.forEach((member) => {
+        cardStatusOptions.push({
+          value: String(member.value),
+          label: member.name,
+        });
+      });
+    }
+
+    return workerFields.map((field) => {
+      if (field.name === 'cardStatus') {
+        return {
+          ...field,
+          type: 'select' as const,
+          options: cardStatusOptions,
+        };
+      }
+      return field;
+    });
+  }, [cardStatusEnum]);
+
+  const modalFields = useMemo(() => {
+    if (!isViewMode) return dynamicWorkerFields;
+    return dynamicWorkerFields.filter((field) => field.name !== 'status');
+  }, [dynamicWorkerFields, isViewMode]);
 
   const handleUpdateWorker = async (formData: ProfileFormData) => {
     if (!editWorkerId || !editWorkerDetails?.data) throw new Error('Worker ID or details not found');
@@ -394,8 +451,9 @@ export default function WorkersPage() {
           title="Please provide details below!"
           onSave={handleAddWorker}
           onCancel={handleCloseModal}
-          fields={workerFields}
+          fields={dynamicWorkerFields}
           saveButtonText="Create"
+          loading={isCardStatusEnumLoading}
           showStatusToggle={false}
         />
       </FormModal>
@@ -413,10 +471,11 @@ export default function WorkersPage() {
             title={isViewMode ? 'Please review details below!' : 'Please update details below!'}
             onSave={handleUpdateWorker}
             onCancel={handleCloseModal}
-            fields={workerFields}
+            fields={modalFields}
             initialValues={initialWorkerValues}
             saveButtonText="Update"
             isViewMode={isViewMode}
+            loading={isEditWorkerLoading || isCardStatusEnumLoading}
             showStatusToggle={false}
           />
         ) : (

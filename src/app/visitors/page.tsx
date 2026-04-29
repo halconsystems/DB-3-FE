@@ -9,6 +9,7 @@ import WarningModal from '../../components/popup/WarningModal';
 import FormModal from '../../components/popup/FormModal';
 import CommonEntityForm, { ProfileFormData } from '../../components/forms/CommonEntityForm';
 import { saveTableRow, clearTableRow, getTableRow } from '../../lib/tableRowStorage';
+import { getStatusConfig } from '../../lib/statusMapping';
 import { useVisitors } from '../../hooks/visitors/useVisitors';
 import { useVisitorById } from '../../hooks/visitors/useVisitorById';
 import { useCreateVisitor } from '../../hooks/visitors/useCreateVisitor';
@@ -41,6 +42,11 @@ const toVisitorPassTypeLabel = (passType?: string | number): string => {
   if (passType === 'DayPass' || passType === 1) return 'Day Pass';
   if (passType === 'LongDay' || passType === 2) return 'Long Stay';
   return '-';
+};
+
+const toCardStatusLabel = (value?: number | null): string => {
+  const status = getStatusConfig('cardStatus', value);
+  return status?.label ?? 'N/A';
 };
 
 const isApiSuccess = (response: any) => {
@@ -228,6 +234,7 @@ export default function VisitorsPage() {
       quickPick: toQuickPick(data.visitorPassType),
       fromDate: toDateInputValue(data.validFrom),
       toDate: toDateInputValue(data.validTo),
+      cardStatus: toCardStatusLabel(data.cardStatus),
       isActive: data.isActive,
       tagId: '',
       tagNumber: '',
@@ -238,6 +245,21 @@ export default function VisitorsPage() {
       entityId: '',
     };
   }, [editVisitorDetails]);
+
+  const modalFields = useMemo(() => {
+    const baseFields = visitorFields.filter((f) => f.name !== 'description');
+    if (!isViewMode) return baseFields;
+
+    return baseFields
+      .filter((f) => f.name !== 'status')
+      .concat({
+        name: 'cardStatus' as keyof ProfileFormData,
+        label: 'Card Status',
+        type: 'text',
+        required: false,
+        readOnly: true,
+      });
+  }, [isViewMode]);
 
   const handleUpdateVisitor = async (formData: ProfileFormData) => {
     if (!editVisitorId || !editVisitorDetails?.data) throw new Error('Visitor ID or details not found');
@@ -379,7 +401,7 @@ export default function VisitorsPage() {
           title="Please provide details below!"
           onSave={handleAddVisitor}
           onCancel={handleCloseModal}
-          fields={visitorFields.filter((f) => f.name !== 'description')}
+          fields={modalFields}
           saveButtonText="Create"
           showStatusToggle={false}
         />
@@ -398,7 +420,7 @@ export default function VisitorsPage() {
             title={isViewMode ? 'Please review details below!' : 'Please update details below!'}
             onSave={handleUpdateVisitor}
             onCancel={handleCloseModal}
-            fields={visitorFields.filter((f) => f.name !== 'description')}
+            fields={modalFields}
             initialValues={initialVisitorValues}
             saveButtonText="Update"
             isViewMode={isViewMode}

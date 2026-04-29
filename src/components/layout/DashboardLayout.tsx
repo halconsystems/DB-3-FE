@@ -1,11 +1,9 @@
 'use client';
 import React, { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
-import { useExternalSearch } from "../../app/dashboard/hooks/useExternalSearch";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import styles from "./DashboardLayout.module.css";
-import CircularButton from "../ui/CircularButton";
 import { logout } from "../../lib/apiClient";
 
 interface DashboardLayoutProps {
@@ -40,28 +38,7 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [activeMenuItem, setActiveMenuItem] = useState('/dashboard');
-  const [searchValue, setSearchValue] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const externalSearchMutation = useExternalSearch();
-
-  // Optionally, handle results in state or UI
-  useEffect(() => {
-    if (externalSearchMutation.status === "pending") {
-      setSearchLoading(true);
-      setSearchError(null);
-    } else if (externalSearchMutation.status === "success") {
-      const data: import("../../services/dashboard.service").ExternalSearchResponse = externalSearchMutation.data;
-      setSearchResults(data?.data?.items || []);
-      setSearchLoading(false);
-      setSearchError(null);
-    } else if (externalSearchMutation.status === "error") {
-      setSearchLoading(false);
-      setSearchError("Search failed. Please try again.");
-    }
-  }, [externalSearchMutation.status, externalSearchMutation.data, externalSearchMutation.error]);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -71,26 +48,6 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
 
   const handleLogout = () => {
     logout();
-  };
-
-  const handleSearch = () => {
-    externalSearchMutation.mutate({
-      pageNumber: 0,
-      pageSize: 10,
-      globalSearch: searchValue,
-      name: "",
-      cnic: "",
-      phoneNumber: "",
-      tagNumber: "",
-      rfidCardNumber: "",
-      workerCardNumber: "",
-      vehicleLicensePlate: "",
-      cardStatus: 0,
-      tagStatus: 0,
-      userType: 0,
-      validFrom: new Date().toISOString(),
-      validTo: new Date().toISOString(),
-    });
   };
 
   return (
@@ -205,36 +162,6 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
             <div className={styles.headerTitle}>{pageTitle}</div>
           </div>
           <div className={styles.headerRight}>
-            <div className={styles.searchBox}>
-              <input
-                type="text"
-                placeholder="Search"
-                className={styles.searchInput}
-                value={searchValue}
-                onChange={e => setSearchValue(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === "Enter") handleSearch();
-                }}
-              />
-              <CircularButton imagePath="/icons/Search Icon.svg" imageAlt="Search" width={32} height={32} onClick={handleSearch} pos="abs"/>
-            </div>
-            {searchLoading && (
-              <div style={{ marginTop: 8, color: '#888' }}>Searching...</div>
-            )}
-            {searchError && (
-              <div style={{ marginTop: 8, color: 'red' }}>{searchError}</div>
-            )}
-            {searchResults.length > 0 && (
-              <div style={{ marginTop: 8, background: '#fff', border: '1px solid #eee', borderRadius: 4, maxHeight: 200, overflowY: 'auto', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-                <ul style={{ listStyle: 'none', margin: 0, padding: 8 }}>
-                  {searchResults.map((item, idx) => (
-                    <li key={idx} style={{ padding: '4px 0', borderBottom: '1px solid #f0f0f0' }}>
-                      {typeof item === 'object' ? JSON.stringify(item) : String(item)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
             <Link href="/notification" className={styles.notificationWrapper}>
               <img src="/icons/basil_notification-on-solid.png" alt="" className={styles.notificationIconImg} />
             </Link>

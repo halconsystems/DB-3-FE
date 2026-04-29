@@ -179,6 +179,11 @@ export default function UserFamilyPage() {
     });
   }, [cardStatusEnum, relationEnum]);
 
+  const modalFields = useMemo(
+    () => (isViewMode ? dynamicUserFamilyFields.filter((field) => field.type !== 'statusSwitch') : dynamicUserFamilyFields),
+    [dynamicUserFamilyFields, isViewMode]
+  );
+
   const handleAddFamily = async (data: ProfileFormData) => {
     try {
       const response = await createUserFamily({
@@ -388,7 +393,7 @@ export default function UserFamilyPage() {
             title={isViewMode ? 'Please review details below!' : 'Please update details below!'}
             onSave={handleUpdateFamily}
             onCancel={handleCloseModal}
-            fields={dynamicUserFamilyFields}
+            fields={modalFields}
             initialValues={initialValues}
             saveButtonText="Update"
             isViewMode={isViewMode}

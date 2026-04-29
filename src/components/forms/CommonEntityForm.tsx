@@ -454,13 +454,17 @@ export default function CommonEntityForm({
         ? 'N/A'
         : rawValue;
     const displayValue = typeof resolvedValue === 'string' ? resolvedValue : String(resolvedValue ?? '');
+    const viewModeSelectLabel =
+      isViewMode && field.type === 'select'
+        ? field.options?.find((option) => String(option.value) === String(rawValue))?.label || displayValue
+        : displayValue;
 
     if (isViewMode && field.type !== 'statusSwitch') {
       return (
         <TextInputField
           key={field.name}
           field={{ ...field, type: 'text', readOnly: true }}
-          value={displayValue}
+          value={viewModeSelectLabel}
           onChange={handleInputChange}
           styles={styles}
           wrapperClassName={wrapperClassName}
