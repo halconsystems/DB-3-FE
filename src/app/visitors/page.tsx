@@ -208,7 +208,7 @@ export default function VisitorsPage() {
       });
 
       if (!isApiSuccess(response)) {
-        throw new Error(response?.errorMessage || response?.message || 'Failed to create visitor');
+        throw new Error(response?.errorMessage || response?.successMessage || 'Failed to create visitor');
       }
     } catch (err: any) {
       throw err;
@@ -273,7 +273,7 @@ export default function VisitorsPage() {
       });
 
       if (!isApiSuccess(response)) {
-        throw new Error(response?.errorMessage || response?.message || 'Failed to update visitor');
+        throw new Error(response?.errorMessage || response?.successMessage || 'Failed to update visitor');
       }
     } catch (err: any) {
       throw err;

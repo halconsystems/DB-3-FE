@@ -231,7 +231,7 @@ export default function UserPage() {
       });
 
       if (!isApiSuccess(response)) {
-        throw new Error(response?.errorMessage || response?.message || 'Failed to create user');
+        throw new Error(response?.errorMessage || response?.successMessage || 'Failed to create user');
       }
     } catch (err: any) {
       throw err;
@@ -270,7 +270,7 @@ export default function UserPage() {
       });
 
       if (!isApiSuccess(response)) {
-        throw new Error(response?.errorMessage || response?.message || 'Failed to update user');
+        throw new Error(response?.errorMessage || response?.successMessage || 'Failed to update user');
       }
     } catch (err: any) {
       throw err;

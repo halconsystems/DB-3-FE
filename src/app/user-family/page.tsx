@@ -199,7 +199,7 @@ export default function UserFamilyPage() {
       });
 
       if (!isApiSuccess(response)) {
-        throw new Error(response?.errorMessage || response?.message || 'Failed to create user family');
+        throw new Error(response?.errorMessage || response?.successMessage || 'Failed to create user family');
       }
     } catch (err: any) {
       throw err;
@@ -243,7 +243,7 @@ export default function UserFamilyPage() {
       });
 
       if (!isApiSuccess(response)) {
-        throw new Error(response?.errorMessage || response?.message || 'Failed to update user family');
+        throw new Error(response?.errorMessage || response?.successMessage || 'Failed to update user family');
       }
     } catch (err: any) {
       throw err;

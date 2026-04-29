@@ -190,7 +190,7 @@ export default function LuggagePage() {
       });
 
       if (!isApiSuccess(response)) {
-        throw new Error(response?.errorMessage || response?.message || 'Failed to create luggage');
+        throw new Error(response?.errorMessage || response?.successMessage || 'Failed to create luggage');
       }
     } catch (err: any) {
       throw err;
@@ -236,7 +236,7 @@ export default function LuggagePage() {
       });
 
       if (!isApiSuccess(response)) {
-        throw new Error(response?.errorMessage || response?.message || 'Failed to update luggage');
+        throw new Error(response?.errorMessage || response?.successMessage || 'Failed to update luggage');
       }
     } catch (err: any) {
       throw err;
