@@ -94,9 +94,10 @@ export default function WorkersPage() {
 
   const modalMode = searchParams?.get('modal');
   const modalId = searchParams?.get('id');
+  const isViewMode = modalMode === 'view';
 
   useEffect(() => {
-    if (modalMode === 'edit') {
+    if (modalMode === 'edit' || modalMode === 'view') {
       if (modalId) {
         setEditWorkerId(modalId);
         setHasCheckedId(true);
@@ -143,6 +144,11 @@ export default function WorkersPage() {
   const handleEdit = (worker: Worker) => {
     saveTableRow('workers', { id: worker.id });
     router.push(`/workers?modal=edit&id=${encodeURIComponent(worker.id)}`);
+  };
+
+  const handleView = (worker: Worker) => {
+    saveTableRow('workers', { id: worker.id });
+    router.push(`/workers?modal=view&id=${encodeURIComponent(worker.id)}`);
   };
 
   const handleCloseModal = () => {
@@ -358,8 +364,7 @@ export default function WorkersPage() {
       header: 'Action',
       render: (_, row) => (
         <div style={{ display: 'flex', gap: '4px' }}>
-          <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
-          <CircularButton imagePath="/icons/DeleteButton.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+          <CircularButton imagePath="/icons/View.svg" imageAlt="View" width={32} height={32} onClick={() => handleView(row)} />
         </div>
       )
     },
@@ -373,6 +378,7 @@ export default function WorkersPage() {
         loading={isLoading}
         onAddClick={handleAddNew}
         addButtonLabel="Add New"
+        showAddButton={false}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.workerStatus ? 'Active' : 'Inactive'}
@@ -395,21 +401,22 @@ export default function WorkersPage() {
       </FormModal>
 
       <FormModal
-        isOpen={modalMode === 'edit' && hasCheckedId}
+        isOpen={(modalMode === 'edit' || modalMode === 'view') && hasCheckedId}
         onClose={handleCloseModal}
-        title="Edit Worker"
+        title={isViewMode ? 'View Worker' : 'Edit Worker'}
       >
         {isEditWorkerLoading ? (
           <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
         ) : initialWorkerValues ? (
           <CommonEntityForm
             key={editWorkerId}
-            title="Please update details below!"
+            title={isViewMode ? 'Please review details below!' : 'Please update details below!'}
             onSave={handleUpdateWorker}
             onCancel={handleCloseModal}
             fields={workerFields}
             initialValues={initialWorkerValues}
             saveButtonText="Update"
+            isViewMode={isViewMode}
             showStatusToggle={false}
           />
         ) : (

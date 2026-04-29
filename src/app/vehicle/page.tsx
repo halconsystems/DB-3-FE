@@ -102,9 +102,10 @@ export default function VehiclePage() {
 
   const modalMode = searchParams?.get('modal');
   const modalId = searchParams?.get('id');
+  const isViewMode = modalMode === 'view';
 
   useEffect(() => {
-    if (modalMode === 'edit') {
+    if (modalMode === 'edit' || modalMode === 'view') {
       if (modalId) {
         setEditVehicleId(modalId);
         setHasCheckedId(true);
@@ -179,6 +180,11 @@ export default function VehiclePage() {
   const handleEdit = (vehicle: Vehicle) => {
     saveTableRow('vehicle', { id: vehicle.id });
     router.push(`/vehicle?modal=edit&id=${encodeURIComponent(vehicle.id)}`);
+  };
+
+  const handleView = (vehicle: Vehicle) => {
+    saveTableRow('vehicle', { id: vehicle.id });
+    router.push(`/vehicle?modal=view&id=${encodeURIComponent(vehicle.id)}`);
   };
 
   const handleCloseModal = () => {
@@ -374,8 +380,7 @@ export default function VehiclePage() {
       header: 'Action',
       render: (_, row) => (
         <div style={{ display: 'flex', gap: '4px' }}>
-          <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
-          <CircularButton imagePath="/icons/DeleteButton.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+          <CircularButton imagePath="/icons/View.svg" imageAlt="View" width={32} height={32} onClick={() => handleView(row)} />
         </div>
       )
     },
@@ -389,6 +394,7 @@ export default function VehiclePage() {
         loading={isLoading}
         onAddClick={handleAddNew}
         addButtonLabel="Add New"
+        showAddButton={false}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         error={isError ? `Failed to load vehicles: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
@@ -411,21 +417,22 @@ export default function VehiclePage() {
       </FormModal>
 
       <FormModal
-        isOpen={modalMode === 'edit' && hasCheckedId}
+        isOpen={(modalMode === 'edit' || modalMode === 'view') && hasCheckedId}
         onClose={handleCloseModal}
-        title="Edit Vehicle"
+        title={isViewMode ? 'View Vehicle' : 'Edit Vehicle'}
       >
         {isEditVehicleLoading || loadingEnums ? (
           <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
         ) : initialVehicleValues ? (
           <CommonEntityForm
             key={editVehicleId}
-            title="Please update details below!"
+            title={isViewMode ? 'Please review details below!' : 'Please update details below!'}
             onSave={handleUpdateVehicle}
             onCancel={handleCloseModal}
             fields={enumFields}
             initialValues={initialVehicleValues}
             saveButtonText="Update"
+            isViewMode={isViewMode}
             showStatusToggle={false}
           />
         ) : (

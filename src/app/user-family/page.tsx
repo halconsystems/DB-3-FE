@@ -62,9 +62,10 @@ export default function UserFamilyPage() {
   // Detect modal state from URL
   const modalMode = searchParams?.get('modal');
   const modalId = searchParams?.get('id');
+  const isViewMode = modalMode === 'view';
 
   useEffect(() => {
-    if (modalMode === 'edit') {
+    if (modalMode === 'edit' || modalMode === 'view') {
       if (modalId) {
         setEditFamilyId(modalId || '');
         setHasCheckedId(true);
@@ -86,6 +87,11 @@ export default function UserFamilyPage() {
   const handleEdit = (family: any) => {
     saveTableRow('userFamily', { id: family.id });
     router.push(`/user-family?modal=edit&id=${encodeURIComponent(family.id)}`);
+  };
+
+  const handleView = (family: any) => {
+    saveTableRow('userFamily', { id: family.id });
+    router.push(`/user-family?modal=view&id=${encodeURIComponent(family.id)}`);
   };
 
   const handleCloseModal = () => {
@@ -332,8 +338,7 @@ export default function UserFamilyPage() {
       render: (_, row) => {
         return (
           <div style={{ display: 'flex', gap: '8px' }}>
-            <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
-            <CircularButton imagePath="/icons/DeleteButton.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+            <CircularButton imagePath="/icons/View.svg" imageAlt="View" width={32} height={32} onClick={() => handleView(row)} />
           </div>
         );
       }
@@ -347,6 +352,7 @@ export default function UserFamilyPage() {
         data={filteredData}
         onAddClick={handleAddNew}
         addButtonLabel="Add New"
+        showAddButton={false}
         currentPage={currentPage}
         loading={isLoading}
         emptyMessage={isLoading ? 'Loading...' : 'No user family data found.'}
@@ -370,21 +376,22 @@ export default function UserFamilyPage() {
       </FormModal>
 
       <FormModal
-        isOpen={modalMode === 'edit' && hasCheckedId}
+        isOpen={(modalMode === 'edit' || modalMode === 'view') && hasCheckedId}
         onClose={handleCloseModal}
-        title="Edit User Family"
+        title={isViewMode ? 'View User Family' : 'Edit User Family'}
       >
         {isEditFamilyLoading ? (
           <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
         ) : initialValues ? (
           <CommonEntityForm
             key={editFamilyId}
-            title="Please update details below!"
+            title={isViewMode ? 'Please review details below!' : 'Please update details below!'}
             onSave={handleUpdateFamily}
             onCancel={handleCloseModal}
             fields={dynamicUserFamilyFields}
             initialValues={initialValues}
             saveButtonText="Update"
+            isViewMode={isViewMode}
             loading={isEditFamilyLoading || isRelationEnumLoading || isCardStatusEnumLoading}
             showStatusToggle={false}
           />

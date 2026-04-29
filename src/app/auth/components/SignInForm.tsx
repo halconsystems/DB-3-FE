@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 
 interface SignInFormProps {
   login: (data: { email: string; password: string }, options: any) => void;
@@ -134,8 +135,13 @@ export default function SignInForm({ login, isPending }: SignInFormProps) {
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
             />
-            <button type="button" className="toggle_password" onClick={() => setShowPassword(!showPassword)}>
-              <img src="/icons/password.svg" alt="" />
+            <button
+              type="button"
+              className="toggle_password"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff size={18} color="#30B33D" /> : <Eye size={18} color="#30B33D" />}
             </button> 
           </div>
         </div>

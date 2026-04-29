@@ -63,10 +63,21 @@ body { margin: 0; font-family: sans-serif; }
     linear-gradient(145deg, #139c2f 0%, #30b33d 52%, #7adf5b 100%);
   box-shadow: 0 18px 40px rgba(20, 89, 28, 0.28) !important;
   min-height: 0 !important;
+  color: #ffffff !important;
 }
 
 .signalr-toast-shell__body {
   padding: 0 !important;
+}
+
+.signalr-toast-shell .Toastify__toast-body {
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #ffffff !important;
+}
+
+.signalr-toast-shell .Toastify__progress-bar--animated {
+  opacity: 1 !important;
 }
 
 .signalr-toast-shell__progress {
@@ -136,7 +147,7 @@ body { margin: 0; font-family: sans-serif; }
 }
 
 .signalr-toast__message {
-  color: rgba(246, 255, 247, 0.94);
+  color: #f4fff5;
   font-size: 0.88rem;
   line-height: 1.5;
 }

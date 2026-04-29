@@ -74,6 +74,7 @@ export default function UserPage() {
   // Detect modal state from URL
   const modalMode = searchParams?.get('modal');
   const modalId = searchParams?.get('id');
+  const isViewMode = modalMode === 'view';
 
   // Build dynamic userType options from enum
   const dynamicUserFields = useMemo(() => {
@@ -123,7 +124,7 @@ export default function UserPage() {
   }, [cardStatusEnum, modalMode, userTypesEnum]);
 
   useEffect(() => {
-    if (modalMode === 'edit') {
+    if (modalMode === 'edit' || modalMode === 'view') {
       if (modalId) {
         setEditUserId(modalId);
         setHasCheckedId(true);
@@ -145,6 +146,11 @@ export default function UserPage() {
   const handleEdit = (user: any) => {
     saveTableRow('user', { id: user.id });
     router.push(`/user?modal=edit&id=${encodeURIComponent(user.id)}`);
+  };
+
+  const handleView = (user: any) => {
+    saveTableRow('user', { id: user.id });
+    router.push(`/user?modal=view&id=${encodeURIComponent(user.id)}`);
   };
 
   const handleCloseModal = () => {
@@ -334,8 +340,7 @@ export default function UserPage() {
       render: (_, row) => {
         return (
           <div style={{ display: 'flex', gap: '8px' }}>
-            <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
-            <CircularButton imagePath="/icons/DeleteButton.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+            <CircularButton imagePath="/icons/View.svg" imageAlt="View" width={32} height={32} onClick={() => handleView(row)} />
           </div>
         );
       }
@@ -349,6 +354,7 @@ export default function UserPage() {
         data={filteredData}
         onAddClick={handleAddNew}
         addButtonLabel="Add New"
+        showAddButton={false}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         loading={isLoading}
@@ -374,21 +380,22 @@ export default function UserPage() {
 
       {/* EDIT USER MODAL */}
       <FormModal
-        isOpen={modalMode === 'edit' && hasCheckedId}
+        isOpen={(modalMode === 'edit' || modalMode === 'view') && hasCheckedId}
         onClose={handleCloseModal}
-        title="Edit User"
+        title={isViewMode ? 'View User' : 'Edit User'}
       >
         {isEditUserLoading ? (
           <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
         ) : initialValues ? (
           <CommonEntityForm
             key={editUserId}
-            title="Please update details below!"
+            title={isViewMode ? 'Please review details below!' : 'Please update details below!'}
             onSave={handleUpdateUser}
             onCancel={handleCloseModal}
             fields={dynamicUserFields}
             initialValues={initialValues}
             saveButtonText="Update"
+            isViewMode={isViewMode}
             loading={isEditUserLoading || isUserTypesEnumLoading || isCardStatusEnumLoading}
             showStatusToggle={false}
           />

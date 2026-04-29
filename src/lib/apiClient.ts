@@ -64,6 +64,8 @@ apiClient.interceptors.response.use(
 			logout();
 		}
 
+		else
+			console.log(`[API Error] ${apiMsg}`);
 		return Promise.reject(error);
 	}
 );

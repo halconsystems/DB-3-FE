@@ -10,22 +10,33 @@ import CircularButton from '../../../../components/ui/CircularButton';
 import FormModal from '../../../../components/popup/FormModal';
 import CommonEntityForm, { ProfileFormData } from '../../../../components/forms/CommonEntityForm';
 import { saveTableRow, clearTableRow, getTableRow } from '../../../../lib/tableRowStorage';
+import { formatDateDisplay } from '../../../../lib/dateUtils';
 import { invoiceFields } from '../fields';
 
 interface Invoice {
   id: string;
   invoiceNumber: string;
+  date: string | null;
+  entityType: string | null;
   userId: string;
-  name: string;
-  serviceType: string;
+  username: string | null;
+  parentUserName: string | null;
+  familyUserName: string | null;
+  serviceType: string | null;
   amount: number;
   taxAmount: number;
   bankCharges: number;
+  discountAmount: number;
+  mdrAmount: number;
+  fedTaxAmount: number;
   totalAmount: number;
-  paymentMethod: string;
+  paymentMethod: string | null;
+  durationDays: number | null;
   trialPeriodDays: number;
-  transactionId: string;
-  status: 'Paid' | 'Pending' | 'Failed';
+  trialDueDate: string | null;
+  transactionId: string | null;
+  status: string;
+  invoiceStatus: string | null;
 }
 
 interface InvoiceTableProps {
@@ -53,9 +64,10 @@ export default function InvoiceTable(props: InvoiceTableProps) {
 
   const modalMode = searchParams?.get('modal');
   const modalId = searchParams?.get('id');
+  const isViewMode = modalMode === 'view';
 
   useEffect(() => {
-    if (modalMode === 'edit') {
+    if (modalMode === 'edit' || modalMode === 'view') {
       if (modalId) {
         setEditInvoiceId(modalId);
         setHasCheckedId(true);
@@ -129,27 +141,32 @@ export default function InvoiceTable(props: InvoiceTableProps) {
   const invoices: Invoice[] = (data?.data || []).map((inv) => ({
     id: inv.id,
     invoiceNumber: inv.invoiceNumber,
-    userId: inv.entityId || '',
-    name: inv.entityType || '', 
-    serviceType: inv.entityType || '', 
+    date: inv.date ?? null,
+    entityType: inv.entityType ?? null,
+    userId: inv.userId || inv.entityId || '',
+    username: inv.username ?? null,
+    parentUserName: inv.parentUserName ?? null,
+    familyUserName: inv.familyUserName ?? null,
+    serviceType: inv.serviceType ?? null,
     amount: inv.amount,
     taxAmount: inv.taxAmount,
-    bankCharges: 0, 
+    bankCharges: inv.bankCharges ?? 0,
+    discountAmount: inv.discountAmount ?? 0,
+    mdrAmount: inv.mdrAmount ?? 0,
+    fedTaxAmount: inv.fedTaxAmount ?? 0,
     totalAmount: inv.totalAmount,
-    paymentMethod: inv.paymentMethod || '',
-    trialPeriodDays: inv.trialPeriodDays ?? 15,
-    transactionId: inv.transactionId || '',
-    status: (inv.status === 'Paid' || inv.status === 'Pending' || inv.status === 'Failed') ? inv.status : 'Pending',
+    paymentMethod: inv.paymentMethod ?? null,
+    durationDays: inv.durationDays ?? null,
+    trialPeriodDays: inv.trialPeriodDays ?? 0,
+    trialDueDate: inv.trialDueDate || inv.trialDueAtUtc || null,
+    transactionId: inv.transactionId ?? null,
+    status: inv.status || '',
+    invoiceStatus: inv.invoiceStatus ?? null,
   }));
 
-  const handleEdit = (item: Invoice) => {
+  const handleView = (item: Invoice) => {
     saveTableRow('invoice', item);
-    router.push(`/setup/invoice?modal=edit&id=${encodeURIComponent(item.id)}`);
-  };
-
-  const handleDelete = (id: string) => {
-    console.log('Delete Invoice:', id);
-    // Handle delete if needed
+    router.push(`/setup/invoice?modal=view&id=${encodeURIComponent(item.id)}`);
   };
 
   const dashIfEmpty = (value: any) =>
@@ -157,26 +174,37 @@ export default function InvoiceTable(props: InvoiceTableProps) {
 
   const columns: Column<Invoice>[] = [
     { key: 'invoiceNumber', header: 'Invoice Number', render: dashIfEmpty },
-    { key: 'name', header: 'Name', render: dashIfEmpty },
-    { key: 'serviceType', header: 'Entity Type', render: dashIfEmpty },
+    { key: 'date', header: 'Date', render: (value) => (value ? formatDateDisplay(value) : '-') },
+    { key: 'entityType', header: 'Entity Type', render: dashIfEmpty },
+    { key: 'userId', header: 'User ID', render: dashIfEmpty },
+    { key: 'username', header: 'User Name', render: dashIfEmpty },
+    { key: 'parentUserName', header: 'Parent User', render: dashIfEmpty },
+    { key: 'familyUserName', header: 'Family User', render: dashIfEmpty },
+    { key: 'serviceType', header: 'Service Type', render: dashIfEmpty },
     { key: 'amount', header: 'Amount', render: dashIfEmpty },
+    { key: 'bankCharges', header: 'Bank Charges', render: dashIfEmpty },
     { key: 'taxAmount', header: 'Tax Amount', render: dashIfEmpty },
+    { key: 'discountAmount', header: 'Discount', render: dashIfEmpty },
+    { key: 'mdrAmount', header: 'MDR Amount', render: dashIfEmpty },
+    { key: 'fedTaxAmount', header: 'FED Tax', render: dashIfEmpty },
     { key: 'totalAmount', header: 'Total Amount', render: dashIfEmpty },
     { key: 'paymentMethod', header: 'Payment Method', render: dashIfEmpty },
+    { key: 'durationDays', header: 'Duration (Days)', render: dashIfEmpty },
     { key: 'trialPeriodDays', header: 'Trial Period (Days)', render: dashIfEmpty },
+    { key: 'trialDueDate', header: 'Trial Due Date', render: (value) => (value ? formatDateDisplay(value) : '-') },
     { key: 'transactionId', header: 'Transaction ID', render: dashIfEmpty },
+    { key: 'invoiceStatus', header: 'Invoice Status', render: dashIfEmpty },
     { 
       key: 'status', 
       header: 'Status',
-      render: (value: 'Paid' | 'Pending' | 'Failed') => <StatusBadge status={value} />
+      render: (value: string) => <StatusBadge status={dashIfEmpty(value)} />
     },
     {
       key: 'action',
       header: 'Action',
       render: (_, row) => (
         <div style={{ display: 'flex', gap: '4px' }}>
-          <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
-          <CircularButton imagePath="/icons/DeleteButton.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row.id)} />
+          <CircularButton imagePath="/icons/View.svg" imageAlt="View" width={32} height={32} onClick={() => handleView(row)} />
         </div>
       )
     }
@@ -191,7 +219,7 @@ export default function InvoiceTable(props: InvoiceTableProps) {
         columns={columns}
         data={invoices}
         loading={isLoading}
-        showAddButton={true}
+        showAddButton={false}
         addButtonLabel={addButtonLabel}
         onAddClick={() => router.push('/setup/invoice?modal=add')}
         currentPage={currentPage}
@@ -222,21 +250,22 @@ export default function InvoiceTable(props: InvoiceTableProps) {
       </FormModal>
 
       <FormModal
-        isOpen={modalMode === 'edit' && hasCheckedId}
+        isOpen={(modalMode === 'edit' || modalMode === 'view') && hasCheckedId}
         onClose={handleCloseModal}
-        title="Edit Invoice"
+        title={isViewMode ? 'View Invoice' : 'Edit Invoice'}
       >
         {isEditInvoiceLoading ? (
           <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
         ) : (
           <CommonEntityForm
-            title=""
+            title={isViewMode ? 'Please review details below!' : ''}
             fields={invoiceFields}
             initialValues={initialInvoiceValues || { id: '', paymentMethod: '', transactionId: '', invoiceNumber: '', tagId: '', entityType: '' }}
             onSave={handleUpdateInvoice}
             onCancel={handleCloseModal}
             loading={false}
             error={formError}
+            isViewMode={isViewMode}
           />
         )}
       </FormModal>

@@ -308,9 +308,10 @@ export function FileInputField({ field, formData, onFileChange, styles, wrapperC
 interface StatusSwitchFieldProps extends SharedFieldProps {
   checked: boolean;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
 }
 
-export function StatusSwitchInputField({ field, checked, onChange, styles, wrapperClassName }: StatusSwitchFieldProps) {
+export function StatusSwitchInputField({ field, checked, onChange, styles, wrapperClassName, disabled = false }: StatusSwitchFieldProps) {
   return (<div>
       <label className={styles.formTitle}>
         {field.label}
@@ -319,6 +320,9 @@ export function StatusSwitchInputField({ field, checked, onChange, styles, wrapp
       <button
         type="button"
         onClick={() => {
+          if (disabled) {
+            return;
+          }
           // Simulate checkbox event for compatibility
           const fakeEvent = {
             target: { name: String(field.name), checked: !checked, type: 'checkbox' }
@@ -327,6 +331,8 @@ export function StatusSwitchInputField({ field, checked, onChange, styles, wrapp
         }}
         className={`${styles.toggleButton} ${checked ? styles.toggleActive : styles.toggleInactive}`}
         aria-pressed={checked}
+        disabled={disabled}
+        style={disabled ? { cursor: 'not-allowed', opacity: 0.7 } : undefined}
       >
         <span className={`${styles.toggleText} ${checked ? styles.textActive : styles.textInactive}`}>
           {checked ? 'Active' : 'Inactive'}

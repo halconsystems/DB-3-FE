@@ -33,6 +33,7 @@ interface CommonEntityFormProps {
   successTitle?: string;
   successMessage?: string;
   error?: string;
+  isViewMode?: boolean;
 }
 
 const toVehicleLicensePlate = (vehicleNo?: string, vehicleNo2?: string) => {
@@ -70,6 +71,7 @@ export default function CommonEntityForm({
   successTitle,
   successMessage,
   error,
+  isViewMode = false,
 }: CommonEntityFormProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -446,6 +448,26 @@ export default function CommonEntityForm({
   };
 
   const renderField = (field: ProfileField, wrapperClassName?: string) => {
+    const rawValue = formData[field.name];
+    const resolvedValue =
+      isViewMode && (rawValue === null || rawValue === undefined || String(rawValue).trim() === '')
+        ? 'N/A'
+        : rawValue;
+    const displayValue = typeof resolvedValue === 'string' ? resolvedValue : String(resolvedValue ?? '');
+
+    if (isViewMode && field.type !== 'statusSwitch') {
+      return (
+        <TextInputField
+          key={field.name}
+          field={{ ...field, type: 'text', readOnly: true }}
+          value={displayValue}
+          onChange={handleInputChange}
+          styles={styles}
+          wrapperClassName={wrapperClassName}
+        />
+      );
+    }
+
     if (field.type === 'file') {
       return (
         <FileInputField
@@ -464,7 +486,7 @@ export default function CommonEntityForm({
         <SelectInputField
           key={field.name}
           field={field}
-          value={typeof formData[field.name] === 'string' ? (formData[field.name] as string) : ''}
+          value={typeof resolvedValue === 'string' ? resolvedValue : ''}
           onChange={handleInputChange}
           styles={styles}
           wrapperClassName={wrapperClassName}
@@ -477,7 +499,7 @@ export default function CommonEntityForm({
         <DateInputField
           key={field.name}
           field={field}
-          value={typeof formData[field.name] === 'string' ? (formData[field.name] as string) : ''}
+          value={typeof resolvedValue === 'string' ? resolvedValue : ''}
           onChange={handleInputChange}
           styles={styles}
           wrapperClassName={wrapperClassName}
@@ -490,7 +512,7 @@ export default function CommonEntityForm({
         <RadioCardInputField
           key={field.name}
           field={field}
-          value={typeof formData[field.name] === 'string' ? (formData[field.name] as string) : ''}
+          value={typeof resolvedValue === 'string' ? resolvedValue : ''}
           onChange={handleInputChange}
           styles={styles}
           wrapperClassName={wrapperClassName}
@@ -503,7 +525,7 @@ export default function CommonEntityForm({
         <ToggleInputField
           key={field.name}
           field={field}
-          checked={!!formData[field.name]}
+          checked={!!resolvedValue}
           onChange={handleInputChange}
           styles={styles}
           wrapperClassName={wrapperClassName}
@@ -516,7 +538,7 @@ export default function CommonEntityForm({
         <StatusSwitchInputField
           key={field.name}
           field={field}
-          checked={!!formData[field.name]}
+          checked={!!resolvedValue}
           onChange={handleInputChange}
           styles={styles}
           wrapperClassName={wrapperClassName}
@@ -532,7 +554,7 @@ export default function CommonEntityForm({
         <TextInputField
           key={field.name}
           field={field}
-          value={typeof formData[field.name] === 'string' ? (formData[field.name] as string) : ''}
+          value={typeof resolvedValue === 'string' ? resolvedValue : ''}
           onChange={handleInputChange}
           styles={styles}
           wrapperClassName={wrapperClassName}
@@ -546,7 +568,7 @@ export default function CommonEntityForm({
         <TextInputField
           key={field.name}
           field={field}
-          value={typeof formData[field.name] === 'string' ? (formData[field.name] as string) : ''}
+          value={typeof resolvedValue === 'string' ? resolvedValue : ''}
           onChange={handleInputChange}
           styles={styles}
           wrapperClassName={wrapperClassName}
@@ -560,7 +582,7 @@ export default function CommonEntityForm({
         <TextInputField
           key={field.name}
           field={field}
-          value={typeof formData[field.name] === 'string' ? (formData[field.name] as string) : ''}
+          value={typeof resolvedValue === 'string' ? resolvedValue : ''}
           onChange={handleInputChange}
           styles={styles}
           wrapperClassName={wrapperClassName}
@@ -574,7 +596,7 @@ export default function CommonEntityForm({
         <TextInputField
           key={field.name}
           field={field}
-          value={typeof formData[field.name] === 'string' ? (formData[field.name] as string) : ''}
+          value={typeof resolvedValue === 'string' ? resolvedValue : ''}
           onChange={handleInputChange}
           styles={styles}
           wrapperClassName={wrapperClassName}
@@ -586,7 +608,7 @@ export default function CommonEntityForm({
       <TextInputField
         key={field.name}
         field={field}
-        value={typeof formData[field.name] === 'string' ? (formData[field.name] as string) : ''}
+        value={typeof resolvedValue === 'string' ? resolvedValue : ''}
         onChange={handleInputChange}
         styles={styles}
         wrapperClassName={wrapperClassName}
@@ -659,6 +681,7 @@ export default function CommonEntityForm({
                   field={field}
                   checked={!!formData[field.name]}
                   onChange={handleInputChange}
+                  disabled={isViewMode}
                   styles={styles}
                   wrapperClassName={styles.statusToggle}
                 />
@@ -671,14 +694,16 @@ export default function CommonEntityForm({
         </div>
       </div>
 
-      <div className={styles.formActions}>
-        <button type="button" className={styles.cancelButton} onClick={onCancel} disabled={loading}>
-          {cancelButtonText}
-        </button>
-        <button type="button" className={styles.saveButton} onClick={handleSubmit} disabled={loading}>
-          {loading ? 'Saving...' : saveButtonText}
-        </button>
-      </div>
+      {!isViewMode && (
+        <div className={styles.formActions}>
+          <button type="button" className={styles.cancelButton} onClick={onCancel} disabled={loading}>
+            {cancelButtonText}
+          </button>
+          <button type="button" className={styles.saveButton} onClick={handleSubmit} disabled={loading}>
+            {loading ? 'Saving...' : saveButtonText}
+          </button>
+        </div>
+      )}
     </div>
     <SuccessModal
       isOpen={showSuccess}

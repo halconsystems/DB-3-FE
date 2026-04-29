@@ -32,3 +32,8 @@
 .buttonIcon {
   object-fit: contain;
 }
+
+.iconOnlyButton {
+  background: transparent;
+  box-shadow: none;
+}

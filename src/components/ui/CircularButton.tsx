@@ -22,6 +22,8 @@ export default function CircularButton({
   pos = "",
   imgSize = 15,
 }: CircularButtonProps) {
+  const isViewIcon = imagePath.includes('/icons/View.svg');
+  const resolvedImgSize = isViewIcon && imgSize === 15 ? 22 : imgSize;
   const buttonStyle = {
     width: typeof width === 'number' ? `${width}px` : width,
     height: typeof height === 'number' ? `${height}px` : height,
@@ -30,7 +32,7 @@ export default function CircularButton({
   return (
     <button
       type="button"
-      className={`${styles.circularButton} ${className} ${pos === "abs" ? styles.posAbsolute : ''}`}
+      className={`${styles.circularButton} ${isViewIcon ? styles.iconOnlyButton : ''} ${className} ${pos === "abs" ? styles.posAbsolute : ''}`}
       onClick={onClick}
       style={buttonStyle}
     >
@@ -38,8 +40,8 @@ export default function CircularButton({
         className={styles.buttonIcon}
         src={imagePath}
         alt={imageAlt}
-        width={imgSize} 
-        height={imgSize}
+        width={resolvedImgSize}
+        height={resolvedImgSize}
       />
     </button>
   );

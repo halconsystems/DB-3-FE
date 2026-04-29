@@ -5,7 +5,6 @@ export const SETUP_TABS: Tab[] = [
   { key: 'bank-account', label: 'Bank Account' },
   { key: 'employee', label: 'Employee' },
   { key: 'vendor-supplier', label: 'Vendor / Supplier' },
-  { key: 'package-type', label: 'Package Type' },
   { key: 'phase', label: 'Phase' },
   { key: 'zone', label: 'Zone' },
   { key: 'fee-scale', label: 'Fee Scale' },

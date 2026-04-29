@@ -85,9 +85,10 @@ export default function VisitorsPage() {
 
   const modalMode = searchParams?.get('modal');
   const modalId = searchParams?.get('id');
+  const isViewMode = modalMode === 'view';
 
   useEffect(() => {
-    if (modalMode === 'edit') {
+    if (modalMode === 'edit' || modalMode === 'view') {
       if (modalId) {
         setEditVisitorId(modalId);
         setHasCheckedId(true);
@@ -131,6 +132,11 @@ export default function VisitorsPage() {
   const handleEdit = (visitor: Visitor) => {
     saveTableRow('visitors', { id: visitor.id });
     router.push(`/visitors?modal=edit&id=${encodeURIComponent(visitor.id)}`);
+  };
+
+  const handleView = (visitor: Visitor) => {
+    saveTableRow('visitors', { id: visitor.id });
+    router.push(`/visitors?modal=view&id=${encodeURIComponent(visitor.id)}`);
   };
 
   const handleCloseModal = () => {
@@ -343,8 +349,7 @@ export default function VisitorsPage() {
       header: 'Action',
       render: (_, row) => (
         <div style={{ display: 'flex', gap: '4px' }}>
-          <CircularButton imagePath="/icons/Edit Button.svg" imageAlt="Edit" width={32} height={32} onClick={() => handleEdit(row)} />
-          <CircularButton imagePath="/icons/DeleteButton.svg" imageAlt="Delete" width={32} height={32} onClick={() => handleDelete(row)} />
+          <CircularButton imagePath="/icons/View.svg" imageAlt="View" width={32} height={32} onClick={() => handleView(row)} />
         </div>
       ),
     },
@@ -358,6 +363,7 @@ export default function VisitorsPage() {
         loading={isLoading}
         onAddClick={handleAddNew}
         addButtonLabel="Add New"
+        showAddButton={false}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status ? 'Active' : 'Inactive'}
@@ -380,21 +386,22 @@ export default function VisitorsPage() {
       </FormModal>
 
       <FormModal
-        isOpen={modalMode === 'edit' && hasCheckedId}
+        isOpen={(modalMode === 'edit' || modalMode === 'view') && hasCheckedId}
         onClose={handleCloseModal}
-        title="Edit Visitor"
+        title={isViewMode ? 'View Visitor' : 'Edit Visitor'}
       >
         {isEditVisitorLoading ? (
           <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
         ) : initialVisitorValues ? (
           <CommonEntityForm
             key={editVisitorId}
-            title="Please update details below!"
+            title={isViewMode ? 'Please review details below!' : 'Please update details below!'}
             onSave={handleUpdateVisitor}
             onCancel={handleCloseModal}
             fields={visitorFields.filter((f) => f.name !== 'description')}
             initialValues={initialVisitorValues}
             saveButtonText="Update"
+            isViewMode={isViewMode}
             showStatusToggle={false}
           />
         ) : (

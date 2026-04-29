@@ -12,6 +12,7 @@ import CircularButton from '../../../../components/ui/CircularButton';
 import FormModal from '../../../../components/popup/FormModal';
 import CommonEntityForm, { ProfileFormData } from '../../../../components/forms/CommonEntityForm';
 import { saveTableRow, clearTableRow, getTableRow } from '../../../../lib/tableRowStorage';
+import { formatDateDisplay } from '../../../../lib/dateUtils';
 import { feeScaleFields } from '../fields';
 
 interface FeeScale {
@@ -19,12 +20,19 @@ interface FeeScale {
   packageName: string;
   feeCategory: string;
   amount: number;
-  taxPercentage: number;
-  currency: string;
-  isTaxApplicable: boolean;
-  userCategory: string;
-  vehicleCategory: string;
   description: string;
+  applicableUserTypes: string;
+  applicableVehicleCategory: string;
+  isTaxApplicable: boolean;
+  taxPercentage: number;
+  discountPercentage: number | null;
+  mdrPercentage: number | null;
+  fedTaxPercentage: number | null;
+  discountValidFrom: string | null;
+  discountValidTo: string | null;
+  currency: string;
+  created: string | null;
+  createdBy: string | null;
   status: 'Active' | 'Inactive';
 }
 
@@ -145,15 +153,22 @@ export default function FeeScaleTable({
   };
   const feeScales: FeeScale[] = (data?.data || []).map((item: any) => ({
     id: item.id,
-    packageName: item.name, // Assuming API 'name' maps to 'packageName'
-    feeCategory: item.feeCategory,
-    amount: item.amount,
-    taxPercentage: item.taxPercentage,
-    currency: item.currency,
+    packageName: item.name || '',
+    feeCategory: item.feeCategory || '',
+    amount: item.amount ?? 0,
+    description: item.description || '',
+    applicableUserTypes: item.applicableUserTypes || '',
+    applicableVehicleCategory: item.applicableVehicleCategory || '',
     isTaxApplicable: item.isTaxApplicable,
-    userCategory: item.applicableUserTypes || '',
-    vehicleCategory: item.applicableVehicleCategory || '',
-    description: item.description,
+    taxPercentage: item.taxPercentage ?? 0,
+    discountPercentage: item.discountPercentage ?? null,
+    mdrPercentage: item.mdrPercentage ?? null,
+    fedTaxPercentage: item.fedTaxPercentage ?? null,
+    discountValidFrom: item.discountValidFrom ?? null,
+    discountValidTo: item.discountValidTo ?? null,
+    currency: item.currency || '',
+    created: item.created ?? null,
+    createdBy: item.createdBy ?? null,
     status: item.isActive ? 'Active' : 'Inactive',
   }));
 
@@ -184,17 +199,24 @@ export default function FeeScaleTable({
   const columns: Column<FeeScale>[] = [
     { key: 'packageName', header: 'Name' },
     { key: 'feeCategory', header: 'Fee Category' },
+    { key: 'description', header: 'Description' },
+    { key: 'applicableUserTypes', header: 'Applicable User Types' },
+    { key: 'applicableVehicleCategory', header: 'Applicable Vehicle Category' },
     { key: 'amount', header: 'Amount' },
-    { key: 'taxPercentage', header: 'Tax %' },
-    { key: 'currency', header: 'Currency' },
     {
       key: 'isTaxApplicable',
       header: 'Tax Applicable',
       render: (value: boolean) => (value ? 'Yes' : 'No'),
     },
-    { key: 'userCategory', header: 'User Category' },
-    { key: 'vehicleCategory', header: 'Vehicle Category' },
-    { key: 'description', header: 'Description' },
+    { key: 'taxPercentage', header: 'Tax %' },
+    { key: 'discountPercentage', header: 'Discount %', render: (value) => value === null || value === undefined || value === '' ? '-' : value },
+    { key: 'mdrPercentage', header: 'MDR %', render: (value) => value === null || value === undefined || value === '' ? '-' : value },
+    { key: 'fedTaxPercentage', header: 'FED Tax %', render: (value) => value === null || value === undefined || value === '' ? '-' : value },
+    { key: 'discountValidFrom', header: 'Discount Valid From', render: (value) => value ? formatDateDisplay(value) : '-' },
+    { key: 'discountValidTo', header: 'Discount Valid To', render: (value) => value ? formatDateDisplay(value) : '-' },
+    { key: 'currency', header: 'Currency' },
+    { key: 'created', header: 'Created', render: (value) => value ? formatDateDisplay(value) : '-' },
+    { key: 'createdBy', header: 'Created By', render: (value) => value === null || value === undefined || value === '' ? '-' : value },
     { 
       key: 'status', 
       header: 'Status',

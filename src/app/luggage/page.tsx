@@ -97,9 +97,10 @@ export default function LuggagePage() {
   // Detect modal state from URL
   const modalMode = searchParams?.get('modal');
   const modalId = searchParams?.get('id');
+  const isViewMode = modalMode === 'view';
 
   useEffect(() => {
-    if (modalMode === 'edit') {
+    if (modalMode === 'edit' || modalMode === 'view') {
       if (modalId) {
         setEditLuggageId(modalId);
         setHasCheckedId(true);
@@ -271,6 +272,11 @@ export default function LuggagePage() {
     router.push(`/luggage?modal=edit&id=${encodeURIComponent(luggage.id)}`);
   };
 
+  const handleView = (luggage: LuggagePass) => {
+    saveTableRow('luggage', luggage);
+    router.push(`/luggage?modal=view&id=${encodeURIComponent(luggage.id)}`);
+  };
+
   const handleDelete = (luggage: SelectedLuggageRow) => {
     setSelectedLuggage(luggage);
     setDeleteModalOpen(true);
@@ -316,18 +322,11 @@ export default function LuggagePage() {
       render: (_, row) => (
         <div style={{ display: 'flex', gap: '4px' }}>
           <CircularButton
-            imagePath="/icons/Edit Button.svg"
-            imageAlt="Edit"
+            imagePath="/icons/View.svg"
+            imageAlt="View"
             width={32}
             height={32}
-            onClick={() => handleEdit(row)}
-          />
-          <CircularButton
-            imagePath="/icons/DeleteButton.svg"
-            imageAlt="Delete"
-            width={32}
-            height={32}
-            onClick={() => handleDelete(row)}
+            onClick={() => handleView(row)}
           />
         </div>
       ),
@@ -346,6 +345,7 @@ export default function LuggagePage() {
         loading={isLoading}
         onAddClick={handleAddNew}
         addButtonLabel="Add New"
+        showAddButton={false}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => (row.status ? 'Active' : 'Inactive')}
@@ -374,21 +374,22 @@ export default function LuggagePage() {
 
       {/* EDIT LUGGAGE MODAL */}
       <FormModal
-        isOpen={modalMode === 'edit' && hasCheckedId}
+        isOpen={(modalMode === 'edit' || modalMode === 'view') && hasCheckedId}
         onClose={handleCloseModal}
-        title="Edit Luggage"
+        title={isViewMode ? 'View Luggage' : 'Edit Luggage'}
       >
         {isEditLuggageLoading ? (
           <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
         ) : initialLuggageValues ? (
           <CommonEntityForm
             key={editLuggageId}
-            title="Please update details below!"
+            title={isViewMode ? 'Please review details below!' : 'Please update details below!'}
             onSave={handleUpdateLuggage}
             onCancel={handleCloseModal}
             fields={luggageFields.filter((f) => f.name !== 'description')}
             initialValues={initialLuggageValues}
             saveButtonText="Update"
+            isViewMode={isViewMode}
             showStatusToggle={false}
           />
         ) : (
