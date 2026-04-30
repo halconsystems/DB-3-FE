@@ -4,7 +4,7 @@ import styles from './DataTable.module.css';
 import Loader from '../ui/loader';
 import { usePathname } from 'next/navigation';
 import { getStatusConfig } from '@/lib/statusMapping';
-import { Search, ArrowLeft, ArrowRight, Plus, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, ArrowLeft, ArrowRight, Plus, ArrowUp, ArrowDown, CreditCard } from 'lucide-react';
 
 export interface Column<T> {
   key: keyof T | string;
@@ -39,6 +39,8 @@ export interface DataTableProps<T> {
   enableSorting?: boolean;
   enableCardStatusFilter?: boolean;
   filterPlaceholder?: string;
+  searchVariant?: 'default' | 'card-management';
+  showSearchActionButton?: boolean;
 }
 
 export function StatusBadge({
@@ -138,6 +140,8 @@ export default function DataTable<T extends Record<string, any>>({
   enableSorting = true,
   enableCardStatusFilter = true,
   filterPlaceholder = 'Search',
+  searchVariant = 'default',
+  showSearchActionButton = false,
 }: DataTableProps<T>) {
   const [filterTerm, setFilterTerm] = useState('');
   const [sortKey, setSortKey] = useState<string>('');
@@ -429,11 +433,22 @@ export default function DataTable<T extends Record<string, any>>({
         <div className={styles.controlsBar}>
           <div className={styles.leftControls}>
             {enableFiltering && (
-              <div className={styles.searchWrapper}>
-                <Search size={16} className={styles.searchIcon} />
+              <div
+                className={`${styles.searchWrapper} ${
+                  searchVariant === 'card-management' ? styles.searchWrapperCardManagement : ''
+                }`}
+              >
+                <Search
+                  size={16}
+                  className={`${styles.searchIcon} ${
+                    searchVariant === 'card-management' ? styles.searchIconCardManagement : ''
+                  }`}
+                />
                 <input
                   type="text"
-                  className={styles.filterInput}
+                  className={`${styles.filterInput} ${
+                    searchVariant === 'card-management' ? styles.filterInputCardManagement : ''
+                  }`}
                   placeholder={filterPlaceholder}
                   value={filterTerm}
                   onChange={(e) => {
@@ -443,6 +458,15 @@ export default function DataTable<T extends Record<string, any>>({
                     }
                   }}
                 />
+                {showSearchActionButton && searchVariant === 'card-management' && (
+                  <button
+                    type="button"
+                    className={styles.searchActionButton}
+                    aria-label="Search action"
+                  >
+                    <CreditCard size={15} />
+                  </button>
+                )}
               </div>
             )}
           </div>

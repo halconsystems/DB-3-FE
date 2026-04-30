@@ -9,6 +9,7 @@ export const SETUP_TABS: Tab[] = [
   { key: 'zone', label: 'Zone' },
   { key: 'fee-scale', label: 'Fee Scale' },
   { key: 'invoice', label: 'Invoice' },
+  { key: 'card-management', label: 'Card Management' },
   { key: 'tag', label: 'Tag' },
   { key: 'tag-approval', label: 'Approve' },
   { key: 'tag-type', label: 'Tag Type' },
@@ -31,6 +32,8 @@ export const getAddButtonLabel = (tab: string): string => {
       return 'Add Fee Scale';
     case 'invoice':
       return 'Add Invoice';
+    case 'card-management':
+      return 'Add Card';
     case 'phase':
       return 'Add Phase';
     case 'zone':
@@ -56,6 +59,7 @@ export const ROUTE_MAP: { [key: string]: string } = {
   'phase': '/setup/phase?modal=add',
   'fee-scale': '/setup/fee-scale?modal=add',
   'invoice': '/setup/invoice?modal=add',
+  'card-management': '/setup/card-management',
   'tag': '/setup/tag?modal=add',
   'tag-type': '/setup/tag-type?modal=add',
   'tag-approval': '/setup/tag-approval?modal=add',
