@@ -9,11 +9,11 @@ export const SETUP_TABS: Tab[] = [
   { key: 'zone', label: 'Zone' },
   { key: 'fee-scale', label: 'Fee Scale' },
   { key: 'invoice', label: 'Invoice' },
-  { key: 'card-management', label: 'Card Management' },
   { key: 'tag', label: 'Tag' },
   { key: 'tag-approval', label: 'Approve' },
   { key: 'tag-type', label: 'Tag Type' },
   { key: 'tag-log', label: 'Approved tags' },
+  { key: 'card-management', label: 'Card Management' }
 ];
 
 export const getAddButtonLabel = (tab: string): string => {

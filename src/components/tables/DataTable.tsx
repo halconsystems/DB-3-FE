@@ -35,6 +35,7 @@ export interface DataTableProps<T> {
   showAddButton?: boolean;
   getRowStatus?: (row: T) => 'Active' | 'Inactive' | 'Pending' | undefined;
   headerContent?: React.ReactNode;
+  tableUpperContent?: React.ReactNode;
   enableFiltering?: boolean;
   enableSorting?: boolean;
   enableCardStatusFilter?: boolean;
@@ -142,6 +143,7 @@ export default function DataTable<T extends Record<string, any>>({
   filterPlaceholder = 'Search',
   searchVariant = 'default',
   showSearchActionButton = false,
+  tableUpperContent = null,
 }: DataTableProps<T>) {
   const [filterTerm, setFilterTerm] = useState('');
   const [sortKey, setSortKey] = useState<string>('');
@@ -418,7 +420,7 @@ export default function DataTable<T extends Record<string, any>>({
         );
       })()}
 
-      {headerContent}
+    {headerContent}
 
       {showAddButton && (
         <div className={styles.addButtonWrapper}>
@@ -458,7 +460,7 @@ export default function DataTable<T extends Record<string, any>>({
                     }
                   }}
                 />
-                {showSearchActionButton && searchVariant === 'card-management' && (
+                {/* {showSearchActionButton && searchVariant === 'card-management' && (
                   <button
                     type="button"
                     className={styles.searchActionButton}
@@ -466,10 +468,11 @@ export default function DataTable<T extends Record<string, any>>({
                   >
                     <CreditCard size={15} />
                   </button>
-                )}
+                )} */}
               </div>
             )}
           </div>
+
 
           {((enableCardStatusFilter && hasCardStatusColumn) || enableSorting) && (
             <div className={styles.rightControls}>
@@ -534,8 +537,8 @@ export default function DataTable<T extends Record<string, any>>({
         </div>
       )}
       
-
       <div className={styles.tableWrapper}>
+      {tableUpperContent}
         {error ? (
           <div style={{ color: 'red', marginBottom: 12, padding: '12px', backgroundColor: '#ffe6e6', borderRadius: '4px' }}>
             {error instanceof Error ? error.message : error}

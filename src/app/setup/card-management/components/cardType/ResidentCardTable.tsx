@@ -44,7 +44,10 @@ export default function ResidentCardTable({ tabs, activeTab, onTabChange, mainTa
       headerContent={
         <div>
           {mainTabsHeader}
-          <div className={styles.subTabs}>
+        </div>
+      }
+      tableUpperContent={
+        <div className={styles.subTabs}>
             {[
               { key: 'member-card', label: 'Member Card' },
               { key: 'non-member-card', label: 'Non Member Card' },
@@ -62,7 +65,6 @@ export default function ResidentCardTable({ tabs, activeTab, onTabChange, mainTa
               </button>
             ))}
           </div>
-        </div>
       }
     />
   );

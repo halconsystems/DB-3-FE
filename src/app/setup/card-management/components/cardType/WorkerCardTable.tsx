@@ -40,12 +40,15 @@ export default function WorkerCardTable({ tabs, activeTab, onTabChange, mainTabs
       enableCardStatusFilter={false}
       enableSorting={false}
       filterPlaceholder="Name"
-      searchVariant="card-management"
+      searchVariant="default"
       showSearchActionButton
       headerContent={
         <div>
           {mainTabsHeader}
-          <div className={styles.subTabs}>
+        </div>
+      }
+      tableUpperContent={
+        <div className={styles.subTabs}>
             {[
               { key: 'commercial-employee', label: 'Commercial Employee' },
               { key: 'house-help-staff', label: 'House-Help Staff' },
@@ -63,7 +66,6 @@ export default function WorkerCardTable({ tabs, activeTab, onTabChange, mainTabs
               </button>
             ))}
           </div>
-        </div>
       }
     />
   );

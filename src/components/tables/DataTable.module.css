@@ -121,25 +121,25 @@
 }
 
 .filterInputCardManagement {
-  min-width: 280px;
-  width: 300px;
-  border-radius: 999px !important;
+  /* min-width: 200px;
+  width: 200px;
+  border-radius: 20px !important;
   border: 1px solid rgba(231, 234, 238, 1) !important;
   background: #ffffff !important;
   box-shadow: 0 8px 24px rgba(16, 24, 40, 0.05);
-  padding: 11px 14px 11px 38px !important;
+  padding: 11px 14px 11px 38px !important; */
 }
 
 .filterInputCardManagement:focus {
-  box-shadow: 0 10px 26px rgba(16, 24, 40, 0.08) !important;
+  /* box-shadow: 0 10px 26px rgba(16, 24, 40, 0.08) !important; */
 }
 
 .searchIconCardManagement {
-  color: #8a959f;
+  /* color: #8a959f; */
 }
 
 .searchWrapperCardManagement {
-  gap: 10px;
+  /* gap: 10px; */
 }
 
 .searchActionButton {
