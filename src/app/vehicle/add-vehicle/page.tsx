@@ -33,10 +33,15 @@ const toTagStatus = (value?: string): number => {
   return 0;
 };
 
-const toAttachmentString = (value?: File | null): string => {
+const toAttachmentString = (value?: File | string | null): string => {
   if (!value) {
     return '';
   }
+
+  if (typeof value === 'string') {
+    return value;
+  }
+
   return value.name;
 };
 

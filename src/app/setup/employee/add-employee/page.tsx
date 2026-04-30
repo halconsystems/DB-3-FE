@@ -6,6 +6,7 @@ import { employeeFields } from '../fields';
 import { getRoles } from '../../../../services/role.service';
 import React from 'react';
 import { useRegister } from '../../../../hooks/auth/useRegister';
+import type { RegisterRequest } from '../../../../types/auth.types';
 export default function AddNewEmployee() {
   const { mutate: registerEmployee, status } = useRegister();
   const [roleOptions, setRoleOptions] = React.useState<{ value: string; label: string }[]>([]);
@@ -24,16 +25,16 @@ export default function AddNewEmployee() {
   }, []);
 
   const handleSave = (data: ProfileFormData) => {
-    const body = {
+    const body: RegisterRequest = {
       FullName: data.fullName || '',
       Email: data.emailAddress || '',
       Password: data.tempPassword || '',
       PhoneNumber: data.cellNumber || '',
       CNIC: data.cnic || '',
       RoleId: data.role || '', 
-      ProfilePicture: data.profilePicture || undefined,
-      CNICFrontImage: data.cnicFront || undefined,
-      CNICBackImage: data.cnicBack || undefined,
+      ProfilePicture: data.profilePicture instanceof File ? data.profilePicture : undefined,
+      CNICFrontImage: data.cnicFront instanceof File ? data.cnicFront : undefined,
+      CNICBackImage: data.cnicBack instanceof File ? data.cnicBack : undefined,
     };
     registerEmployee(body);
   };

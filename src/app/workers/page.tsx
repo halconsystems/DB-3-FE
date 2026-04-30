@@ -297,10 +297,10 @@ export default function WorkersPage() {
       issueDate: toDateInputValue(data.validFrom),
       expiryDate: toDateInputValue(data.validTo),
       cardStatus: toCardStatusFormValue(data.cardStatus),
-      profilePicture: data.profilePicture || '',
-      policeVerificationFile: data.policeVerificationAttachment || '',
-      cnicFront: data.cnicFront || '',
-      cnicBack: data.cnicBack || '',
+      profilePicture: null,
+      policeVerificationFile: null,
+      cnicFront: null,
+      cnicBack: null,
       isActive: data.isActive,
     };
   }, [editWorkerDetails]);

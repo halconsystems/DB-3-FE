@@ -80,9 +80,9 @@ export default function EditEmployee() {
       PhoneNumber: data.cellNumber || '',
       RoleId: (data.role as string) || selectedRoleId,
       IsActive: !!data.isActive,
-      ProfilePicture: data.profilePicture || null,
-      CNICFrontImage: data.cnicFront || null,
-      CNICBackImage: data.cnicBack || null,
+      ProfilePicture: data.profilePicture instanceof File ? data.profilePicture : null,
+      CNICFrontImage: data.cnicFront instanceof File ? data.cnicFront : null,
+      CNICBackImage: data.cnicBack instanceof File ? data.cnicBack : null,
     });
   };
 

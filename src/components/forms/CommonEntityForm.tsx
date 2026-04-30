@@ -104,7 +104,7 @@ const formatValueByFieldName = (fieldName: string, value: unknown): string => {
 };
 
 const withFormattedIdentityAndPhoneFields = (data: ProfileFormData): ProfileFormData => {
-  const nextData: ProfileFormData = { ...data };
+  const nextData: Record<string, unknown> = { ...data };
 
   Object.keys(nextData).forEach((key) => {
     if (!CNIC_FIELD_NAMES.has(key) && !PHONE_FIELD_NAMES.has(key)) {
@@ -113,7 +113,7 @@ const withFormattedIdentityAndPhoneFields = (data: ProfileFormData): ProfileForm
     nextData[key] = formatValueByFieldName(key, nextData[key]);
   });
 
-  return nextData;
+  return nextData as ProfileFormData;
 };
 export default function CommonEntityForm({
   onCancel,

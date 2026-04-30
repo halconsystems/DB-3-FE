@@ -34,7 +34,11 @@ const toIsoDate = (value?: string) => {
   return date.toISOString();
 };
 
-const toTagStatus = (value?: string): number => {
+const toTagStatus = (value?: string | boolean): number => {
+  if (typeof value === 'boolean') {
+    return value ? 1 : 0;
+  }
+
   if (value === 'active') {
     return 1;
   }
