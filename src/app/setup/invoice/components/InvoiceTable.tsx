@@ -9,6 +9,7 @@ import DataTable, { Column, Tab, StatusBadge } from '../../../../components/tabl
 import CircularButton from '../../../../components/ui/CircularButton';
 import FormModal from '../../../../components/popup/FormModal';
 import CommonEntityForm, { ProfileFormData } from '../../../../components/forms/CommonEntityForm';
+import InvoicePreviewModal from './InvoicePreviewModal';
 import { saveTableRow, clearTableRow, getTableRow } from '../../../../lib/tableRowStorage';
 import { formatDateDisplay } from '../../../../lib/dateUtils';
 import { invoiceFields } from '../fields';
@@ -55,6 +56,7 @@ export default function InvoiceTable(props: InvoiceTableProps) {
   // Pass required payload to useInvoices
   const { data, isLoading } = useInvoices({ pageNumber: currentPage, pageSize: 10 });
   const [editInvoiceId, setEditInvoiceId] = useState<string | undefined>();
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [hasCheckedId, setHasCheckedId] = useState(false);
   const [formError, setFormError] = useState('');
 
@@ -64,7 +66,6 @@ export default function InvoiceTable(props: InvoiceTableProps) {
 
   const modalMode = searchParams?.get('modal');
   const modalId = searchParams?.get('id');
-  const isViewMode = modalMode === 'view';
 
   useEffect(() => {
     if (modalMode === 'edit' || modalMode === 'view') {
@@ -84,6 +85,7 @@ export default function InvoiceTable(props: InvoiceTableProps) {
 
   const handleCloseModal = () => {
     setEditInvoiceId(undefined);
+    setSelectedInvoice(null);
     setHasCheckedId(false);
     setFormError('');
     router.push('/setup/invoice');
@@ -165,6 +167,7 @@ export default function InvoiceTable(props: InvoiceTableProps) {
   }));
 
   const handleView = (item: Invoice) => {
+    setSelectedInvoice(item);
     saveTableRow('invoice', item);
     router.push(`/setup/invoice?modal=view&id=${encodeURIComponent(item.id)}`);
   };
@@ -250,25 +253,48 @@ export default function InvoiceTable(props: InvoiceTableProps) {
       </FormModal>
 
       <FormModal
-        isOpen={(modalMode === 'edit' || modalMode === 'view') && hasCheckedId}
+        isOpen={modalMode === 'edit' && hasCheckedId}
         onClose={handleCloseModal}
-        title={isViewMode ? 'View Invoice' : 'Edit Invoice'}
+        title="Edit Invoice"
       >
         {isEditInvoiceLoading ? (
           <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
         ) : (
           <CommonEntityForm
-            title={isViewMode ? 'Please review details below!' : ''}
+            title=""
             fields={invoiceFields}
             initialValues={initialInvoiceValues || { id: '', paymentMethod: '', transactionId: '', invoiceNumber: '', tagId: '', entityType: '' }}
             onSave={handleUpdateInvoice}
             onCancel={handleCloseModal}
             loading={false}
             error={formError}
-            isViewMode={isViewMode}
+            isViewMode={false}
           />
         )}
       </FormModal>
+
+      <InvoicePreviewModal
+        isOpen={modalMode === 'view' && hasCheckedId}
+        onClose={handleCloseModal}
+        invoice={
+          selectedInvoice
+            ? selectedInvoice
+            : editInvoiceDetails?.data
+              ? {
+                  id: editInvoiceDetails.data.id || '',
+                  invoiceNumber: editInvoiceDetails.data.invoiceNumber || '',
+                  date: editInvoiceDetails.data.date || null,
+                  userId: editInvoiceDetails.data.userId || editInvoiceDetails.data.entityId || '',
+                  username: editInvoiceDetails.data.username || null,
+                  amount: Number(editInvoiceDetails.data.amount || 0),
+                  taxAmount: Number(editInvoiceDetails.data.taxAmount || 0),
+                  bankCharges: Number(editInvoiceDetails.data.bankCharges || 0),
+                  totalAmount: Number(editInvoiceDetails.data.totalAmount || 0),
+                  serviceType: editInvoiceDetails.data.serviceType || null,
+                }
+              : null
+        }
+      />
     </>
   );
 }

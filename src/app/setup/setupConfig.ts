@@ -9,6 +9,7 @@ export const SETUP_TABS: Tab[] = [
   { key: 'zone', label: 'Zone' },
   { key: 'fee-scale', label: 'Fee Scale' },
   { key: 'invoice', label: 'Invoice' },
+  { key: 'dha-x-halcon', label: 'DHA x Halcon' },
   { key: 'tag', label: 'Tag' },
   { key: 'tag-approval', label: 'Approve' },
   { key: 'tag-type', label: 'Tag Type' },
@@ -32,6 +33,8 @@ export const getAddButtonLabel = (tab: string): string => {
       return 'Add Fee Scale';
     case 'invoice':
       return 'Add Invoice';
+    case 'dha-x-halcon':
+      return 'Add Record';
     case 'card-management':
       return 'Add Card';
     case 'phase':
@@ -59,6 +62,7 @@ export const ROUTE_MAP: { [key: string]: string } = {
   'phase': '/setup/phase?modal=add',
   'fee-scale': '/setup/fee-scale?modal=add',
   'invoice': '/setup/invoice?modal=add',
+  'dha-x-halcon': '/setup/dha-x-halcon',
   'card-management': '/setup/card-management',
   'tag': '/setup/tag?modal=add',
   'tag-type': '/setup/tag-type?modal=add',

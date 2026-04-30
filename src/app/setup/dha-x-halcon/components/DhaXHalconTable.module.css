@@ -1,0 +1,31 @@
+.headerArea {
+  margin: 10px 0 12px;
+}
+
+.filtersRow {
+  display: grid;
+  grid-template-columns: 1.1fr 1.1fr 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.card {
+  border: 1px solid #e6eaef;
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px 10px;
+}
+
+.cardLabel {
+  margin: 0 0 3px;
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.cardValue {
+  margin: 0;
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 500;
+}
