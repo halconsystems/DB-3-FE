@@ -58,7 +58,7 @@ export interface ProfileFormData {
   year?: string;
   eTagId?: string;
   eTagType?: string;
-  tagStatus?: string;
+  tagStatus?: string | boolean;
   attachment?: File | null;
   cpAgentName?: string;
   syncAgentId?: string;
