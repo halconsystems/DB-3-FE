@@ -36,7 +36,6 @@ export default function ResidentCardTable({ tabs, activeTab, onTabChange, mainTa
       showAddButton={false}
       currentPage={currentPage}
       onPageChange={setCurrentPage}
-      enableCardStatusFilter={false}
       enableSorting={false}
       filterPlaceholder="Name"
       searchVariant="card-management"

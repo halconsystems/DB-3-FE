@@ -37,7 +37,6 @@ export default function WorkerCardTable({ tabs, activeTab, onTabChange, mainTabs
       showAddButton={false}
       currentPage={currentPage}
       onPageChange={setCurrentPage}
-      enableCardStatusFilter={false}
       enableSorting={false}
       filterPlaceholder="Name"
       searchVariant="default"
