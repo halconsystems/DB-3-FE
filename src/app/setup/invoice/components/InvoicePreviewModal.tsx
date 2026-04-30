@@ -118,9 +118,9 @@ export default function InvoicePreviewModal({ isOpen, onClose, invoice }: Invoic
     doc.text(addressLine2, right, y, { align: 'right' });
 
     y += 18;
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text('Description', left, y);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
 
     y += 14;
     doc.setLineWidth(0.8);
@@ -128,12 +128,12 @@ export default function InvoicePreviewModal({ isOpen, onClose, invoice }: Invoic
     doc.line(left, y, right, y);
 
     y += 22;
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text('Sr No.', left, y);
     doc.text('Invoice ID', left + 90, y);
     doc.text('Service Type', left + 220, y);
     doc.text('Amount', right, y, { align: 'right' });
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
 
     y += 14;
     doc.line(left, y, right, y);

@@ -114,7 +114,6 @@ export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHa
       onPageChange={setCurrentPage}
       headerContent={headerContent}
       enableSorting={false}
-      enableCardStatusFilter={false}
       enableFiltering={false}
     />
   );
