@@ -172,14 +172,8 @@ export default function ClubMembersTable({
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Simulate data loading based on active tab
-    setIsLoading(true);
-    const timer = setTimeout(() => {
       setMembers(mockClubMembers[activeTab] || []);
       setIsLoading(false);
-    }, 300);
-
-    return () => clearTimeout(timer);
   }, [activeTab]);
 
   const clubMembersColumns: Column<ClubMember>[] = [
