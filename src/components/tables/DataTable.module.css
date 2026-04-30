@@ -254,7 +254,8 @@
   transition: all 0.2s ease;
   text-align: center;
   box-shadow: 0px 0px 20px 0px rgba(225, 227, 238, 0.95) inset;
-  border-right: 1px solid #D9D9D9
+  border-right: 1px solid #D9D9D9;
+  max-width: 185px;
 }
 
 .tabSetup{

@@ -25,6 +25,7 @@ const MENU_ICONS: Record<string, { active: string; inactive: string }> = {
   '/visitors': { active: 'Visitorgreen.svg', inactive: 'Visitor.png' },
   '/workers': { active: 'Workergreen.png', inactive: 'Worker.png' },
   '/luggage': { active: 'Luggagegreen.png', inactive: 'Luggage.png' },
+  '/club-members': { active: 'Clubgreen.svg', inactive: 'Club.svg' },
 };
 
 // Helper function to get icon based on active state
@@ -104,6 +105,13 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
           </div>
           {memberTypeOpen && (
             <>
+              <Link 
+                  href="/club-members" 
+                  className={`${(activeMenuItem === '/club-members' || activeMenuItem.startsWith('/club-members/')) ? styles.menuItemActive : ''} ${styles.menuItem}`}
+                >
+                  <span>Club Members</span>
+                  <img src={getMenuIcon('/club-members', (activeMenuItem === '/club-members' || activeMenuItem.startsWith('/club-members/')))} alt="" className={styles.menuIconImg} />
+              </Link>
               <Link 
                 href="/user" 
                 className={`${(activeMenuItem === '/user' || activeMenuItem.startsWith('/user/')) ? styles.menuItemActive : ''} ${styles.menuItem}`}
