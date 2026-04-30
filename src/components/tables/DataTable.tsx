@@ -6,6 +6,8 @@ import { usePathname } from 'next/navigation';
 import { getStatusConfig } from '@/lib/statusMapping';
 import { Search, ArrowLeft, ArrowRight, Plus, ArrowUp, ArrowDown, CreditCard } from 'lucide-react';
 
+// ================================ TYPE DEFINITIONS ================================
+
 export interface Column<T> {
   key: keyof T | string;
   header: string;
@@ -38,11 +40,21 @@ export interface DataTableProps<T> {
   tableUpperContent?: React.ReactNode;
   enableFiltering?: boolean;
   enableSorting?: boolean;
-  enableCardStatusFilter?: boolean;
   filterPlaceholder?: string;
   searchVariant?: 'default' | 'card-management';
   showSearchActionButton?: boolean;
 }
+
+// ================================ CONSTANTS ================================
+
+const FILTERABLE_COLUMNS_CONFIG: Record<string, string> = {
+  cardStatus: 'Card Status',
+  tagType: 'Tag Type',
+  subjectType: 'Subject Type',
+  tagStatus: 'Tag Status'
+};
+
+// ================================ STATUS BADGE COMPONENT ================================
 
 export function StatusBadge({
   status,
@@ -119,6 +131,9 @@ export function StatusBadge({
     </span>
   );
 }
+
+// ================================ MAIN DATATABLE COMPONENT ================================
+
 export default function DataTable<T extends Record<string, any>>({
   tabs,
   activeTab,
@@ -139,56 +154,25 @@ export default function DataTable<T extends Record<string, any>>({
   headerContent,
   enableFiltering = true,
   enableSorting = true,
-  enableCardStatusFilter = true,
   filterPlaceholder = 'Search',
   searchVariant = 'default',
   showSearchActionButton = false,
   tableUpperContent = null,
 }: DataTableProps<T>) {
+  
+  // ================================ STATE MANAGEMENT ================================
+  
   const [filterTerm, setFilterTerm] = useState('');
   const [sortKey, setSortKey] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [cardStatusFilter, setCardStatusFilter] = useState<string>('all');
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
+  const [internalRowsPerPage, setInternalRowsPerPage] = useState(rowsPerPage);
+  const [internalCurrentPage, setInternalCurrentPage] = useState(1);
+  
+  const pathName = usePathname();
 
-  const hasCardStatusColumn = useMemo(
-    () => columns.some((column) => String(column.key) === 'cardStatus'),
-    [columns]
-  );
-
-  useEffect(() => {
-    if (!enableSorting) return;
-    if (hasCardStatusColumn && !sortKey) {
-      setSortKey('cardStatus');
-      setSortDirection('desc');
-    }
-  }, [hasCardStatusColumn, enableSorting, sortKey]);
-
-  const cardStatusOptions = useMemo(() => {
-    if (!hasCardStatusColumn) {
-      return [];
-    }
-
-    const uniqueValues = Array.from(
-      new Set(
-        data
-          .map((row) => row.cardStatus)
-          .filter((value) => value !== null && value !== undefined)
-          .map((value) => String(value))
-      )
-    );
-
-    return uniqueValues
-      .map((value) => {
-        const numericValue = Number(value);
-        const config = getStatusConfig('cardStatus', Number.isNaN(numericValue) ? value : numericValue);
-        return {
-          value,
-          label: config?.label || value,
-        };
-      })
-      .sort((a, b) => a.label.localeCompare(b.label));
-  }, [data, hasCardStatusColumn]);
-
+  // ================================ HELPER FUNCTIONS ================================
+  
   const getRawCellValue = (column: Column<T>, row: T) => {
     if (column.key.toString().includes('.')) {
       return column.key
@@ -196,31 +180,90 @@ export default function DataTable<T extends Record<string, any>>({
         .split('.')
         .reduce((obj, key) => obj?.[key], row as any);
     }
-
     return row[column.key as keyof T];
   };
 
+  const getRowClassName = (row: T) => {
+    const status = getRowStatus?.(row);
+    if (status === 'Active') return styles.rowActive;
+    if (status === 'Inactive') return styles.rowInactive;
+    return '';
+  };
+  
+  const renderCell = (column: Column<T>, row: T) => {
+    const value = getRawCellValue(column, row);
+    if (column.render) {
+      return column.render(value, row);
+    }
+    if (value === null) return '-';
+    return value ?? '-';
+  };
+
+  // ================================ FILTER OPTIONS GENERATION ================================
+  
+  // Determine which filters are available based on columns present in the table
+  const availableFilters = useMemo(() => {
+    const filters: Array<{ key: string; label: string }> = [];
+    
+    Object.entries(FILTERABLE_COLUMNS_CONFIG).forEach(([key, label]) => {
+      if (columns.some(column => String(column.key) === key)) {
+        filters.push({ key, label });
+      }
+    });
+    
+    return filters;
+  }, [columns]);
+
+  const getFilterOptions = (filterKey: string) => {
+    const uniqueValues = Array.from(
+      new Set(
+        data
+          .map((row) => row[filterKey])
+          .filter((value) => value !== null && value !== undefined)
+          .map((value) => String(value))
+      )
+    );
+    
+    return uniqueValues.map((value) => {
+      // Check if this filter key exists in FILTERABLE_COLUMNS_CONFIG
+      // and try to get a status config for it
+      if (FILTERABLE_COLUMNS_CONFIG[filterKey]) {
+        const numericValue = Number(value);
+        const config = getStatusConfig(filterKey, Number.isNaN(numericValue) ? value : numericValue);
+        return {
+          value,
+          label: config?.label || value,
+        };
+      }
+      return { value, label: value };
+    }).sort((a, b) => a.label.localeCompare(b.label));
+  };
+
+  // ================================ DATA FILTERING & SORTING ================================
+  
   const filteredAndSortedData = useMemo(() => {
     let result = [...data];
 
-    if (enableCardStatusFilter && hasCardStatusColumn && cardStatusFilter !== 'all') {
-      result = result.filter((row) => String(row.cardStatus) === cardStatusFilter);
-    }
+    // Apply all column filters
+    Object.entries(columnFilters).forEach(([key, filterValue]) => {
+      if (filterValue && filterValue !== 'all') {
+        result = result.filter((row) => String(row[key]) === filterValue);
+      }
+    });
 
+    // Apply search filter
     const trimmedFilter = filterTerm.trim().toLowerCase();
     if (enableFiltering && trimmedFilter) {
       result = result.filter((row) =>
         columns.some((column) => {
           const value = getRawCellValue(column, row);
-          if (value === null || value === undefined) {
-            return false;
-          }
-
+          if (value === null || value === undefined) return false;
           return String(value).toLowerCase().includes(trimmedFilter);
         })
       );
     }
 
+    // Apply sorting
     if (enableSorting && sortKey) {
       const selectedColumn = columns.find((column) => String(column.key) === sortKey);
       if (selectedColumn) {
@@ -250,76 +293,64 @@ export default function DataTable<T extends Record<string, any>>({
     }
 
     return result;
-  }, [
-    cardStatusFilter,
-    columns,
-    data,
-    enableCardStatusFilter,
-    enableFiltering,
-    enableSorting,
-    filterTerm,
-    hasCardStatusColumn,
-    sortDirection,
-    sortKey,
-  ]);
+  }, [columnFilters, columns, data, enableFiltering, enableSorting, filterTerm, sortDirection, sortKey]);
 
+  // ================================ EFFECTS ================================
+  
+  // Auto-set initial sort if cardStatus column exists
+  useEffect(() => {
+    if (!enableSorting) return;
+    const hasCardStatusColumn = columns.some((column) => String(column.key) === 'cardStatus');
+    if (hasCardStatusColumn && !sortKey) {
+      setSortKey('cardStatus');
+      setSortDirection('desc');
+    }
+  }, [columns, enableSorting, sortKey]);
+
+  // Sync internal page with total pages when uncontrolled
+  useEffect(() => {
+    const isPaginationControlled = typeof currentPage === 'number';
+    if (isPaginationControlled) return;
+    
+    const calculatedTotalPages = Math.max(1, Math.ceil(filteredAndSortedData.length / Math.max(1, internalRowsPerPage)));
+    setInternalCurrentPage((prevPage) => Math.min(prevPage, calculatedTotalPages));
+  }, [filteredAndSortedData.length, internalRowsPerPage, currentPage]);
+
+
+  // ================================ PAGINATION LOGIC ================================
+  
   const isPaginationControlled = typeof currentPage === 'number';
-  const [internalRowsPerPage, setInternalRowsPerPage] = useState(rowsPerPage);
   const effectiveRowsPerPage = Math.max(1, internalRowsPerPage);
   const safeRowsPerPage = Math.max(1, effectiveRowsPerPage);
   const calculatedTotalPages = Math.max(1, Math.ceil(filteredAndSortedData.length / safeRowsPerPage));
   const resolvedTotalPages = Math.max(calculatedTotalPages, Math.max(1, totalPages ?? 1));
-
-  const [internalCurrentPage, setInternalCurrentPage] = useState(1);
-
-  const pathName = usePathname();
-
-  useEffect(() => {
-    if (isPaginationControlled) return;
-
-    setInternalCurrentPage((prevPage) => Math.min(prevPage, resolvedTotalPages));
-  }, [isPaginationControlled, resolvedTotalPages]);
-
   const activePage = isPaginationControlled ? (currentPage as number) : internalCurrentPage;
   const safeCurrentPage = Math.min(Math.max(activePage, 1), resolvedTotalPages);
+  const paginatedData = filteredAndSortedData.slice((safeCurrentPage - 1) * safeRowsPerPage, safeCurrentPage * safeRowsPerPage);
 
   const handlePageChange = (nextPage: number) => {
     const clampedPage = Math.min(Math.max(nextPage, 1), resolvedTotalPages);
     if (clampedPage === safeCurrentPage) return;
-
     if (isPaginationControlled) {
       onPageChange?.(clampedPage);
-      return;
+    } else {
+      setInternalCurrentPage(clampedPage);
     }
-
-    setInternalCurrentPage(clampedPage);
   };
 
   const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newRows = parseInt(e.target.value, 10);
     setInternalRowsPerPage(newRows);
-    setInternalCurrentPage(1); 
+    setInternalCurrentPage(1);
   };
 
-  const paginatedData = filteredAndSortedData.slice((safeCurrentPage - 1) * safeRowsPerPage, safeCurrentPage * safeRowsPerPage);
-
-  const getRowClassName = (row: T) => {
-    const status = getRowStatus?.(row);
-    if (status === 'Active') return styles.rowActive;
-    if (status === 'Inactive') return styles.rowInactive;
-    return '';
+  const handleColumnFilterChange = (key: string, value: string) => {
+    setColumnFilters(prev => ({ ...prev, [key]: value }));
+    if (!isPaginationControlled) setInternalCurrentPage(1);
   };
+
+  // ================================ PAGINATION UI RENDERER ================================
   
-  const renderCell = (column: Column<T>, row: T) => {
-    const value = getRawCellValue(column, row);
-    
-    if (column.render) {
-      return column.render(value, row);
-    }
-    if (value === null) return '-';
-    return value ?? '-';
-  };
-
   const renderPagination = () => {
     if (resolvedTotalPages < 1) return null;
 
@@ -327,23 +358,14 @@ export default function DataTable<T extends Record<string, any>>({
     const maxVisiblePages = 5;
 
     if (resolvedTotalPages <= maxVisiblePages) {
-      for (let i = 1; i <= resolvedTotalPages; i++) {
-        pages.push(i);
-      }
+      for (let i = 1; i <= resolvedTotalPages; i++) pages.push(i);
     } else {
       pages.push(1);
-
       const startPage = Math.max(2, safeCurrentPage - 1);
       const endPage = Math.min(resolvedTotalPages - 1, safeCurrentPage + 1);
-
       if (startPage > 2) pages.push('...');
-
-      for (let i = startPage; i <= endPage; i++) {
-        pages.push(i);
-      }
-
+      for (let i = startPage; i <= endPage; i++) pages.push(i);
       if (endPage < resolvedTotalPages - 1) pages.push('...');
-
       pages.push(resolvedTotalPages);
     }
 
@@ -377,202 +399,194 @@ export default function DataTable<T extends Record<string, any>>({
     );
   };
 
-  return (
-    <div className={styles.container}>
-      
-      {tabs && tabs.length > 0 && (() => {
+  // ================================ TABS RENDERER ================================
+  
+  const renderTabs = () => {
+    if (!tabs || tabs.length === 0) return null;
+    
+    const chunkTabs = (tabs: Tab[], size: number): Tab[][] => {
+      const chunks: Tab[][] = [];
+      for (let i = 0; i < tabs.length; i += size) {
+        chunks.push(tabs.slice(i, i + size));
+      }
+      return chunks;
+    };
 
+    const tabChunks = chunkTabs(tabs, 7);
 
-        const chunkTabs = (tabs: Tab[], size: number): Tab[][] => {
-          const chunks: Tab[][] = [];
-          for (let i = 0; i < tabs.length; i += size) {
-            chunks.push(tabs.slice(i, i + size));
-          }
-          return chunks;
-        };
+    return tabChunks.map((chunk: Tab[], rowIndex: number) => (
+      <div key={rowIndex} className={styles.tabsRow}>
+        <div className={styles.tabsContainer}>
+          {chunk.map((tab: Tab, ind: number) => (
+            <button
+              key={tab.key}
+              className={`
+                ${styles.tab}
+                ${pathName?.includes('setup') ? styles.tabSetup : ''}
+                ${activeTab === tab.key ? styles.tabActive : ''}
+                ${ind === 0 ? styles.tabEdgeLeft : ''}
+                ${ind === chunk.length - 1 ? styles.tabEdgeRight : ''}
+              `}
+              onClick={() => onTabChange?.(tab.key)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    ));
+  };
 
-        const tabChunks = chunkTabs(tabs, 7);
+  // ================================ CONTROLS BAR RENDERER ================================
+  
+  const renderControlsBar = () => {
+    if (!enableFiltering && !enableSorting && availableFilters.length === 0) return null;
 
-        return (
-          <>
-            {tabChunks.map((chunk: Tab[], rowIndex: number) => (
-              <div key={rowIndex} className={styles.tabsRow}>
-                <div className={styles.tabsContainer}>
-                  {chunk.map((tab: Tab, ind: number) => (
-                    <button
-                      key={tab.key}
-                      className={`
-                        ${styles.tab}
-                        ${pathName?.includes('setup') ? styles.tabSetup : ''}
-                        ${activeTab === tab.key ? styles.tabActive : ''}
-                        ${ind === 0 ? styles.tabEdgeLeft : ''}
-                        ${ind === chunk.length - 1 ? styles.tabEdgeRight : ''}
-                      `}
-                      onClick={() => onTabChange?.(tab.key)}
-                    >
-                      {tab.label}
-                    </button>
+    return (
+      <div className={styles.controlsBar}>
+        <div className={styles.leftControls}>
+          {enableFiltering && (
+            <div
+              className={`${styles.searchWrapper} ${
+                searchVariant === 'card-management' ? styles.searchWrapperCardManagement : ''
+              }`}
+            >
+              <Search
+                size={16}
+                className={`${styles.searchIcon} ${
+                  searchVariant === 'card-management' ? styles.searchIconCardManagement : ''
+                }`}
+              />
+              <input
+                type="text"
+                className={`${styles.filterInput} ${
+                  searchVariant === 'card-management' ? styles.filterInputCardManagement : ''
+                }`}
+                placeholder={filterPlaceholder}
+                value={filterTerm}
+                onChange={(e) => {
+                  setFilterTerm(e.target.value);
+                  if (!isPaginationControlled) setInternalCurrentPage(1);
+                }}
+              />
+            </div>
+          )}
+        </div>
+
+        {(availableFilters.length > 0 || enableSorting) && (
+          <div className={styles.rightControls}>
+            {/* Dynamic column filters */}
+            {availableFilters.map((filter) => (
+              <div key={filter.key} className={styles.filterGroup}>
+                <label className={styles.controlLabel} htmlFor={`filter-${filter.key}`}>
+                  {filter.label}
+                </label>
+                <select
+                  id={`filter-${filter.key}`}
+                  className={styles.sortSelect}
+                  value={columnFilters[filter.key] || 'all'}
+                  onChange={(e) => handleColumnFilterChange(filter.key, e.target.value)}
+                >
+                  <option value="all">All</option>
+                  {getFilterOptions(filter.key).map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
                   ))}
-                </div>
+                </select>
               </div>
             ))}
-          </>
-        );
-      })()}
 
-    {headerContent}
-
-      {showAddButton && (
-        <div className={styles.addButtonWrapper}>
-          <button className={styles.addButton} onClick={onAddClick}>
-            <Plus size={14} style={{ marginRight: 8 }} />
-            {addButtonLabel}
-          </button>
-        </div>
-      )}
-
-      {(enableFiltering || enableSorting || (enableCardStatusFilter && hasCardStatusColumn)) && (
-        <div className={styles.controlsBar}>
-          <div className={styles.leftControls}>
-            {enableFiltering && (
-              <div
-                className={`${styles.searchWrapper} ${
-                  searchVariant === 'card-management' ? styles.searchWrapperCardManagement : ''
-                }`}
-              >
-                <Search
-                  size={16}
-                  className={`${styles.searchIcon} ${
-                    searchVariant === 'card-management' ? styles.searchIconCardManagement : ''
-                  }`}
-                />
-                <input
-                  type="text"
-                  className={`${styles.filterInput} ${
-                    searchVariant === 'card-management' ? styles.filterInputCardManagement : ''
-                  }`}
-                  placeholder={filterPlaceholder}
-                  value={filterTerm}
-                  onChange={(e) => {
-                    setFilterTerm(e.target.value);
-                    if (!isPaginationControlled) {
-                      setInternalCurrentPage(1);
-                    }
-                  }}
-                />
-                {/* {showSearchActionButton && searchVariant === 'card-management' && (
-                  <button
-                    type="button"
-                    className={styles.searchActionButton}
-                    aria-label="Search action"
-                  >
-                    <CreditCard size={15} />
-                  </button>
-                )} */}
-              </div>
-            )}
-          </div>
-
-
-          {((enableCardStatusFilter && hasCardStatusColumn) || enableSorting) && (
-            <div className={styles.rightControls}>
-              {enableCardStatusFilter && hasCardStatusColumn && (
+            {/* Sort controls */}
+            {enableSorting && (
+              <div className={styles.sortControls}>
                 <div className={styles.filterGroup}>
-                  <label className={styles.controlLabel} htmlFor="cardStatusFilterSelect">Card Status</label>
+                  <label className={styles.controlLabel} htmlFor="sortBySelect">Sort By</label>
                   <select
-                    id="cardStatusFilterSelect"
+                    id="sortBySelect"
                     className={styles.sortSelect}
-                    value={cardStatusFilter}
-                    onChange={(e) => {
-                      setCardStatusFilter(e.target.value);
-                      if (!isPaginationControlled) {
-                        setInternalCurrentPage(1);
-                      }
-                    }}
+                    value={sortKey}
+                    onChange={(e) => setSortKey(e.target.value)}
                   >
-                    <option value="all">All</option>
-                    {cardStatusOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
+                    <option value="">None</option>
+                    {columns.map((column) => (
+                      <option key={String(column.key)} value={String(column.key)}>
+                        {column.header}
                       </option>
                     ))}
                   </select>
                 </div>
-              )}
-
-              {enableSorting && (
-                <div className={styles.sortControls}>
-                  <div className={styles.filterGroup}>
-                    <label className={styles.controlLabel} htmlFor="sortBySelect">Sort By</label>
-                    <select
-                      id="sortBySelect"
-                      className={styles.sortSelect}
-                      value={sortKey}
-                      onChange={(e) => setSortKey(e.target.value)}
-                    >
-                      <option value="">None</option>
-                      {columns.map((column) => (
-                        <option key={String(column.key)} value={String(column.key)}>
-                          {column.header}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className={styles.filterGroup}>
-                    <button
-                      id="sortDirectionSelect"
-                      type="button"
-                      className={styles.sortToggleButton}
-                      onClick={() => setSortDirection((current) => (current === 'asc' ? 'desc' : 'asc'))}
-                      disabled={!sortKey}
-                      aria-label={`Sort direction ${sortDirection === 'asc' ? 'ascending' : 'descending'}`}
-                    >
-                      {sortDirection === 'asc' ? <ArrowUp size={18} /> : <ArrowDown size={18} />}
-                    </button>
-                  </div>
+                <div className={styles.filterGroup}>
+                  <button
+                    id="sortDirectionSelect"
+                    type="button"
+                    className={styles.sortToggleButton}
+                    onClick={() => setSortDirection((current) => (current === 'asc' ? 'desc' : 'asc'))}
+                    disabled={!sortKey}
+                    aria-label={`Sort direction ${sortDirection === 'asc' ? 'ascending' : 'descending'}`}
+                  >
+                    {sortDirection === 'asc' ? <ArrowUp size={18} /> : <ArrowDown size={18} />}
+                  </button>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-      
-      <div className={styles.tableWrapper}>
-      {tableUpperContent}
-        {error ? (
-          <div style={{ color: 'red', marginBottom: 12, padding: '12px', backgroundColor: '#ffe6e6', borderRadius: '4px' }}>
-            {error instanceof Error ? error.message : error}
+              </div>
+            )}
           </div>
-        ) : loading ? (
-          <div className={styles.loading}><Loader variant="inline" /></div>
-        ) : paginatedData.length === 0 ? (
-          <div className={styles.emptyState}>{emptyMessage}</div>
-        ) : (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                {columns.map((column, ind) => (
-                  <th key={ind} className={`${ind === 0 ? styles.tabEdgeLeft : ''} ${ind === columns.length - 1 ? styles.tabEdgeRight : ''}`}>
-                    {column.header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedData.map((row, rowIndex) => (
-                <tr key={rowIndex} className={`${(rowIndex % 2 !== 0 ? styles.rowInactive : styles.rowActive)} ${rowIndex === paginatedData.length - 1 ? styles.lastRow : ''}`}>
-                  {columns.map((column, colIndex) => (
-                    <td key={colIndex}>
-                      {renderCell(column, row)}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
         )}
       </div>
+    );
+  };
 
+  // ================================ TABLE RENDERER ================================
+  
+  const renderTable = () => {
+    if (error) {
+      return (
+        <div style={{ color: 'red', marginBottom: 12, padding: '12px', backgroundColor: '#ffe6e6', borderRadius: '4px' }}>
+          {error instanceof Error ? error.message : error}
+        </div>
+      );
+    }
+
+    if (loading) {
+      return (
+        <div className={styles.loading}>
+          <Loader variant="inline" />
+        </div>
+      );
+    }
+
+    if (paginatedData.length === 0) {
+      return <div className={styles.emptyState}>{emptyMessage}</div>;
+    }
+
+    return (
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            {columns.map((column, ind) => (
+              <th key={ind} className={`${ind === 0 ? styles.tabEdgeLeft : ''} ${ind === columns.length - 1 ? styles.tabEdgeRight : ''}`}>
+                {column.header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {paginatedData.map((row, rowIndex) => (
+            <tr key={rowIndex} className={`${rowIndex % 2 !== 0 ? styles.rowInactive : styles.rowActive} ${rowIndex === paginatedData.length - 1 ? styles.lastRow : ''}`}>
+              {columns.map((column, colIndex) => (
+                <td key={colIndex}>{renderCell(column, row)}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  };
+
+  // ================================ FOOTER RENDERER ================================
+  
+  const renderFooter = () => {
+    return (
       <div className={styles.footerBar}>
         {renderPagination()}
         <div className={styles.rowsPerPage}>
@@ -585,13 +599,40 @@ export default function DataTable<T extends Record<string, any>>({
             value={effectiveRowsPerPage}
             onChange={handleRowsPerPageChange}
             className={styles.rowsPerPageSelect}
-            >
+          >
             {[5, 10, 15, 20, 50, 100].map((option) => (
               <option key={option} value={option}>{option}</option>
             ))}
           </select>
         </div>
       </div>
+    );
+  };
+
+  // ================================ MAIN RENDER ================================
+  
+  return (
+    <div className={styles.container}>
+      {renderTabs()}
+      {headerContent}
+      
+      {showAddButton && (
+        <div className={styles.addButtonWrapper}>
+          <button className={styles.addButton} onClick={onAddClick}>
+            <Plus size={14} style={{ marginRight: 8 }} />
+            {addButtonLabel}
+          </button>
+        </div>
+      )}
+
+      {renderControlsBar()}
+      
+      <div className={styles.tableWrapper}>
+        {tableUpperContent}
+        {renderTable()}
+      </div>
+
+      {renderFooter()}
     </div>
   );
 }

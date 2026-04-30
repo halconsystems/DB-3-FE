@@ -24,7 +24,6 @@ export default function ClubCardTable({ tabs, activeTab, onTabChange, mainTabsHe
       showAddButton={false}
       currentPage={currentPage}
       onPageChange={setCurrentPage}
-      enableCardStatusFilter={false}
       enableSorting={false}
       filterPlaceholder="Name"
       searchVariant="card-management"
