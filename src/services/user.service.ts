@@ -38,6 +38,21 @@ export interface ExternalUser {
   lastModified: string | null;
   lastModifiedBy: string | null;
 }
+
+export interface AuthUserProfile {
+  id: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string | null;
+  vehicleId: string | null;
+  cnic: string;
+  profilePicture: string;
+  cnicFrontImageUrl: string;
+  cnicBackImageUrl: string;
+  userRole: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
 export const getAllExternalUsers = async (): Promise<ExternalUser[]> => {
   const response = await apiClient.get("/user/GetAllUser");
   return response.data.data;
@@ -47,7 +62,12 @@ export const removeUser = async (id: string) => {
   return response.data;
 };
 export const getUserById = async (id: string): Promise<ExternalUser> => {
-  const response = await apiClient.get(`/user/GetUserById`, { params: { id } });
+  const response = await apiClient.get(`/user/GetUserById`, { params: { Id: String(id) } });
+  return response.data.data;
+};
+
+export const getAuthUserProfileById = async (id: string): Promise<AuthUserProfile> => {
+  const response = await apiClient.get(`/auth/GetUserById`, { params: { Id: String(id) } });
   return response.data.data;
 };
 export interface CreateUserRequest {

@@ -38,7 +38,8 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [activeMenuItem, setActiveMenuItem] = useState('/dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [displayName, setDisplayName] = useState(userName);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -46,13 +47,23 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
     setActiveMenuItem(pathname ?? "");
   }, [pathname]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const storedFullName = localStorage.getItem('fullName') || sessionStorage.getItem('fullName');
+    setDisplayName(storedFullName || userName || 'User');
+  }, [userName]);
+
   const handleLogout = () => {
     logout();
   };
 
   return (
     <div className={styles.dashboardWrapper}>
-      <div className={styles.sidebarOverlay} onClick={() => setSidebarOpen(false)} style={{ display: sidebarOpen ? 'block' : 'none' }} />
+      <div
+        className={`${styles.sidebarOverlay} ${sidebarOpen ? styles.sidebarOverlayVisible : ''}`}
+        onClick={() => setSidebarOpen(false)}
+      />
       <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
         <div className={styles.sidebarHeader}>
           <div className={styles.logoSection}>
@@ -139,14 +150,8 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
           )}
           <div className={styles.menuSeparator} />
         </nav>
-        <div className={styles.logoutSection}>
-          <button className={styles.logoutButton} onClick={handleLogout}>
-            <span>Logout</span>
-            <img src="/icons/Log Out.png" alt="" className={styles.logoutIconImg} />
-          </button>
-        </div>
       </aside>
-      <main className={`${styles.mainContent} ${sidebarOpen ? styles.mainContentShifted : ''}`}>
+      <main className={`${styles.mainContent} ${!sidebarOpen ? styles.mainContentShifted : ''}`}>
         <header className={styles.header}>
           <div className={styles.headerTitleWrapper}>
             <button className={styles.toggleSidebarBtn} onClick={() => setSidebarOpen(!sidebarOpen)}>
@@ -173,7 +178,7 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
                 <img src={userAvatarUrl || "/icons/Profile Picture.jpg"} alt="User" className={styles.userAvatar} />
                 <div className={styles.userTextWrapper}>
                   <span className={styles.welcomeText}>👋 Welcome Back,</span>
-                  <span className={styles.userName}>{userName}</span>
+                  <span className={styles.userName}>{displayName}</span>
                 </div>
                 <img src="/icons/gridicons_dropdown.png" alt="" className={styles.userDropdownImg} />
               </div>
@@ -194,6 +199,14 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
                       <span className={styles.toggleSlider}></span>
                     </label>
                   </div>
+                  <div className={styles.profileDropdownDivider} />
+                  <button
+                    type="button"
+                    className={`${styles.profileDropdownItem} ${styles.profileDropdownLogout}`}
+                    onClick={handleLogout}
+                  >
+                    <span>Logout</span>
+                  </button>
                 </div>
               )}
             </div>

@@ -58,6 +58,63 @@ const withDerivedVehicleLicensePlate = (data: ProfileFormData): ProfileFormData 
     licensePlate: toVehicleLicensePlate(data.vehicleNo, data.vehicleNo2),
   };
 };
+
+const toDigitsOnly = (value: unknown): string => String(value ?? '').replace(/\D/g, '');
+
+const formatCnicValue = (value: unknown): string => {
+  const digits = toDigitsOnly(value).slice(0, 13);
+
+  if (!digits) return '';
+  if (digits.length <= 5) return digits;
+  if (digits.length <= 12) return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+  return `${digits.slice(0, 5)}-${digits.slice(5, 12)}-${digits.slice(12)}`;
+};
+
+const formatPhoneValue = (value: unknown): string => {
+  const raw = String(value ?? '').trim();
+  if (!raw) return '';
+
+  let digits = toDigitsOnly(raw);
+  if (digits.startsWith('92')) {
+    digits = `0${digits.slice(2)}`;
+  }
+
+  digits = digits.slice(0, 11);
+  if (!digits) return '';
+  if (digits.length <= 4) return digits;
+
+  return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+};
+
+const CNIC_FIELD_NAMES = new Set(['cnic', 'idNumber']);
+const PHONE_FIELD_NAMES = new Set(['phoneNumber', 'cellNumber', 'cellNumber1', 'cellNumber2', 'nextOfKinNumber']);
+
+const formatValueByFieldName = (fieldName: string, value: unknown): string => {
+  if (value === null || value === undefined) return '';
+
+  if (CNIC_FIELD_NAMES.has(fieldName)) {
+    return formatCnicValue(value);
+  }
+
+  if (PHONE_FIELD_NAMES.has(fieldName)) {
+    return formatPhoneValue(value);
+  }
+
+  return String(value);
+};
+
+const withFormattedIdentityAndPhoneFields = (data: ProfileFormData): ProfileFormData => {
+  const nextData: ProfileFormData = { ...data };
+
+  Object.keys(nextData).forEach((key) => {
+    if (!CNIC_FIELD_NAMES.has(key) && !PHONE_FIELD_NAMES.has(key)) {
+      return;
+    }
+    nextData[key] = formatValueByFieldName(key, nextData[key]);
+  });
+
+  return nextData;
+};
 export default function CommonEntityForm({
   onCancel,
   onSave,
@@ -90,9 +147,10 @@ export default function CommonEntityForm({
       statusFieldNames.push('isActive');
     }
 
-    return withDerivedVehicleLicensePlate(
-      normalizeFormStatuses({ ...initialValues }, statusFieldNames)
-    );
+    const normalizedData = normalizeFormStatuses({ ...initialValues }, statusFieldNames);
+    const formattedData = withFormattedIdentityAndPhoneFields(normalizedData);
+
+    return withDerivedVehicleLicensePlate(formattedData);
   }, [fields, initialValues]);
 
   const [formData, setFormData] = useState<ProfileFormData>(
@@ -163,7 +221,7 @@ export default function CommonEntityForm({
     const { name, value, type } = event.target;
 
     // Phone/cell masking and block further input
-    if (name === 'phoneNumber' || name === 'cellNumber') {
+    if (name === 'phoneNumber' || name === 'cellNumber' || name === 'cellNumber1' || name === 'cellNumber2' || name === 'nextOfKinNumber') {
       const formatted = formatAndLimitPhone(value);
       setFormData((prev) => ({
         ...prev,
@@ -453,7 +511,7 @@ export default function CommonEntityForm({
       isViewMode && (rawValue === null || rawValue === undefined || String(rawValue).trim() === '')
         ? 'N/A'
         : rawValue;
-    const displayValue = typeof resolvedValue === 'string' ? resolvedValue : String(resolvedValue ?? '');
+    const displayValue = formatValueByFieldName(String(field.name), resolvedValue);
     const viewModeSelectLabel =
       isViewMode && field.type === 'select'
         ? field.options?.find((option) => String(option.value) === String(rawValue))?.label || displayValue

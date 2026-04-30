@@ -1,64 +1,102 @@
+'use client';
+
+import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import CommonEntityForm, { ProfileField } from '../../components/forms/CommonEntityForm';
+import CommonEntityForm, { ProfileField, ProfileFormData } from '../../components/forms/CommonEntityForm';
+import { useAuthUserProfileById } from '../../hooks/user/useAuthUserProfileById';
+import { getUserIdFromToken } from '../../lib/authToken';
+import { updateAuthUserProfile } from '../../services/auth.service';
+
+const getCurrentUserId = (): string | undefined => {
+  if (typeof window === 'undefined') return undefined;
+
+  const savedId = localStorage.getItem('currentUserId') || sessionStorage.getItem('currentUserId');
+  if (savedId) return savedId;
+
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const idFromToken = getUserIdFromToken(token);
+  return idFromToken || undefined;
+};
 
 export default function ProfilePage() {
   const pageTitle = 'Profile';
-  
-  // Status options for different status type selects
-  const cardStatusOptions = [
-    { value: '0', label: 'Draft' },
-    { value: '1', label: 'Encoded' },
-    { value: '2', label: 'Active' },
-    { value: '3', label: 'Suspended' },
-    { value: '4', label: 'Blacklisted' },
-    { value: '5', label: 'Replaced' },
-    { value: '6', label: 'Expired' },
-  ];
-
-  const tagStatusOptions = [
-    { value: '0', label: 'Unknown' },
-    { value: '1', label: 'Active' },
-    { value: '2', label: 'Blocked' },
-    { value: '3', label: 'Expired' },
-    { value: '4', label: 'Suspended' },
-  ];
-
-  const vehicleCategoryOptions = [
-    { value: '0', label: 'Private' },
-    { value: '1', label: 'Official' },
-    { value: '2', label: 'Service' },
-    { value: '3', label: 'Commercial' },
-  ];
-
-  const activeInactiveOptions = [
-    { value: '1', label: 'Active' },
-    { value: '0', label: 'Inactive' },
-  ];
+  const router = useRouter();
+  const currentUserId = useMemo(() => getCurrentUserId(), []);
+  const { data: profileData, isLoading, isError } = useAuthUserProfileById(currentUserId);
   
   const profileFields: ProfileField[] = [
-    { name: 'idNumber', label: 'ID Number', type: 'text', required: true, placeholder: 'Type here' },
-    { name: 'role', label: 'Role', type: 'select', required: true, options: [ { value: '', label: 'Select Role here' } ] },
     { name: 'fullName', label: 'Full Name', type: 'text', required: true, placeholder: 'Full Name here' },
-    { name: 'userName', label: 'User Name', type: 'text', required: true, placeholder: 'User Name here' },
+    { name: 'cellNumber', label: 'Phone Number', type: 'text', required: true, placeholder: '0301-2345650' },
     { name: 'cnic', label: 'CNIC', type: 'text', required: true, placeholder: '12345-1234567-1' },
-    { name: 'vehicleTagId', label: 'Vehicle Tag ID', type: 'text', required: false, placeholder: 'Vehicle Tag ID here' },
+    { name: 'role', label: 'Role', type: 'text', required: true, placeholder: 'Role here' },
     { name: 'emailAddress', label: 'Email Address', type: 'email', required: true, placeholder: 'Email Address here' },
-    { name: 'password', label: 'Password', type: 'password', required: true, placeholder: 'Password here' },
-    { name: 'phoneNumber', label: 'Phone Number', type: 'text', required: true, placeholder: '0301-2345650' },
     { name: 'cnicFront', label: 'CNIC Front', type: 'file', required: true },
-    { name: 'cnicBack', label: 'CNIC Back', type: 'file', required: true },
-    { name: 'profilePicture', label: 'Profile Picture', type: 'file', required: false },
-    
-    // Status Type Fields
-    { name: 'cardStatus', label: 'Card Status', type: 'select', required: false, options: cardStatusOptions },
-    { name: 'tagStatus', label: 'Tag Status', type: 'select', required: false, options: tagStatusOptions },
-    { name: 'vehicleCategory', label: 'Vehicle Category', type: 'select', required: false, options: vehicleCategoryOptions },
-    { name: 'activeInactiveStatus', label: 'Active/Inactive Status', type: 'select', required: false, options: activeInactiveOptions },
   ];
+
+  const initialValues = profileData
+    ? {
+        fullName: profileData.fullName || '',
+        cellNumber: profileData.phoneNumber || '',
+        cnic: profileData.cnic || '',
+        role: String(profileData.userRole ?? ''),
+        emailAddress: profileData.email || '',
+        cnicFront: profileData.cnicFrontImageUrl || '',
+      }
+    : {};
+
+  const isUuid = (value?: string) =>
+    !!value && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+
+  const handleUpdateProfile = async (formData: ProfileFormData) => {
+    if (!currentUserId) {
+      throw new Error('User id not found.');
+    }
+
+    await updateAuthUserProfile({
+      Id: String(currentUserId),
+      FullName: formData.fullName || undefined,
+      PhoneNumber: formData.cellNumber || formData.phoneNumber || undefined,
+      CNIC: formData.cnic || undefined,
+      Email: formData.emailAddress || undefined,
+      // Send role only when it is an id (UUID); if role is label text, skip it.
+      RoleId: isUuid(formData.role) ? String(formData.role) : undefined,
+      CNICFrontImage: formData.cnicFront instanceof File ? formData.cnicFront : undefined,
+    });
+
+    const updatedName = String(formData.fullName || '').trim();
+    if (updatedName) {
+      const rememberMe = localStorage.getItem('rememberMe') === 'true';
+      if (rememberMe) {
+        localStorage.setItem('fullName', updatedName);
+      } else {
+        sessionStorage.setItem('fullName', updatedName);
+      }
+    }
+  };
 
   return (
     <DashboardLayout pageTitle={pageTitle} showBackButton={true}>
-      <CommonEntityForm fields={profileFields} />
+      {isLoading ? (
+        <div style={{ padding: '20px', textAlign: 'center' }}>Loading profile...</div>
+      ) : isError ? (
+        <div style={{ padding: '20px', textAlign: 'center', color: '#d32f2f' }}>
+          Failed to load profile details.
+        </div>
+      ) : !currentUserId ? (
+        <div style={{ padding: '20px', textAlign: 'center', color: '#d32f2f' }}>
+          Unable to identify logged-in user from auth token.
+        </div>
+      ) : (
+        <CommonEntityForm
+          fields={profileFields}
+          initialValues={initialValues}
+          onSave={handleUpdateProfile}
+          onCancel={() => router.back()}
+          saveButtonText="Update"
+          cancelButtonText="Cancel"
+        />
+      )}
     </DashboardLayout>
   );
 }

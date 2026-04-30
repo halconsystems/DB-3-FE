@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
+import { getUserIdFromToken } from "../../../lib/authToken";
 
 interface SignInFormProps {
   login: (data: { email: string; password: string }, options: any) => void;
@@ -57,6 +58,7 @@ export default function SignInForm({ login, isPending }: SignInFormProps) {
         onSuccess: (data: any) => {
           const token = data.data.token;
           const fullName = data.data.fullName || data.data.name || '';
+          const userIdFromToken = getUserIdFromToken(token);
 
           if (formData.remember) {
             // Save token to localStorage (persistent across sessions)
@@ -64,18 +66,30 @@ export default function SignInForm({ login, isPending }: SignInFormProps) {
             if (fullName) {
               localStorage.setItem("fullName", fullName);
             }
+            if (userIdFromToken) {
+              localStorage.setItem("currentUserId", userIdFromToken);
+            } else {
+              localStorage.removeItem("currentUserId");
+            }
             // Clear sessionStorage if it exists
             sessionStorage.removeItem("token");
             sessionStorage.removeItem("fullName");
+            sessionStorage.removeItem("currentUserId");
           } else {
             // Save token to sessionStorage only (temporary, clears when browser closes)
             sessionStorage.setItem("token", token);
             if (fullName) {
               sessionStorage.setItem("fullName", fullName);
             }
+            if (userIdFromToken) {
+              sessionStorage.setItem("currentUserId", userIdFromToken);
+            } else {
+              sessionStorage.removeItem("currentUserId");
+            }
             // Clear localStorage token to avoid using old token
             localStorage.removeItem("token");
             localStorage.removeItem("fullName");
+            localStorage.removeItem("currentUserId");
           }
 
           // Set cookie for middleware to check

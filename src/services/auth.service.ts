@@ -1,5 +1,15 @@
 import apiClient from "../lib/apiClient";
 import { LoginRequest, LoginResponse, GetAllUsersResponse, RegisterRequest, RegisterResponse } from "../types/auth.types";
+
+export interface UpdateAuthUserProfileRequest {
+	Id: string;
+	FullName?: string;
+	PhoneNumber?: string;
+	CNIC?: string;
+	Email?: string;
+	RoleId?: string;
+	CNICFrontImage?: File;
+}
 export const removeUser = async (id: string): Promise<{ statusCode: number; successMessage?: string; errorMessage?: string }> => {
 	let token = "";
 	if (typeof window !== "undefined") {
@@ -47,5 +57,25 @@ export const register = async (data: RegisterRequest): Promise<RegisterResponse>
 			...(token ? { Authorization: `Bearer ${token}` } : {}),
 		},
 	});
+	return response.data;
+};
+
+export const updateAuthUserProfile = async (data: UpdateAuthUserProfileRequest) => {
+	const formData = new FormData();
+	formData.append("Id", String(data.Id));
+
+	if (data.FullName) formData.append("FullName", data.FullName);
+	if (data.PhoneNumber) formData.append("PhoneNumber", data.PhoneNumber);
+	if (data.CNIC) formData.append("CNIC", data.CNIC);
+	if (data.Email) formData.append("Email", data.Email);
+	if (data.RoleId) formData.append("RoleId", data.RoleId);
+	if (data.CNICFrontImage) formData.append("CNICFrontImage", data.CNICFrontImage);
+
+	const response = await apiClient.post("/auth/update-user", formData, {
+		headers: {
+			"Content-Type": "multipart/form-data",
+		},
+	});
+
 	return response.data;
 };
