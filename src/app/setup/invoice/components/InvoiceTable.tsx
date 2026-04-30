@@ -196,7 +196,6 @@ export default function InvoiceTable(props: InvoiceTableProps) {
     { key: 'trialPeriodDays', header: 'Trial Period (Days)', render: dashIfEmpty },
     { key: 'trialDueDate', header: 'Trial Due Date', render: (value) => (value ? formatDateDisplay(value) : '-') },
     { key: 'transactionId', header: 'Transaction ID', render: dashIfEmpty },
-    { key: 'invoiceStatus', header: 'Invoice Status', render: dashIfEmpty },
     { 
       key: 'status', 
       header: 'Status',
