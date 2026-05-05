@@ -19,6 +19,36 @@ export const getAllRequestedTags = async (
 import { TagApprovalRequest } from "../types/tag-approval.types";
 import apiClient from "../lib/apiClient";
 import { GetTagApprovalRequestsResponse } from "../types/tag-approval.types";
+import type { TagType } from "../types/tagtype.types";
+
+/** Match API expectation: continuous digits, no spaces. */
+export function normalizeTagNumberForApi(tagNumber: string): string {
+  return String(tagNumber ?? "").replace(/\D/g, "");
+}
+
+/** Many backends reject validTo <= validFrom (same instant fails validation). */
+export function normalizeApprovalDateRange(validFromIso: string, validToIso: string): { validFrom: string; validTo: string } {
+  const from = new Date(validFromIso);
+  const to = new Date(validToIso);
+  if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) {
+    return { validFrom: validFromIso, validTo: validToIso };
+  }
+  if (to.getTime() <= from.getTime()) {
+    const adjusted = new Date(from.getTime());
+    adjusted.setUTCDate(adjusted.getUTCDate() + 1);
+    return { validFrom: from.toISOString(), validTo: adjusted.toISOString() };
+  }
+  return { validFrom: from.toISOString(), validTo: to.toISOString() };
+}
+
+export function resolveTagTypeIdForApproval(tagTypes: TagType[] | undefined, tagType: string | undefined | null): string | undefined {
+  if (!tagType?.trim() || !tagTypes?.length) return undefined;
+  const t = tagType.trim();
+  const byId = tagTypes.find((x) => x.id.toLowerCase() === t.toLowerCase());
+  if (byId) return byId.id;
+  const byName = tagTypes.find((x) => x.name.toLowerCase() === t.toLowerCase());
+  return byName?.id;
+}
 export interface GetTagApprovalRequestByIdResponse {
   statusCode: number;
   successMessage: string;
@@ -52,14 +82,29 @@ export interface ApproveTagApprovalRequestPayload {
   validTo: string;
   status: number;
   feeScaleId: string;
-  deviceId: string;
-
+  deviceId?: string;
   trialPeriod: string;
+  planType?: number;
 }
 
 export const approveTagApprovalRequest = async (payload: ApproveTagApprovalRequestPayload): Promise<any> => {
-  const response = await apiClient.post("/tag-approval/approve", payload);
-  return response.data;
+  const requestBody: Record<string, unknown> = { ...payload };
+  if (!payload.deviceId?.trim()) {
+    delete requestBody.deviceId;
+  }
+  const response = await apiClient.post("/tag-approval/approve", requestBody);
+  const data = response.data as { statusCode?: number; success?: boolean; errorMessage?: string; message?: string };
+  if (data && typeof data.statusCode === "number" && ![0, 200, 201, 204].includes(data.statusCode)) {
+    const err = new Error(String(data.errorMessage || data.message || "Approval failed")) as Error & { response?: { data: unknown } };
+    err.response = { data };
+    throw err;
+  }
+  if (data && typeof data.success === "boolean" && data.success === false) {
+    const err = new Error(String(data.errorMessage || data.message || "Approval failed")) as Error & { response?: { data: unknown } };
+    err.response = { data };
+    throw err;
+  }
+  return data;
 };
 
 export interface CreateTagApprovalRequestPayload {

@@ -8,6 +8,11 @@ import { useDevices } from '../../hooks/device/useDevices';
 import { useZones } from '../../hooks/zone/useZones';
 import { useGetAllTagTypes } from '../../hooks/tagtype/useGetAllTagTypes';
 import { useApproveTagApprovalRequest } from '../../hooks/tag-approval/useApproveTagApprovalRequest';
+import {
+  normalizeApprovalDateRange,
+  normalizeTagNumberForApi,
+  resolveTagTypeIdForApproval,
+} from '../../services/approval.service';
 import type { FeeScale } from '../../types/fees.types';
 import { TagApprovalRequest } from '../../types/tag-approval.types';
 
@@ -26,7 +31,7 @@ export default function ApprovalModal({
   const { data: deviceData, isLoading: isDeviceLoading } = useDevices();
   const { data: zoneData, isLoading: isZoneLoading } = useZones();
   const { data: tagTypeData, isLoading: isTagTypeLoading } = useGetAllTagTypes();
-  const approveTagMutation = useApproveTagApprovalRequest();
+  const { mutateAsync: approveTagRequest, isPending: isApprovePending } = useApproveTagApprovalRequest();
 
   const [planTypeOptions, setPlanTypeOptions] = useState([
     { value: '', label: 'Select Plan Type' }
@@ -170,30 +175,41 @@ export default function ApprovalModal({
     };
   }, [data]);
 
-  const handleSave = (formData: ProfileFormData) => {
-    if (!data) return;
+  const handleSave = async (formData: ProfileFormData) => {
+    if (!data) return false;
+
+    const tagTypeId =
+      resolveTagTypeIdForApproval(tagTypeData?.data, data.tagType || (formData.tagType as string | undefined)) ||
+      '00a07f67-9150-417a-fd67-08de8b030b56';
+
+    const rawFrom = toIsoDate(String(formData.validFrom || data.validFrom || ''));
+    const rawTo = toIsoDate(String(formData.validTo || data.validTo || ''));
+    const { validFrom, validTo } = normalizeApprovalDateRange(rawFrom, rawTo);
+
+    const deviceRaw = formData.device != null && formData.device !== '' ? String(formData.device).trim() : '';
+    const planNum = formData.planType !== undefined && formData.planType !== '' ? Number(formData.planType) : 0;
 
     const payload = {
       tagApprovalRequestId: String(formData.tagApprovalRequestId || data.id),
       entityName: String(formData.name || data.subjectName || ''),
       entityId: String(formData.entityId || data.subjectId || ''),
-      tagNumber: String(formData.tagNumber || data.tagNumber || ''),
-      tagTypeId: '00a07f67-9150-417a-fd67-08de8b030b56',
-      validFrom: toIsoDate(String(formData.validFrom || data.validFrom || '')),
-      validTo: toIsoDate(String(formData.validTo || data.validTo || '')),
+      tagNumber: normalizeTagNumberForApi(String(formData.tagNumber || data.tagNumber || '')),
+      tagTypeId,
+      validFrom,
+      validTo,
       status: toStatusValue(formData.status),
       feeScaleId: formData.feeScaleId !== undefined ? String(formData.feeScaleId) : String(data.feeScale || ''),
-      deviceId: String(formData.device || ''),
+      ...(deviceRaw ? { deviceId: deviceRaw } : {}),
       trialPeriod: String(formData.trialPeriod || 'Unknown'),
-      planType: formData.planType ? String(Number(formData.planType)) : "0",
+      planType: Number.isFinite(planNum) ? planNum : 0,
     };
 
-    console.log('approveTagApprovalRequest payload:', payload);
-    approveTagMutation.mutate(payload, {
-      onSuccess: () => {
-        onClose();
-      }
-    });
+    console.log(
+      `approveTagApprovalRequest payload:\n${JSON.stringify(payload, null, 2)}`
+    );
+    const result = await approveTagRequest(payload);
+    onClose();
+    return result;
   };
 
   return (
@@ -210,7 +226,7 @@ export default function ApprovalModal({
           fields={approveFields}
           saveButtonText="Approve"
           initialValues={initialValues}
-          loading={isFeeScaleLoading || isDeviceLoading || isZoneLoading || isTagTypeLoading || approveTagMutation.isPending}
+          loading={isFeeScaleLoading || isDeviceLoading || isZoneLoading || isTagTypeLoading || isApprovePending}
           successTitle="Tag Approved"
           successMessage="The tag approval has been submitted successfully."
         />

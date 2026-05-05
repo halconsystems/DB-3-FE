@@ -13,6 +13,11 @@ import { useDevices } from '../../../../hooks/device/useDevices';
 import { useZones } from '../../../../hooks/zone/useZones';
 import { useGetAllTagTypes } from '../../../../hooks/tagtype/useGetAllTagTypes';
 import { useApproveTagApprovalRequest } from '../../../../hooks/tag-approval/useApproveTagApprovalRequest';
+import {
+  normalizeApprovalDateRange,
+  normalizeTagNumberForApi,
+  resolveTagTypeIdForApproval,
+} from '../../../../services/approval.service';
 
 export default function AddNewTag() {
   const searchParams = useSearchParams();
@@ -22,8 +27,7 @@ export default function AddNewTag() {
   const { data: deviceData, isLoading: isDeviceLoading } = useDevices();
   const { data: zoneData, isLoading: isZoneLoading } = useZones();
 
-  // Restore approveTagMutation declaration
-  const approveTagMutation = useApproveTagApprovalRequest();
+  const { mutateAsync: approveTagRequest, isPending: isApprovePending } = useApproveTagApprovalRequest();
   const { data: tagTypeData, isLoading: isTagTypeLoading } = useGetAllTagTypes();
 
   // State to track form data for auto-filling dates
@@ -244,31 +248,42 @@ export default function AddNewTag() {
     },
   ];
 
-  const handleSave = (formData: ProfileFormData) => {
+  const handleSave = async (formData: ProfileFormData) => {
     if (!data?.data) {
-      return;
+      return false;
     }
 
     const tag = data.data;
-    // Ensure feeScaleId is passed correctly, even for the first real item
+
+    const tagTypeId =
+      resolveTagTypeIdForApproval(tagTypeData?.data, tag.tagType || (formData.tagType as string | undefined)) ||
+      '00a07f67-9150-417a-fd67-08de8b030b56';
+
+    const rawFrom = toIsoDate(String(formData.validFrom || tag.validFrom || ''));
+    const rawTo = toIsoDate(String(formData.validTo || tag.validTo || ''));
+    const { validFrom, validTo } = normalizeApprovalDateRange(rawFrom, rawTo);
+
+    const deviceRaw = formData.device != null && formData.device !== '' ? String(formData.device).trim() : '';
+    const planNum = formData.planType !== undefined && formData.planType !== '' ? Number(formData.planType) : 0;
+
     const payload = {
       tagApprovalRequestId: String(formData.tagApprovalRequestId || tag.id),
       entityName: String(formData.name || tag.subjectName || ''),
       entityId: String(formData.entityId || tag.subjectId || ''),
-      tagNumber: String(formData.tagNumber || tag.tagNumber || ''),
-      tagTypeId: '00a07f67-9150-417a-fd67-08de8b030b56',
-      validFrom: toIsoDate(String(formData.validFrom || tag.validFrom || '')),
-      validTo: toIsoDate(String(formData.validTo || tag.validTo || '')),
+      tagNumber: normalizeTagNumberForApi(String(formData.tagNumber || tag.tagNumber || '')),
+      tagTypeId,
+      validFrom,
+      validTo,
       status: toStatusValue(formData.status),
       feeScaleId: formData.feeScaleId !== undefined ? String(formData.feeScaleId) : String(tag.feeScale || ''),
-      deviceId: String(formData.device || ''),
+      ...(deviceRaw ? { deviceId: deviceRaw } : {}),
       trialPeriod: String(formData.trialPeriod || 'Unknown'),
-      planType: formData.planType ? String(Number(formData.planType)) : "0",
+      planType: Number.isFinite(planNum) ? planNum : 0,
     };
 
     console.log('approveTagApprovalRequest payload:', payload);
 
-    approveTagMutation.mutate(payload);
+    return approveTagRequest(payload);
   };
 
   // Map fetched data to form fields
@@ -335,7 +350,7 @@ export default function AddNewTag() {
             fields={approveFields}
             saveButtonText="Approve"
             initialValues={initialValues}
-            loading={isFeeScaleLoading || isDeviceLoading || isZoneLoading || isTagTypeLoading || approveTagMutation.isPending}
+            loading={isFeeScaleLoading || isDeviceLoading || isZoneLoading || isTagTypeLoading || isApprovePending}
             successTitle="Tag Approved"
             successMessage="The tag approval has been submitted successfully."
           />
