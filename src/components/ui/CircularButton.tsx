@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './CircularButton.module.css';
 
 interface CircularButtonProps {
-  imagePath: string;
+  imagePath?: string;
   imageAlt?: string;
   width?: number | string;
   height?: number | string;
@@ -10,10 +10,11 @@ interface CircularButtonProps {
   className?: string;
   pos?: "abs" | "";
   imgSize?: number;
+  children?: React.ReactNode;
 }
 
 export default function CircularButton({
-  imagePath,
+  imagePath= '',
   imageAlt = '',
   width = 32,
   height = 32,
@@ -21,6 +22,7 @@ export default function CircularButton({
   className = '',
   pos = "",
   imgSize = 15,
+  children,
 }: CircularButtonProps) {
   const isViewIcon = imagePath.includes('/icons/View.svg');
   const resolvedImgSize = isViewIcon && imgSize === 15 ? 22 : imgSize;
@@ -42,7 +44,9 @@ export default function CircularButton({
         alt={imageAlt}
         width={resolvedImgSize}
         height={resolvedImgSize}
+        style={{display: imagePath ? 'block' : 'none' }}
       />
+      {children}
     </button>
   );
 }

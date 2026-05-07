@@ -1,10 +1,11 @@
 'use client';
 import React, { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import styles from "./DashboardLayout.module.css";
 import { logout } from "../../lib/apiClient";
+import CircularButton from "../ui/CircularButton";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -62,7 +63,7 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
   return (
     <div className={styles.dashboardWrapper}>
       <div
-        className={`${styles.sidebarOverlay} ${sidebarOpen ? styles.sidebarOverlayVisible : ''}`}
+        className={`${styles.sidebarOverlay} ${sidebarOpen ? styles.sidebarOverlayVisible : ''} `}
         onClick={() => setSidebarOpen(false)}
       />
       <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
@@ -71,9 +72,9 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
             <img src="/images/PDOHA.png" alt="Logo" className={styles.logo} />
             <div className={styles.logoSeparator} />
           </div>
-          <button className={styles.closeSidebarBtn} onClick={() => setSidebarOpen(false)}>
+          {/* <button className={styles.closeSidebarBtn} onClick={() => setSidebarOpen(false)}>
             <X size={24} color="#27ae60" />
-          </button>
+          </button> */}
         </div>
         <nav className={styles.menu}>
           <Link 
@@ -162,9 +163,16 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
       <main className={`${styles.mainContent} ${!sidebarOpen ? styles.mainContentShifted : ''}`}>
         <header className={styles.header}>
           <div className={styles.headerTitleWrapper}>
-            <button className={styles.toggleSidebarBtn} onClick={() => setSidebarOpen(!sidebarOpen)}>
+            {/* <button className={styles.toggleSidebarBtn} onClick={() => setSidebarOpen(!sidebarOpen)} >
               <Menu size={24} color="#27ae60" />
-            </button>
+            </button> */}
+              <CircularButton onClick={() => setSidebarOpen(!sidebarOpen)}>
+                {sidebarOpen ?
+                  <ChevronLeft size={24} color="#27ae60" /> 
+                  : 
+                  <ChevronRight size={24} color="#27ae60" />
+                }
+              </CircularButton>
             {(showBackButton !== false && (activeMenuItem.match(/\//g)?.length ?? 0) >= 2) || showBackButton === true ? (
               <img 
               src="/icons/arrow-back.png" 
