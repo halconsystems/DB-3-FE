@@ -79,10 +79,13 @@ export function StatusBadge({
     }
   }
 
+  const normalizedLabel =
+    typeof displayLabel === 'string' && displayLabel.trim() === '' ? undefined : displayLabel;
+
   // Fallback to CSS classes if no custom colors
   if (!bgColor || !textColor) {
     const getStatusClass = () => {
-      const statusStr = (displayLabel || '').toLowerCase();
+      const statusStr = (normalizedLabel || '').toLowerCase();
       switch (statusStr) {
         case 'approved':
           return styles.statusApproved;
@@ -114,7 +117,7 @@ export function StatusBadge({
 
     return (
       <span className={`${styles.statusBadge} ${getStatusClass()}`}>
-        {displayLabel ?? noStatus}
+        {normalizedLabel ?? noStatus}
       </span>
     );
   }
@@ -127,7 +130,7 @@ export function StatusBadge({
         color: textColor,
       }}
     >
-      {displayLabel}
+      {normalizedLabel}
     </span>
   );
 }
@@ -195,8 +198,9 @@ export default function DataTable<T extends Record<string, any>>({
     if (column.render) {
       return column.render(value, row);
     }
-    if (value === null) return '-';
-    return value ?? '-';
+    if (value === null || value === undefined) return '-';
+    if (typeof value === 'string' && value.trim() === '') return '-';
+    return value;
   };
 
   // ================================ FILTER OPTIONS GENERATION ================================
