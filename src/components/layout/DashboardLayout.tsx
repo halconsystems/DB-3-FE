@@ -40,10 +40,21 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [activeMenuItem, setActiveMenuItem] = useState('/dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window === 'undefined') return true;
+
+    const storedSidebarState = window.localStorage.getItem('dashboardSidebarOpen');
+    return storedSidebarState === null ? true : storedSidebarState === 'true';
+  });
   const [displayName, setDisplayName] = useState(userName);
   const router = useRouter();
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    window.localStorage.setItem('dashboardSidebarOpen', String(sidebarOpen));
+  }, [sidebarOpen]);
 
   useEffect(() => {
     setActiveMenuItem(pathname ?? "");
@@ -66,7 +77,7 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
         className={`${styles.sidebarOverlay} ${sidebarOpen ? styles.sidebarOverlayVisible : ''} `}
         onClick={() => setSidebarOpen(false)}
       />
-      <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
+      <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : styles.sidebarClosed}`}>
         <div className={styles.sidebarHeader}>
           <div className={styles.logoSection}>
             <img src="/images/PDOHA.png" alt="Logo" className={styles.logo} />
@@ -76,12 +87,12 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
             <X size={24} color="#27ae60" />
           </button> */}
         </div>
-        <nav className={styles.menu}>
+        <nav className={`${styles.menu} ${!sidebarOpen ? styles.menuCollapsed : ''}`}>
           <Link 
             href="/dashboard" 
             className={`${activeMenuItem === '/dashboard' ? styles.menuItemActive : ''} ${styles.menuItemGap} ${styles.menuItem}`}
           >
-            <span>Dashboard</span>
+            <span className={styles.menuItemText}>Dashboard</span>
             <img src={getMenuIcon('/dashboard', activeMenuItem === '/dashboard')} alt="" className={styles.menuIconImg} />
           </Link>
           <Link 
@@ -89,84 +100,97 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
             onClick={()=>localStorage.setItem('activeTab','cp-agent')}
             className={`${activeMenuItem.includes('/setup') ? styles.menuItemActive : ''} ${styles.menuItemGap} ${styles.menuItem}`}
           >
-            <span>Setup</span>
+            <span className={styles.menuItemText}>Setup</span>
             <img src={getMenuIcon('/setup', activeMenuItem.includes('/setup'))} alt="" className={styles.menuIconImg} />
           </Link>
-          <div 
-            className={styles.menuSectionTitle} 
-            onClick={() => setMemberTypeOpen(!memberTypeOpen)}
-            style={{ cursor: 'pointer' }}
-          >
-            <span>Member Type</span>
-            <img 
-              src="/icons/Arrow.png" 
-              alt="" 
-              className={`${styles.menuDropdownIconImg} ${memberTypeOpen ? styles.menuDropdownIconOpen : ''}`}
-            />
-          </div>
+          {sidebarOpen && (
+            <div 
+              className={styles.menuSectionTitle} 
+              onClick={() => setMemberTypeOpen(!memberTypeOpen)}
+              style={{ cursor: 'pointer' }}
+            >
+              <span>Member Type</span>
+              <img 
+                src="/icons/Arrow.png" 
+                alt="" 
+                className={`${styles.menuDropdownIconImg} ${memberTypeOpen ? styles.menuDropdownIconOpen : ''}`}
+              />
+            </div>
+          )}
           {memberTypeOpen && (
             <>
               <Link 
                   href="/club-members" 
                   className={`${(activeMenuItem === '/club-members' || activeMenuItem.startsWith('/club-members/')) ? styles.menuItemActive : ''} ${styles.menuItem}`}
                 >
-                  <span>Club Members</span>
+                  <span className={styles.menuItemText}>Club Members</span>
                   <img src={getMenuIcon('/club-members', (activeMenuItem === '/club-members' || activeMenuItem.startsWith('/club-members/')))} alt="" className={styles.menuIconImg} />
               </Link>
               <Link 
                 href="/user" 
                 className={`${(activeMenuItem === '/user' || activeMenuItem.startsWith('/user/')) ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
-                <span>User</span>
+                <span className={styles.menuItemText}>User</span>
                 <img src={getMenuIcon('/user', (activeMenuItem === '/user' || activeMenuItem.startsWith('/user/')))} alt="" className={styles.menuIconImg} />
               </Link>
               <Link 
                 href="/user-family" 
                 className={`${(activeMenuItem === '/user-family' || activeMenuItem.startsWith('/user-family/')) ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
-                <span>User Family</span>
+                <span className={styles.menuItemText}>User Family</span>
                 <img src={getMenuIcon('/user-family', (activeMenuItem === '/user-family' || activeMenuItem.startsWith('/user-family/')))} alt="" className={styles.menuIconImg} />
               </Link>
               <Link 
                 href="/vehicle" 
                 className={`${(activeMenuItem === '/vehicle' || activeMenuItem.startsWith('/vehicle/')) ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
-                <span>Vehicles</span>
+                <span className={styles.menuItemText}>Vehicles</span>
                 <img src={getMenuIcon('/vehicle', (activeMenuItem === '/vehicle' || activeMenuItem.startsWith('/vehicle/')))} alt="" className={styles.menuIconImg} />
               </Link>
               <Link 
                 href="/visitors" 
                 className={`${(activeMenuItem === '/visitors' || activeMenuItem.startsWith('/visitors/')) ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
-                <span>Visitor</span>
+                <span className={styles.menuItemText}>Visitor</span>
                 <img src={getMenuIcon('/visitors', (activeMenuItem === '/visitors' || activeMenuItem.startsWith('/visitors/')))} alt="" className={styles.menuIconImg} />
               </Link>
               <Link 
                 href="/workers" 
                 className={`${(activeMenuItem === '/workers' || activeMenuItem.startsWith('/workers/')) ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
-                <span>Workers</span>
+                <span className={styles.menuItemText}>Workers</span>
                 <img src={getMenuIcon('/workers', (activeMenuItem === '/workers' || activeMenuItem.startsWith('/workers/')))} alt="" className={styles.menuIconImg} />
               </Link>
               <Link 
                 href="/luggage" 
                 className={`${(activeMenuItem === '/luggage' || activeMenuItem.startsWith('/luggage/')) ? styles.menuItemActive : ''} ${styles.menuItem}`}
               >
-                <span>Luggage Pass</span>
+                <span className={styles.menuItemText}>Luggage Pass</span>
                 <img src={getMenuIcon('/luggage', (activeMenuItem === '/luggage' || activeMenuItem.startsWith('/luggage/')))} alt="" className={styles.menuIconImg} />
               </Link>
             </>
           )}
-          <div className={styles.menuSeparator} />
+          {sidebarOpen && <div className={styles.menuSeparator} />}
         </nav>
+        <button
+          type="button"
+          className={styles.sidebarLogoutBtn}
+          onClick={handleLogout}
+        >
+          <span style={{display: sidebarOpen ? 'block' : 'none'}}>Logout</span>
+          <img src="/icons/Log Out.png" alt="" className={styles.sidebarLogoutIcon} />
+        </button>
       </aside>
-      <main className={`${styles.mainContent} ${!sidebarOpen ? styles.mainContentShifted : ''}`}>
+      <main className={`${styles.mainContent} ${sidebarOpen ? styles.mainContentShifted : ''}`}>
         <header className={styles.header}>
           <div className={styles.headerTitleWrapper}>
             {/* <button className={styles.toggleSidebarBtn} onClick={() => setSidebarOpen(!sidebarOpen)} >
               <Menu size={24} color="#27ae60" />
             </button> */}
-              <CircularButton onClick={() => setSidebarOpen(!sidebarOpen)}>
+              <CircularButton onClick={() => {
+                setSidebarOpen(!sidebarOpen);
+                setMemberTypeOpen(true);
+              }}>
                 {sidebarOpen ?
                   <ChevronLeft size={24} color="#27ae60" /> 
                   : 
