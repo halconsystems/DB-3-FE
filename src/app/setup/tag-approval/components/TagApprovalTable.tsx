@@ -108,12 +108,18 @@ export default function TagApprovalTable({
     };
   }, [editTagApprovalDetails]);
 
-  const getTagTypeId = (tagTypeName: string): string => {
-    if (!tagTypesData?.data) return tagTypeName;
-    const foundTagType = tagTypesData.data.find(
-      (t) => t.name.toLowerCase() === tagTypeName.toLowerCase()
+  const getTagTypeLabel = (tagTypeValue?: string | null): string => {
+    if (!tagTypeValue || tagTypeValue.trim() === '') return '-';
+    if (!tagTypesData?.data) return tagTypeValue;
+    const normalized = tagTypeValue.trim().toLowerCase();
+    const foundById = tagTypesData.data.find(
+      (t) => t.id.toLowerCase() === normalized
     );
-    return foundTagType?.id || tagTypeName;
+    if (foundById) return foundById.name;
+    const foundByName = tagTypesData.data.find(
+      (t) => t.name.toLowerCase() === normalized
+    );
+    return foundByName?.name || tagTypeValue;
   };
 
   useEffect(() => {
@@ -155,8 +161,8 @@ export default function TagApprovalTable({
     { key: 'subjectType', header: 'Subject Type' },
     {
       key: 'tagType',
-      header: 'Tag Type ID',
-      render: (value: string) => getTagTypeId(value),
+      header: 'Tag Type',
+      render: (value: string) => getTagTypeLabel(value),
     },
     { key: 'tagNumber', header: 'Tag Number' },
     { key: 'feeScale', header: 'Fee Scale' },
