@@ -82,17 +82,12 @@ export interface ApproveTagApprovalRequestPayload {
   validTo: string;
   status: number;
   feeScaleId: string;
-  deviceId?: string;
   trialPeriod: string;
   planType?: number;
 }
 
 export const approveTagApprovalRequest = async (payload: ApproveTagApprovalRequestPayload): Promise<any> => {
-  const requestBody: Record<string, unknown> = { ...payload };
-  if (!payload.deviceId?.trim()) {
-    delete requestBody.deviceId;
-  }
-  const response = await apiClient.post("/tag-approval/approve", requestBody);
+  const response = await apiClient.post("/tag-approval/approve", payload);
   const data = response.data as { statusCode?: number; success?: boolean; errorMessage?: string; message?: string };
   if (data && typeof data.statusCode === "number" && ![0, 200, 201, 204].includes(data.statusCode)) {
     const err = new Error(String(data.errorMessage || data.message || "Approval failed")) as Error & { response?: { data: unknown } };

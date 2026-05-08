@@ -172,14 +172,6 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
           )}
           {sidebarOpen && <div className={styles.menuSeparator} />}
         </nav>
-        <button
-          type="button"
-          className={styles.sidebarLogoutBtn}
-          onClick={handleLogout}
-        >
-          <span style={{display: sidebarOpen ? 'block' : 'none'}}>Logout</span>
-          <img src="/icons/Log Out.png" alt="" className={styles.sidebarLogoutIcon} />
-        </button>
       </aside>
       <main className={`${styles.mainContent} ${sidebarOpen ? styles.mainContentShifted : ''}`}>
         <header className={styles.header}>

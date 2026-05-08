@@ -4,7 +4,6 @@ import FormModal from './FormModal';
 import CommonEntityForm, { ProfileFormData, ProfileField } from '../forms/CommonEntityForm';
 import { getEnumMetadata } from '../../services/enum.service';
 import { useFeeScales } from '../../hooks/fees/useFeeScales';
-import { useDevices } from '../../hooks/device/useDevices';
 import { useZones } from '../../hooks/zone/useZones';
 import { useGetAllTagTypes } from '../../hooks/tagtype/useGetAllTagTypes';
 import { useApproveTagApprovalRequest } from '../../hooks/tag-approval/useApproveTagApprovalRequest';
@@ -28,7 +27,6 @@ export default function ApprovalModal({
   data,
 }: ApprovalModalProps) {
   const { data: feeScaleData, isLoading: isFeeScaleLoading } = useFeeScales();
-  const { data: deviceData, isLoading: isDeviceLoading } = useDevices();
   const { data: zoneData, isLoading: isZoneLoading } = useZones();
   const { data: tagTypeData, isLoading: isTagTypeLoading } = useGetAllTagTypes();
   const { mutateAsync: approveTagRequest, isPending: isApprovePending } = useApproveTagApprovalRequest();
@@ -91,11 +89,6 @@ export default function ApprovalModal({
     ...((feeScaleData?.data?.map((fee: FeeScale) => ({ value: fee.id, label: fee.name })) || [])),
   ];
 
-  const deviceOptions = [
-    { value: '', label: 'Select Device' },
-    ...(deviceData?.data?.map((device: any) => ({ value: device.id, label: device.name })) || []),
-  ];
-
   const zoneOptions = [
     { value: '', label: 'Select Zone' },
     ...(zoneData?.data?.map((zone: any) => ({ value: zone.id, label: zone.name })) || []),
@@ -145,14 +138,6 @@ export default function ApprovalModal({
         { value: 'ThirtyDays', label: 'Thirty Days' },
       ],
     },
-    {
-      name: 'device' as keyof ProfileFormData,
-      label: 'Device',
-      type: 'select',
-      required: false,
-      placeholder: 'Select Device',
-      options: deviceOptions,
-    },
   ];
 
   const initialValues = useMemo(() => {
@@ -170,7 +155,6 @@ export default function ApprovalModal({
       planType: data.planType || '',
       trialPeriod: data.trialPeriod || 'Unknown',
       zone: '',
-      device: '',
       notes: data.notes,
     };
   }, [data]);
@@ -186,7 +170,6 @@ export default function ApprovalModal({
     const rawTo = toIsoDate(String(formData.validTo || data.validTo || ''));
     const { validFrom, validTo } = normalizeApprovalDateRange(rawFrom, rawTo);
 
-    const deviceRaw = formData.device != null && formData.device !== '' ? String(formData.device).trim() : '';
     const planNum = formData.planType !== undefined && formData.planType !== '' ? Number(formData.planType) : 0;
 
     const payload = {
@@ -199,7 +182,6 @@ export default function ApprovalModal({
       validTo,
       status: toStatusValue(formData.status),
       feeScaleId: formData.feeScaleId !== undefined ? String(formData.feeScaleId) : String(data.feeScale || ''),
-      ...(deviceRaw ? { deviceId: deviceRaw } : {}),
       trialPeriod: String(formData.trialPeriod || 'Unknown'),
       planType: Number.isFinite(planNum) ? planNum : 0,
     };
@@ -226,7 +208,7 @@ export default function ApprovalModal({
           fields={approveFields}
           saveButtonText="Approve"
           initialValues={initialValues}
-          loading={isFeeScaleLoading || isDeviceLoading || isZoneLoading || isTagTypeLoading || isApprovePending}
+          loading={isFeeScaleLoading || isZoneLoading || isTagTypeLoading || isApprovePending}
           successTitle="Tag Approved"
           successMessage="The tag approval has been submitted successfully."
         />

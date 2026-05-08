@@ -9,7 +9,6 @@ import { useGetTagApprovalRequestById } from '../../../../hooks/tag-approval/use
 
 import { useFeeScales } from '../../../../hooks/fees/useFeeScales';
 import type { FeeScale } from '../../../../types/fees.types';
-import { useDevices } from '../../../../hooks/device/useDevices';
 import { useZones } from '../../../../hooks/zone/useZones';
 import { useGetAllTagTypes } from '../../../../hooks/tagtype/useGetAllTagTypes';
 import { useApproveTagApprovalRequest } from '../../../../hooks/tag-approval/useApproveTagApprovalRequest';
@@ -24,7 +23,6 @@ export default function AddNewTag() {
   const id = searchParams?.get('id') || '';
   const { data, isLoading, isError } = useGetTagApprovalRequestById(id, !!id);
   const { data: feeScaleData, isLoading: isFeeScaleLoading } = useFeeScales();
-  const { data: deviceData, isLoading: isDeviceLoading } = useDevices();
   const { data: zoneData, isLoading: isZoneLoading } = useZones();
 
   const { mutateAsync: approveTagRequest, isPending: isApprovePending } = useApproveTagApprovalRequest();
@@ -184,10 +182,6 @@ export default function AddNewTag() {
     { value: '', label: 'Select Fee Scale' },
     ...((feeScaleData?.data?.map((fee: FeeScale) => ({ value: fee.id, label: fee.name })) || [])),
   ];
-  const deviceOptions = [
-    { value: '', label: 'Select Device' },
-    ...(deviceData?.data?.map((device) => ({ value: device.id, label: device.name })) || []),
-  ];
   const zoneOptions = [
     { value: '', label: 'Select Zone' },
     ...(zoneData?.data?.map((zone) => ({ value: zone.id, label: zone.name })) || []),
@@ -238,14 +232,6 @@ export default function AddNewTag() {
         { value: 'ThirtyDays', label: 'Thirty Days' },
       ],
     },
-    {
-      name: 'device' as keyof ProfileFormData,
-      label: 'Device',
-      type: 'select',
-      required: false,
-      placeholder: 'Select Device',
-      options: deviceOptions,
-    },
   ];
 
   const handleSave = async (formData: ProfileFormData) => {
@@ -263,7 +249,6 @@ export default function AddNewTag() {
     const rawTo = toIsoDate(String(formData.validTo || tag.validTo || ''));
     const { validFrom, validTo } = normalizeApprovalDateRange(rawFrom, rawTo);
 
-    const deviceRaw = formData.device != null && formData.device !== '' ? String(formData.device).trim() : '';
     const planNum = formData.planType !== undefined && formData.planType !== '' ? Number(formData.planType) : 0;
 
     const payload = {
@@ -276,7 +261,6 @@ export default function AddNewTag() {
       validTo,
       status: toStatusValue(formData.status),
       feeScaleId: formData.feeScaleId !== undefined ? String(formData.feeScaleId) : String(tag.feeScale || ''),
-      ...(deviceRaw ? { deviceId: deviceRaw } : {}),
       trialPeriod: String(formData.trialPeriod || 'Unknown'),
       planType: Number.isFinite(planNum) ? planNum : 0,
     };
@@ -328,7 +312,6 @@ export default function AddNewTag() {
       planType: tag.planType || '',
       trialPeriod: tag.trialPeriod || 'Unknown',
       zone: '',
-      device: '',
       notes: tag.notes,
     };
     
@@ -350,7 +333,7 @@ export default function AddNewTag() {
             fields={approveFields}
             saveButtonText="Approve"
             initialValues={initialValues}
-            loading={isFeeScaleLoading || isDeviceLoading || isZoneLoading || isTagTypeLoading || isApprovePending}
+            loading={isFeeScaleLoading || isZoneLoading || isTagTypeLoading || isApprovePending}
             successTitle="Tag Approved"
             successMessage="The tag approval has been submitted successfully."
           />
