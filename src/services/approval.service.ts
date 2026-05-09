@@ -18,7 +18,7 @@ export const getAllRequestedTags = async (
 };
 import { TagApprovalRequest } from "../types/tag-approval.types";
 import apiClient from "../lib/apiClient";
-import { GetTagApprovalRequestsResponse } from "../types/tag-approval.types";
+import { parsePagedListData, type PagedList } from "../lib/unwrapApiList";
 import type { TagType } from "../types/tagtype.types";
 
 /** Match API expectation: continuous digits, no spaces. */
@@ -59,9 +59,20 @@ export const getTagApprovalRequestById = async (id: string): Promise<GetTagAppro
   const response = await apiClient.get<GetTagApprovalRequestByIdResponse>(`/tag-approval/requests/${id}`);
   return response.data;
 };
-export const getTagApprovalRequests = async (): Promise<GetTagApprovalRequestsResponse> => {
-	const response = await apiClient.get<GetTagApprovalRequestsResponse>("/tag-approval/requests");
-	return response.data;
+export const getTagApprovalRequests = async (
+  params?: { pageNumber?: number; pageSize?: number }
+): Promise<PagedList<TagApprovalRequest>> => {
+  const pageNumber = params?.pageNumber ?? 1;
+  const pageSize = params?.pageSize ?? 10;
+  const response = await apiClient.get<{
+    statusCode: number;
+    successMessage: string;
+    errorMessage: string | null;
+    data: unknown;
+  }>("/tag-approval/requests", {
+    params: { PageNumber: pageNumber, PageSize: pageSize },
+  });
+  return parsePagedListData<TagApprovalRequest>(response.data?.data as never);
 };
 export const rejectTagApprovalRequest = async (id: string): Promise<any> => {
   const response = await apiClient.post(`/tag-approval/requests/${id}/reject`);

@@ -8,11 +8,10 @@ interface InvoicePreviewData {
   id: string;
   invoiceNumber: string;
   date: string | null;
-  userId: string;
   username: string | null;
   amount: number;
   taxAmount: number;
-  bankCharges: number;
+  discountAmount: number;
   totalAmount: number;
   serviceType: string | null;
 }
@@ -85,8 +84,10 @@ export default function InvoicePreviewModal({ isOpen, onClose, invoice }: Invoic
   const contact = '03312752177';
   const addressLine1 = '2-B East Street Ph-1';
   const addressLine2 = 'DHA Karachi-75500';
-  const subtotal = (invoice.amount || 0) * 3;
-  const totalPay = invoice.totalAmount || subtotal + (invoice.taxAmount || 0) + (invoice.bankCharges || 0);
+  const lineAmount = Number(invoice.amount || 0);
+  const taxAmount = Number(invoice.taxAmount || 0);
+  const discountAmount = Number(invoice.discountAmount || 0);
+  const totalPay = Number(invoice.totalAmount ?? 0);
 
   const downloadPdf = () => {
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
@@ -102,7 +103,6 @@ export default function InvoicePreviewModal({ isOpen, onClose, invoice }: Invoic
     doc.setFontSize(11);
     doc.setTextColor(31, 41, 55);
     doc.text(`Invoice No: ${invoice.invoiceNumber || '-'}`, left, y);
-    doc.text(`User ID: ${invoice.userId || '-'}`, right, y, { align: 'right' });
 
     y += 18;
     doc.text(`Date & Time: ${issueDate} | ${timeText}`, left, y);
@@ -131,7 +131,7 @@ export default function InvoicePreviewModal({ isOpen, onClose, invoice }: Invoic
     doc.setFont('helvetica', 'bold');
     doc.text('Sr No.', left, y);
     doc.text('Invoice ID', left + 90, y);
-    doc.text('Service Type', left + 220, y);
+    doc.text('Tag Type', left + 220, y);
     doc.text('Amount', right, y, { align: 'right' });
     doc.setFont('helvetica', 'normal');
 
@@ -140,22 +140,20 @@ export default function InvoicePreviewModal({ isOpen, onClose, invoice }: Invoic
     y += 18;
 
     const rowService = invoice.serviceType || 'RFID (Card Printing)';
-    [1, 2, 3].forEach((index) => {
-      doc.text(String(index).padStart(2, '0'), left, y);
-      doc.text(invoice.invoiceNumber || '-', left + 90, y);
-      doc.text(rowService, left + 220, y);
-      doc.text(currency(invoice.amount), right, y, { align: 'right' });
-      y += 20;
-    });
+    doc.text('01', left, y);
+    doc.text(invoice.invoiceNumber || '-', left + 90, y);
+    doc.text(rowService, left + 220, y);
+    doc.text(currency(lineAmount), right, y, { align: 'right' });
+    y += 20;
 
     y += 6;
     doc.line(left, y, right, y);
     y += 20;
 
     [
-      ['Total Amount', currency(subtotal)],
-      ['Tax Amount', currency(invoice.taxAmount)],
-      ['Bank Charges', currency(invoice.bankCharges)],
+      ['Amount', currency(lineAmount)],
+      ['Tax Amount', currency(taxAmount)],
+      ['Discount Amount', currency(discountAmount)],
       ['Total Pay', currency(totalPay)],
     ].forEach(([label, value]) => {
       doc.text(label, right - 160, y);
@@ -204,7 +202,6 @@ export default function InvoicePreviewModal({ isOpen, onClose, invoice }: Invoic
               </div>
               <div className={styles.metaRight}>
                 <h3 className={styles.invoiceHeading}>INVOICE</h3>
-                <p className={styles.metaText}><strong>User ID:</strong> {invoice.userId || '-'}</p>
                 <p className={styles.metaText}><strong>Name:</strong> {invoice.username || '-'}</p>
                 <p className={styles.metaText}><strong>Contact:</strong> {contact}</p>
                 <p className={styles.metaText}><strong>Address:</strong> {addressLine1}</p>
@@ -219,19 +216,17 @@ export default function InvoicePreviewModal({ isOpen, onClose, invoice }: Invoic
                 <tr>
                   <th>Sr No.</th>
                   <th>Invoice ID</th>
-                  <th>Service Type</th>
+                  <th>Tag Type</th>
                   <th className={styles.amountCell}>Amount</th>
                 </tr>
               </thead>
               <tbody>
-                {[1, 2, 3].map((index) => (
-                  <tr key={index}>
-                    <td>{String(index).padStart(2, '0')}</td>
-                    <td>{invoice.invoiceNumber || '-'}</td>
-                    <td>{invoice.serviceType || 'RFID (Card Printing)'}</td>
-                    <td className={styles.amountCell}>{currency(invoice.amount)}</td>
-                  </tr>
-                ))}
+                <tr>
+                  <td>01</td>
+                  <td>{invoice.invoiceNumber || '-'}</td>
+                  <td>{invoice.serviceType || 'RFID (Card Printing)'}</td>
+                  <td className={styles.amountCell}>{currency(lineAmount)}</td>
+                </tr>
               </tbody>
             </table>
 
@@ -239,16 +234,16 @@ export default function InvoicePreviewModal({ isOpen, onClose, invoice }: Invoic
               <table className={styles.totalsTable}>
                 <tbody>
                   <tr>
-                    <td className={styles.totalsLabel}>Total Amount</td>
-                    <td className={styles.totalsValue}>{currency(invoice.amount * 3)}</td>
+                    <td className={styles.totalsLabel}>Amount</td>
+                    <td className={styles.totalsValue}>{currency(lineAmount)}</td>
                   </tr>
                   <tr>
                     <td className={styles.totalsLabel}>Tax Amount</td>
-                    <td className={styles.totalsValue}>{currency(invoice.taxAmount)}</td>
+                    <td className={styles.totalsValue}>{currency(taxAmount)}</td>
                   </tr>
                   <tr>
-                    <td className={styles.totalsLabel}>Bank Charges</td>
-                    <td className={styles.totalsValue}>{currency(invoice.bankCharges)}</td>
+                    <td className={styles.totalsLabel}>Discount Amount</td>
+                    <td className={styles.totalsValue}>{currency(discountAmount)}</td>
                   </tr>
                   <tr>
                     <td className={styles.totalsLabel}>Total Pay</td>

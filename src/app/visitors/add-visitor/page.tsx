@@ -4,7 +4,7 @@ import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { visitorFields } from '../fields';
 import { useCreateVisitor } from '../../../hooks/visitors/useCreateVisitor';
-import { getAllExternalUsers } from '../../../services/user.service';
+import { EXTERNAL_USERS_SELECT_PAGE_SIZE, getAllExternalUsers } from '../../../services/user.service';
 
 const toIsoDate = (value?: string) => {
   if (!value) {
@@ -55,7 +55,10 @@ export default function AddNewVisitor() {
 
     let externalUserId = 'system';
     try {
-      const users = await getAllExternalUsers();
+      const { items: users } = await getAllExternalUsers({
+        pageNumber: 1,
+        pageSize: EXTERNAL_USERS_SELECT_PAGE_SIZE,
+      });
       const firstValid = users.find(u => u.id);
       if (firstValid && firstValid.id) {
         externalUserId = firstValid.id;

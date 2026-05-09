@@ -9,7 +9,6 @@ interface HostDetailsModalProps {
     name: string;
     phone: string;
     address: string;
-    imageUrl?: string;
   };
 }
 
@@ -22,15 +21,6 @@ const HostDetailsModal: React.FC<HostDetailsModalProps> = ({ open, onClose, host
             <img src="/icons/close.svg" alt="" />
         </button>
         <h2 className={styles.title}>Host Details</h2>
-        <div className={styles.imageWrapper}>
-          <div className={styles.imageContainer}>
-            <img
-              src={host.imageUrl || '/icons/hostImg.png'}
-              alt="Host"
-              className={styles.image}
-            />
-          </div>
-        </div>
         <hr className={styles.divider} />
         <div className={styles.detailsContainer}>
           <div className={styles.detailRow}>

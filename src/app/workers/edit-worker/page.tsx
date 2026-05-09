@@ -47,7 +47,14 @@ const toJobType = (value?: string): number => {
   }
 };
 
-const toJobTypeFormValue = (value?: number): string => {
+const toJobTypeFormValue = (value?: number | string | null): string => {
+  if (value === null || value === undefined || value === '') return '';
+  if (typeof value === 'string') {
+    const key = value.trim().toLowerCase();
+    if (['driver', 'cook', 'guard', 'peon', 'gardener'].includes(key)) return key;
+    const n = Number(value);
+    return Number.isNaN(n) ? '' : toJobTypeFormValue(n);
+  }
   switch (value) {
     case 0:
       return 'driver';
@@ -64,7 +71,7 @@ const toJobTypeFormValue = (value?: number): string => {
   }
 };
 
-const toCardStatus = (value?: string | number | boolean): number => {
+const toCardStatus = (value?: string | number | boolean | null): number => {
   if (value === undefined || value === null) {
     return 0;
   }
@@ -84,11 +91,8 @@ const toCardStatus = (value?: string | number | boolean): number => {
   return 0;
 };
 
-const toCardStatusFormValue = (value?: number): string => {
-  if (value === 1) {
-    return 'active';
-  }
-  return 'inactive';
+const toCardStatusFormValue = (value?: number | string | null): string => {
+  return toCardStatus(value) === 1 ? 'active' : 'inactive';
 };
 
 const toWorkerCardDeliveryType = (value?: string): number => {

@@ -14,21 +14,18 @@ import { useCreateVehicle } from '../../hooks/vehicle/useCreateVehicle';
 import { useUpdateVehicle } from '../../hooks/vehicle/useUpdateVehicle';
 import { useDeleteVehicle } from '../../hooks/vehicle/useDeleteVehicle';
 import { formatDateDisplay } from '../../lib/dateUtils';
+import { resolveTableTotalPages } from '../../lib/unwrapApiList';
 import { vehicleFields } from './fields';
 import { getEnumMetadata } from '../../services/enum.service';
-import { getAllExternalUsers } from '../../services/user.service';
+import { EXTERNAL_USERS_SELECT_PAGE_SIZE, getAllExternalUsers } from '../../services/user.service';
 import type { ExternalVehicle as BaseExternalVehicle } from '../../services/vehicle.service';
 
-// Extend ExternalVehicle to include externalUserName
-interface ExternalVehicle extends BaseExternalVehicle {
-  externalUserName?: string;
-}
+type ExternalVehicle = BaseExternalVehicle;
 
 interface Vehicle {
   id: string;
   licensePlate: string;
   vehicleETagId: string;
-  eTagType: string;
   issueDate: string;
   expiryDate: string;
   tagStatus: number | null;
@@ -62,6 +59,17 @@ const formatLicensePlate = (license?: string | null, licenseNo?: number | null) 
   return `${first}-${second}`;
 };
 
+const toAbsoluteAttachmentUrl = (path?: string | null): string => {
+  if (!path || !String(path).trim()) return '';
+  const p = String(path).trim();
+  if (p.startsWith('http://') || p.startsWith('https://')) return p;
+  const base = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_API_URL || '' : '';
+  if (!base) return p;
+  const normalizedBase = base.replace(/\/$/, '');
+  const normalizedPath = p.startsWith('/') ? p : `/${p}`;
+  return `${normalizedBase}${normalizedPath}`;
+};
+
 const isApiSuccess = (response: any) => {
   const statusCode = response?.statusCode;
   if (typeof statusCode === 'number') {
@@ -83,6 +91,7 @@ export default function VehiclePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<SelectedVehicleRow | null>(null);
@@ -90,7 +99,8 @@ export default function VehiclePage() {
   const [editVehicleId, setEditVehicleId] = useState<string | undefined>();
   const [hasCheckedId, setHasCheckedId] = useState(false);
 
-  const { data, isLoading, isError, error } = useVehicles();
+  const { data, isLoading, isError, error } = useVehicles(currentPage, pageSize);
+  const totalListPages = resolveTableTotalPages(data, pageSize);
   const { data: editVehicleDetails, isLoading: isEditVehicleLoading } = useVehicleById(editVehicleId);
   const { mutateAsync: deleteVehicle, isPending: isDeleting } = useDeleteVehicle();
   const { mutateAsync: createVehicle } = useCreateVehicle();
@@ -98,6 +108,7 @@ export default function VehiclePage() {
 
   const [loadingEnums, setLoadingEnums] = useState(true);
   const [enumFields, setEnumFields] = useState(vehicleFields);
+  const [vehicleColorLabels, setVehicleColorLabels] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState('');
 
   const modalMode = searchParams?.get('modal');
@@ -130,6 +141,11 @@ export default function VehiclePage() {
         const colorEnum = colorRes.data.enums.find((e: any) => e.name === 'VehicleColor');
         const tagStatusEnum = tagStatusRes.data.enums.find((e: any) => e.name === 'TagStatus');
         const colorOptions = colorEnum?.members.map((m: any) => ({ value: m.value.toString(), label: m.name })) || [];
+        const colorLookup: Record<string, string> = {};
+        colorEnum?.members.forEach((m: any) => {
+          colorLookup[String(m.value)] = m.name;
+        });
+        setVehicleColorLabels(colorLookup);
         const tagStatusOptions = tagStatusEnum?.members.map((m: any) => ({ value: m.value.toString(), label: m.name })) || [];
         setEnumFields((prevFields) =>
           prevFields.map((f) => {
@@ -153,14 +169,24 @@ export default function VehiclePage() {
 
   console.log('VehiclePage render with data:', data, 'isLoading:', isLoading, 'isError:', isError, 'error:', error);
 
-  const vehicles: Vehicle[] = (data?.data || [])
+  const resolveVehicleColorLabel = (raw: string | number | null | undefined): string => {
+    if (raw === null || raw === undefined || raw === '') return '-';
+    const key = String(raw).trim();
+    if (vehicleColorLabels[key] !== undefined) return vehicleColorLabels[key];
+    const asNum = Number(key);
+    if (!Number.isNaN(asNum) && vehicleColorLabels[String(asNum)] !== undefined) {
+      return vehicleColorLabels[String(asNum)];
+    }
+    return key !== '-' ? key : '-';
+  };
+
+  const vehicles: Vehicle[] = (data?.items || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
     .map((item: ExternalVehicle, idx) => ({
-      sno: idx + 1,
+      sno: (currentPage - 1) * pageSize + idx + 1,
       id: item.id,
       licensePlate: formatLicensePlate(item.license, item.licenseNo),
       vehicleETagId: item.eTagId || '-',
-      eTagType: item.eTagId || '-',
       issueDate: formatDateDisplay(item.validFrom),
       expiryDate: formatDateDisplay(item.validTo),
       ownership: item.externalUserId || '-',
@@ -168,8 +194,8 @@ export default function VehiclePage() {
       make: item.make || '-',
       model: item.model || '-',
       year: item.year || '-',
-      color: item.color || '-',
-      tagStatus: item.tagStatus,
+      color: resolveVehicleColorLabel(item.color),
+      tagStatus: item.tagStatus ?? item.cardStatus ?? null,
     }));
 
 
@@ -241,7 +267,10 @@ export default function VehiclePage() {
 
       let externalUserId = 'system';
       try {
-        const users = await getAllExternalUsers();
+        const { items: users } = await getAllExternalUsers({
+          pageNumber: 1,
+          pageSize: EXTERNAL_USERS_SELECT_PAGE_SIZE,
+        });
         const firstValid = users.find((u: any) => u.id);
         if (firstValid && firstValid.id) {
           externalUserId = firstValid.id;
@@ -288,16 +317,19 @@ export default function VehiclePage() {
       eTagId: data.eTagId || '',
       issueDate: toDateInputValue(data.validFrom),
       expiryDate: toDateInputValue(data.validTo),
-      eTagStatus: toTagStatusSelectValue(data.tagStatus),
-      tagStatus: toTagStatusToggleValue(data.tagStatus),
+      eTagStatus: toTagStatusSelectValue(data.tagStatus ?? data.cardStatus),
+      tagStatus: toTagStatusToggleValue(data.tagStatus ?? data.cardStatus),
       isActive: data.isActive,
+      attachment: toAbsoluteAttachmentUrl(data.attachment) as unknown as ProfileFormData['attachment'],
     };
   }, [editVehicleDetails]);
 
-  const modalFields = useMemo(
-    () => (isViewMode ? enumFields.filter((field) => field.name !== 'tagStatus') : enumFields),
-    [enumFields, isViewMode]
-  );
+  const modalFields = useMemo(() => {
+    if (!isViewMode) return enumFields;
+    return enumFields.filter(
+      (field) => field.name !== 'tagStatus' && field.name !== 'attachment'
+    );
+  }, [enumFields, isViewMode]);
 
   const handleUpdateVehicle = async (data: ProfileFormData) => {
     if (!editVehicleId || !editVehicleDetails?.data) throw new Error('Vehicle ID or details not found');
@@ -374,7 +406,6 @@ export default function VehiclePage() {
     },
     { key: 'licensePlate', header: 'License Plate' },
     { key: 'vehicleETagId', header: 'Vehicle E-Tag ID' },
-    { key: 'eTagType', header: 'E-Tag Type' },
     { key: 'issueDate', header: 'Issue Date' },
     { key: 'expiryDate', header: 'Expiry Date' },
     // Removed Ownership ID column as requested
@@ -384,9 +415,7 @@ export default function VehiclePage() {
     {
       key: 'color',
       header: 'Color',
-      render: (value: string) => (
-        value && value !== '-' ? value : '-'
-      ),
+      render: (value: string) => (value && value !== '-' ? value : '-'),
     },
     {
       key: 'tagStatus',
@@ -414,7 +443,16 @@ export default function VehiclePage() {
         addButtonLabel="Add New"
         showAddButton={false}
         currentPage={currentPage}
+        totalPages={totalListPages}
         onPageChange={setCurrentPage}
+        rowsPerPage={pageSize}
+        onRowsPerPageChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+        serverSidePagination
+        columnFilterKeys={['tagStatus']}
+        columnFilterLabels={{ tagStatus: 'Card Status' }}
         error={isError ? `Failed to load vehicles: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
       />
 

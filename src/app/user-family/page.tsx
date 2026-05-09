@@ -18,6 +18,7 @@ import { useCreateUserFamily } from '../../hooks/user-family/useCreateUserFamily
 import { useUpdateUserFamily } from '../../hooks/user-family/useUpdateUserFamily';
 import type { UserFamily } from '../../services/user-family.service';
 import { useEnumMetadata } from '../../hooks/metadata/useEnumMetadata';
+import { resolveTableTotalPages } from '../../lib/unwrapApiList';
 
 const isApiSuccess = (response: any) => {
   const statusCode = response?.statusCode;
@@ -40,6 +41,7 @@ export default function UserFamilyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
+  const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedFamily, setSelectedFamily] = useState<UserFamily | null>(null);
@@ -47,7 +49,9 @@ export default function UserFamilyPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [formError, setFormError] = useState('');
 
-  const { data: userFamilyData = [], isLoading } = useUserFamily();
+  const { data: userFamilyPage, isLoading } = useUserFamily(currentPage, pageSize);
+  const userFamilyData = userFamilyPage?.items ?? [];
+  const totalListPages = resolveTableTotalPages(userFamilyPage, pageSize);
   const removeUserFamilyMutation = useRemoveUserFamily();
   const { mutateAsync: createUserFamily } = useCreateUserFamily();
   const { mutateAsync: updateUserFamily } = useUpdateUserFamily();
@@ -284,7 +288,7 @@ export default function UserFamilyPage() {
   const filteredData = userFamilyData
     .filter((family: UserFamily) => !localRemovedIds.includes(family.id))
     .map((family, idx) => ({
-      sno: idx + 1,
+      sno: (currentPage - 1) * pageSize + idx + 1,
       id: family.id,
       name: family.name || '',
       externalUserName: family.externalUserName || '',
@@ -359,6 +363,13 @@ export default function UserFamilyPage() {
         addButtonLabel="Add New"
         showAddButton={false}
         currentPage={currentPage}
+        totalPages={totalListPages}
+        rowsPerPage={pageSize}
+        onRowsPerPageChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+        serverSidePagination
         loading={isLoading}
         emptyMessage={isLoading ? 'Loading...' : 'No user family data found.'}
         onPageChange={setCurrentPage}

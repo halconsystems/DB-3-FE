@@ -18,6 +18,10 @@ export const updateUser = async (user: UpdateUserRequest) => {
   return response.data;
 };
 import apiClient from "../lib/apiClient";
+import { parsePagedListData, type PagedList } from "../lib/unwrapApiList";
+
+/** Large page for dropdowns (host user pick) when only the list API exists. */
+export const EXTERNAL_USERS_SELECT_PAGE_SIZE = 500;
 
 export interface ExternalUser {
   externalUserName: string;
@@ -53,9 +57,15 @@ export interface AuthUserProfile {
   isActive: boolean;
   createdAt: string;
 }
-export const getAllExternalUsers = async (): Promise<ExternalUser[]> => {
-  const response = await apiClient.get("/user/GetAllUser");
-  return response.data.data;
+export const getAllExternalUsers = async (
+  params?: { pageNumber?: number; pageSize?: number }
+): Promise<PagedList<ExternalUser>> => {
+  const pageNumber = params?.pageNumber ?? 1;
+  const pageSize = params?.pageSize ?? 10;
+  const response = await apiClient.get("/user/GetAllUser", {
+    params: { PageNumber: pageNumber, PageSize: pageSize },
+  });
+  return parsePagedListData<ExternalUser>(response.data?.data);
 };
 export const removeUser = async (id: string) => {
   const response = await apiClient.post(`/user/removeUser`, null, { params: { id } });

@@ -18,8 +18,9 @@ import { useUpdateLuggage } from '../../hooks/luggage/useUpdateLuggage';
 import { useDeleteLuggage } from '../../hooks/luggage/useDeleteLuggage';
 import { saveTableRow, clearTableRow, getTableRow } from '../../lib/tableRowStorage';
 import { formatDateDisplay } from '../../lib/dateUtils';
+import { resolveTableTotalPages } from '../../lib/unwrapApiList';
 import { luggageFields } from './fields';
-import { getAllExternalUsers } from '../../services/user.service';
+import { EXTERNAL_USERS_SELECT_PAGE_SIZE, getAllExternalUsers } from '../../services/user.service';
 import type { Luggage } from '../../services/luggage.service';
 
 // ============================================================================
@@ -30,10 +31,13 @@ interface LuggagePass {
   name: string;
   userName?: string;
   vehicleInfo: string;
-  visitDetail: string;
-  validity: string;
+  visitPassType: string;
+  validFrom: string;
+  validTill: string;
   cnicNicopNo: string;
   status: boolean;
+  activeStatus: string;
+  passStatus: string;
   sno?: number;
 }
 
@@ -42,13 +46,66 @@ type SelectedLuggageRow = Pick<Luggage, 'id'>;
 // ============================================================================
 // UTILITIES
 // ============================================================================
-/**
- * Convert pass type to display label
- */
-const toLuggagePassTypeLabel = (passType?: string | number): string => {
-  if (passType === 'DayPass' || passType === 1) return 'Day Pass';
-  if (passType === 'LongDay' || passType === 2) return 'Long Stay';
-  return '-';
+const formatLuggagePassTypeLabel = (passType?: string | number): string => {
+  if (passType === null || passType === undefined || passType === '') return '-';
+  if (passType === 1 || passType === '1') return 'Day pass';
+  if (passType === 2 || passType === '2') return 'Long Stay Pass';
+  const p = String(passType).trim();
+  const lower = p.toLowerCase();
+  if (p === 'DayPass' || lower === 'daypass' || lower === 'day pass' || lower === 'day') {
+    return 'Day pass';
+  }
+  if (
+    p === 'LongStay' ||
+    p === 'LongDay' ||
+    lower === 'longstay' ||
+    lower === 'long day' ||
+    lower === 'long stay' ||
+    lower.includes('long')
+  ) {
+    return 'Long Stay Pass';
+  }
+  return p ? p : '-';
+};
+
+const formatLuggageVehicleDisplay = (item: Luggage): string => {
+  const plate = (item.vehicleLicensePlate ?? '').trim();
+  const numRaw = item.vehicleLicenseNo;
+  const numStr =
+    numRaw !== null && numRaw !== undefined && String(numRaw).trim() !== ''
+      ? String(numRaw).trim()
+      : '';
+  if (!plate && !numStr) return '-';
+  if (plate && numStr) {
+    if (plate.endsWith(`-${numStr}`)) return plate;
+    return `${plate}-${numStr}`;
+  }
+  return plate || numStr || '-';
+};
+
+const deriveLuggagePassStatus = (item: Luggage): string => {
+  if (item.isDeleted || !item.isActive) return 'Inactive';
+  const end = new Date(item.validTo);
+  if (Number.isNaN(end.getTime())) return 'Active';
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const endDay = new Date(end);
+  endDay.setHours(0, 0, 0, 0);
+  if (endDay < today) return 'Expired';
+  return 'Active';
+};
+
+const splitLuggageVehicleForForm = (data: Luggage) => {
+  const plate = (data.vehicleLicensePlate ?? '').trim();
+  const numStr = data.vehicleLicenseNo != null ? String(data.vehicleLicenseNo) : '';
+  if (plate.includes('-')) {
+    const [first, second = ''] = plate.split('-');
+    return {
+      vehicleNo: (first || '').trim(),
+      vehicleNo2: (second || '').trim() || numStr,
+    };
+  }
+  return { vehicleNo: plate, vehicleNo2: numStr };
 };
 
 const isApiSuccess = (response: any) => {
@@ -78,13 +135,15 @@ export default function LuggagePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedLuggage, setSelectedLuggage] = useState<SelectedLuggageRow | null>(null);
   const [localRemovedIds, setLocalRemovedIds] = useState<string[]>([]);
   const [formError, setFormError] = useState('');
 
-  const { data, isLoading, isError, error } = useLuggage();
+  const { data, isLoading, isError, error } = useLuggage(currentPage, pageSize);
+  const totalListPages = resolveTableTotalPages(data, pageSize);
   const { mutateAsync: deleteLuggage, isPending: isDeleting } = useDeleteLuggage();
   const { mutateAsync: createLuggage } = useCreateLuggage();
   const { mutateAsync: updateLuggage } = useUpdateLuggage();
@@ -168,7 +227,10 @@ export default function LuggagePage() {
 
       let externalUserId = 'system';
       try {
-        const users = await getAllExternalUsers();
+        const { items: users } = await getAllExternalUsers({
+          pageNumber: 1,
+          pageSize: EXTERNAL_USERS_SELECT_PAGE_SIZE,
+        });
         const firstValid = users.find((u: any) => u.id);
         if (firstValid && firstValid.id) {
           externalUserId = firstValid.id;
@@ -200,12 +262,13 @@ export default function LuggagePage() {
   const initialLuggageValues = useMemo<ProfileFormData | null>(() => {
     if (!editLuggageDetails?.data) return null;
     const data = editLuggageDetails.data;
+    const { vehicleNo, vehicleNo2 } = splitLuggageVehicleForForm(data);
     return {
       fullName: data.name || '',
       cnic: data.cnic || '',
-      vehicleNo: data.vehicleLicensePlate?.split('-')[0] || '',
-      vehicleNo2: data.vehicleLicensePlate?.split('-')[1] || '',
-      licensePlate: data.vehicleLicensePlate || '',
+      vehicleNo,
+      vehicleNo2,
+      licensePlate: formatLuggageVehicleDisplay(data),
       qrReference: data.qrCode || '',
       status: data.isActive ? 'active' : 'inactive',
       quickPick: toQuickPick(data.luggagePassType),
@@ -246,19 +309,26 @@ export default function LuggagePage() {
   // -----------------------------------------------------------------------
   // Data Transformation
   // -----------------------------------------------------------------------
-  const luggagePasses: LuggagePass[] = (data?.data || [])
+  const luggagePasses: LuggagePass[] = (data?.items || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
-    .map((item, idx) => ({
-      sno: idx + 1,
-      id: item.id,
-      name: item.name,
-      userName: item.externalUserName || '-',
-      vehicleInfo: item.vehicleLicensePlate || '-',
-      visitDetail: toLuggagePassTypeLabel(item.luggagePassType),
-      validity: `${formatDateDisplay(item.validFrom)} - ${formatDateDisplay(item.validTo)}`,
-      cnicNicopNo: item.cnic,
-      status: item.isActive && !item.isDeleted,
-    }));
+    .map((item, idx) => {
+      const passStatus = deriveLuggagePassStatus(item);
+      const isActiveRow = item.isActive && !item.isDeleted;
+      return {
+        sno: (currentPage - 1) * pageSize + idx + 1,
+        id: item.id,
+        name: item.name,
+        userName: item.externalUserName || '-',
+        vehicleInfo: formatLuggageVehicleDisplay(item),
+        visitPassType: formatLuggagePassTypeLabel(item.luggagePassType),
+        validFrom: formatDateDisplay(item.validFrom),
+        validTill: formatDateDisplay(item.validTo),
+        cnicNicopNo: item.cnic,
+        status: isActiveRow,
+        activeStatus: isActiveRow ? 'Active' : 'Inactive',
+        passStatus,
+      };
+    });
 
   // -----------------------------------------------------------------------
   // Event Handlers
@@ -307,14 +377,20 @@ export default function LuggagePage() {
   const columns: Column<LuggagePass>[] = [
     { key: 'sno', header: 'S.No' },
     { key: 'name', header: 'Name' },
-    { key: 'vehicleInfo', header: 'Vehicle Info' },
-    { key: 'visitDetail', header: 'Visit Detail' },
-    { key: 'validity', header: 'Validity' },
+    { key: 'vehicleInfo', header: 'Vehicle No' },
+    { key: 'visitPassType', header: 'Luggage Pass Type' },
+    { key: 'validFrom', header: 'Valid From' },
+    { key: 'validTill', header: 'Valid Till' },
     { key: 'cnicNicopNo', header: 'CNIC/NICOP No.' },
     {
-      key: 'status',
+      key: 'passStatus',
+      header: 'Pass Status',
+      render: (value: string) => <StatusBadge status={value} />,
+    },
+    {
+      key: 'activeStatus',
       header: 'Status',
-      render: (value: boolean) => <StatusBadge type="activeInactive" value={value} />,
+      render: (_, row) => <StatusBadge type="activeInactive" value={row.status} />,
     },
     {
       key: 'action',
@@ -347,8 +423,20 @@ export default function LuggagePage() {
         addButtonLabel="Add New"
         showAddButton={false}
         currentPage={currentPage}
+        totalPages={totalListPages}
         onPageChange={setCurrentPage}
-        getRowStatus={(row) => (row.status ? 'Active' : 'Inactive')}
+        rowsPerPage={pageSize}
+        onRowsPerPageChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+        serverSidePagination
+        getRowStatus={(row) => {
+          if (!row.status || row.passStatus === 'Expired') return 'Inactive';
+          return 'Active';
+        }}
+        columnFilterKeys={['passStatus', 'visitPassType']}
+        enableSorting={false}
         error={
           isError
             ? `Failed to load luggage: ${error instanceof Error ? error.message : 'Unknown error'}`

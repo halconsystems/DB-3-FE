@@ -31,6 +31,10 @@ export interface DataTableProps<T> {
   totalPages?: number;
   onPageChange?: (page: number) => void;
   rowsPerPage?: number;
+  /** When set with `serverSidePagination`, page size is controlled by parent (triggers API refetch). */
+  onRowsPerPageChange?: (pageSize: number) => void;
+  /** When true with controlled `currentPage`, rows are not sliced client-side (server returns one page). */
+  serverSidePagination?: boolean;
   loading?: boolean;
   error?: string | Error;
   emptyMessage?: string;
@@ -43,6 +47,10 @@ export interface DataTableProps<T> {
   filterPlaceholder?: string;
   searchVariant?: 'default' | 'card-management';
   showSearchActionButton?: boolean;
+  /** If set, only these keys get column filter dropdowns (each must exist in columns and FILTERABLE_COLUMNS_CONFIG). */
+  columnFilterKeys?: string[];
+  /** Per-table labels for column filters (overrides default FILTERABLE_COLUMNS_CONFIG labels). */
+  columnFilterLabels?: Record<string, string>;
 }
 
 // ================================ CONSTANTS ================================
@@ -51,7 +59,10 @@ const FILTERABLE_COLUMNS_CONFIG: Record<string, string> = {
   cardStatus: 'Card Status',
   tagType: 'Tag Type',
   subjectType: 'Subject Type',
-  tagStatus: 'Tag Status'
+  tagStatus: 'Tag Status',
+  passStatus: 'Pass Status',
+  visitPassType: 'Pass Type',
+  activeStatus: 'Status',
 };
 
 // ================================ STATUS BADGE COMPONENT ================================
@@ -149,6 +160,8 @@ export default function DataTable<T extends Record<string, any>>({
   totalPages,
   onPageChange,
   rowsPerPage = 10,
+  onRowsPerPageChange,
+  serverSidePagination = false,
   loading = false,
   error,
   emptyMessage = 'No data available',
@@ -156,11 +169,13 @@ export default function DataTable<T extends Record<string, any>>({
   getRowStatus,
   headerContent,
   enableFiltering = true,
-  enableSorting = true,
+  enableSorting = false,
   filterPlaceholder = 'Search',
   searchVariant = 'default',
   showSearchActionButton = false,
   tableUpperContent = null,
+  columnFilterKeys,
+  columnFilterLabels,
 }: DataTableProps<T>) {
   
   // ================================ STATE MANAGEMENT ================================
@@ -208,15 +223,18 @@ export default function DataTable<T extends Record<string, any>>({
   // Determine which filters are available based on columns present in the table
   const availableFilters = useMemo(() => {
     const filters: Array<{ key: string; label: string }> = [];
-    
+
     Object.entries(FILTERABLE_COLUMNS_CONFIG).forEach(([key, label]) => {
-      if (columns.some(column => String(column.key) === key)) {
-        filters.push({ key, label });
+      if (!columns.some((column) => String(column.key) === key)) return;
+      if (columnFilterKeys && columnFilterKeys.length > 0 && !columnFilterKeys.includes(key)) {
+        return;
       }
+      const displayLabel = columnFilterLabels?.[key] ?? label;
+      filters.push({ key, label: displayLabel });
     });
-    
+
     return filters;
-  }, [columns]);
+  }, [columns, columnFilterKeys, columnFilterLabels]);
 
   const getFilterOptions = (filterKey: string) => {
     const uniqueValues = Array.from(
@@ -324,13 +342,23 @@ export default function DataTable<T extends Record<string, any>>({
   // ================================ PAGINATION LOGIC ================================
   
   const isPaginationControlled = typeof currentPage === 'number';
-  const effectiveRowsPerPage = Math.max(1, internalRowsPerPage);
+  const isRowsPerPageControlled = typeof onRowsPerPageChange === 'function';
+  const effectiveRowsPerPage = Math.max(
+    1,
+    isRowsPerPageControlled ? rowsPerPage : internalRowsPerPage
+  );
   const safeRowsPerPage = Math.max(1, effectiveRowsPerPage);
   const calculatedTotalPages = Math.max(1, Math.ceil(filteredAndSortedData.length / safeRowsPerPage));
-  const resolvedTotalPages = Math.max(calculatedTotalPages, Math.max(1, totalPages ?? 1));
+  const resolvedTotalPages =
+    serverSidePagination && isPaginationControlled
+      ? Math.max(1, totalPages ?? 1)
+      : Math.max(calculatedTotalPages, Math.max(1, totalPages ?? 1));
   const activePage = isPaginationControlled ? (currentPage as number) : internalCurrentPage;
   const safeCurrentPage = Math.min(Math.max(activePage, 1), resolvedTotalPages);
-  const paginatedData = filteredAndSortedData.slice((safeCurrentPage - 1) * safeRowsPerPage, safeCurrentPage * safeRowsPerPage);
+  const paginatedData =
+    serverSidePagination && isPaginationControlled
+      ? filteredAndSortedData
+      : filteredAndSortedData.slice((safeCurrentPage - 1) * safeRowsPerPage, safeCurrentPage * safeRowsPerPage);
 
   const handlePageChange = (nextPage: number) => {
     const clampedPage = Math.min(Math.max(nextPage, 1), resolvedTotalPages);
@@ -343,7 +371,16 @@ export default function DataTable<T extends Record<string, any>>({
   };
 
   const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newRows = parseInt(e.target.value, 10);
+    const newRows = Math.max(1, parseInt(e.target.value, 10) || 10);
+    if (isRowsPerPageControlled) {
+      onRowsPerPageChange(newRows);
+      if (isPaginationControlled) {
+        onPageChange?.(1);
+      } else {
+        setInternalCurrentPage(1);
+      }
+      return;
+    }
     setInternalRowsPerPage(newRows);
     setInternalCurrentPage(1);
   };

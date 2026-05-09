@@ -1,10 +1,11 @@
 import apiClient from "../lib/apiClient";
+import { parsePagedListData, type PagedList } from "../lib/unwrapApiList";
 
 export interface ExternalWorker {
   externalUserName: string;
   id: string;
   ser: number;
-  jobType: number;
+  jobType: number | string;
   name: string;
   fatherOrHusbandName: string;
   phoneNumber: string;
@@ -16,7 +17,7 @@ export interface ExternalWorker {
   policeVerification: boolean;
   policeVerificationAttachment: string | null;
   workerCardNumber: string;
-  cardStatus: number;
+  cardStatus: number | string | null;
   workerCardDeliveryType: string | number;
   validFrom: string | null;
   validTo: string | null;
@@ -89,9 +90,20 @@ export type DeleteExternalWorkerResponse = ApiResponse<ExternalWorker | null>;
 export type GetExternalWorkerByIdResponse = ApiResponse<ExternalWorker | null>;
 export type GetAllExternalWorkersResponse = ApiResponse<ExternalWorker[] | null>;
 
-export const getAllExternalWorkers = async (): Promise<GetAllExternalWorkersResponse> => {
-  const { data } = await apiClient.get<GetAllExternalWorkersResponse>("/worker/GetAllWorker");
-  return data;
+export const getAllExternalWorkers = async (
+  params?: { pageNumber?: number; pageSize?: number }
+): Promise<PagedList<ExternalWorker>> => {
+  const pageNumber = params?.pageNumber ?? 1;
+  const pageSize = params?.pageSize ?? 10;
+  const { data: envelope } = await apiClient.get<{
+    statusCode: number;
+    successMessage: string | null;
+    errorMessage: string | null;
+    data: unknown;
+  }>("/worker/GetAllWorker", {
+    params: { PageNumber: pageNumber, PageSize: pageSize },
+  });
+  return parsePagedListData<ExternalWorker>(envelope?.data as never);
 };
 
 export const getExternalWorkerById = async (

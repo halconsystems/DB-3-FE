@@ -1,4 +1,5 @@
 import apiClient from "../lib/apiClient";
+import { parsePagedListData, type PagedList } from "../lib/unwrapApiList";
 
 export interface Luggage {
   id: string;
@@ -11,15 +12,15 @@ export interface Luggage {
   luggagePassType: string | number;
   validFrom: string;
   validTo: string;
-  qrCode: string;
-  tagId: string;
-  pdfFilePath: string;
+  qrCode: string | null;
+  tagId: string | null;
+  pdfFilePath: string | null;
   externalUserId: string;
   externalUserName: string;
   created: string;
-  createdBy: string;
-  lastModified: string;
-  lastModifiedBy: string;
+  createdBy: string | null;
+  lastModified: string | null;
+  lastModifiedBy: string | null;
   isDeleted: boolean;
   isActive: boolean;
 }
@@ -69,9 +70,20 @@ export type DeleteLuggageResponse = ApiResponse<Luggage | null>;
 export type GetLuggageByIdResponse = ApiResponse<Luggage | null>;
 export type GetAllLuggageResponse = ApiResponse<Luggage[] | null>;
 
-export const getAllLuggage = async (): Promise<GetAllLuggageResponse> => {
-  const { data } = await apiClient.get<GetAllLuggageResponse>("/luggage/GetAllLuggagePass");
-  return data;
+export const getAllLuggage = async (
+  params?: { pageNumber?: number; pageSize?: number }
+): Promise<PagedList<Luggage>> => {
+  const pageNumber = params?.pageNumber ?? 1;
+  const pageSize = params?.pageSize ?? 10;
+  const { data: envelope } = await apiClient.get<{
+    statusCode: number;
+    successMessage: string | null;
+    errorMessage: string | null;
+    data: unknown;
+  }>("/luggage/GetAllLuggagePass", {
+    params: { PageNumber: pageNumber, PageSize: pageSize },
+  });
+  return parsePagedListData<Luggage>(envelope?.data as never);
 };
 
 export const getLuggageById = async (id: string): Promise<GetLuggageByIdResponse> => {

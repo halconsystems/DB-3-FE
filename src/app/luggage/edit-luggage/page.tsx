@@ -69,7 +69,7 @@ export default function EditLuggage() {
         vehicleNo: data.data.vehicleLicensePlate?.split('-')[0] || '',
         vehicleNo2: data.data.vehicleLicensePlate?.split('-')[1] || '',
         licensePlate: data.data.vehicleLicensePlate,
-        qrReference: data.data.qrCode,
+        qrReference: data.data.qrCode ?? '',
         status: data.data.isActive ? 'active' : 'inactive',
         quickPick: data.data.luggagePassType === 'LongDay' ? 'LongStay' : 'DayPass',
         fromDate: toDateInputValue(data.data.validFrom),

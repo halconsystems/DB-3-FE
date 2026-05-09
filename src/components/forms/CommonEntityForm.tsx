@@ -513,9 +513,32 @@ export default function CommonEntityForm({
         : rawValue;
     const displayValue = formatValueByFieldName(String(field.name), resolvedValue);
     const viewModeSelectLabel =
-      isViewMode && field.type === 'select'
+      isViewMode && (field.type === 'select' || field.type === 'radio')
         ? field.options?.find((option) => String(option.value) === String(rawValue))?.label || displayValue
         : displayValue;
+
+    if (isViewMode && field.type === 'file') {
+      const url =
+        typeof rawValue === 'string' && rawValue.trim() ? rawValue.trim() : '';
+      return (
+        <div
+          key={String(field.name)}
+          className={wrapperClassName}
+          style={{ marginBottom: 16, textAlign: 'left' }}
+        >
+          <label className={styles.formTitle}>{field.label}</label>
+          {url ? (
+            <div style={{ marginTop: 8 }}>
+              <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#30b33d' }}>
+                Open attachment
+              </a>
+            </div>
+          ) : (
+            <div style={{ marginTop: 8, color: '#707070' }}>N/A</div>
+          )}
+        </div>
+      );
+    }
 
     if (isViewMode && field.type !== 'statusSwitch') {
       return (

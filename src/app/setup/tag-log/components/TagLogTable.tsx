@@ -35,9 +35,9 @@ export default function TagLogTable({
   }, [data]);
 
   const TagColumns: Column<TagApprovalRequest>[] = [
-    { key: 'subjectType', header: 'Subject Type' },
-    { key: 'subjectId', header: 'User ID' },
-    { key: 'subjectName', header: 'User Name' },
+    { key: 'parentUserName', header: 'Username' },
+    { key: 'subjectName', header: 'Entity Name' },
+    { key: 'entityTypeDisplay', header: 'Entity Type', render: (_: any, row) => row.subjectType || '-' },
     { key: 'tagType', header: 'Tag Type' },
     { key: 'tagNumber', header: 'Tag Number' },
     { key: 'feeScale', header: 'FeeScale' },
@@ -62,6 +62,7 @@ export default function TagLogTable({
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status as 'Active' | 'Inactive' | 'Pending' | undefined}
+        enableSorting={false}
         headerContent={
           <div style={{height:'40px'}}></div>
         }

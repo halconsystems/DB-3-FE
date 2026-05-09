@@ -5,7 +5,7 @@ import CommonEntityForm, { ProfileFormData } from '../../../components/forms/Com
 import { luggageFields } from '../fields';
 
 import { useCreateLuggage } from '../../../hooks/luggage/useCreateLuggage';
-import { getAllExternalUsers } from '../../../services/user.service';
+import { EXTERNAL_USERS_SELECT_PAGE_SIZE, getAllExternalUsers } from '../../../services/user.service';
 
 // Return YYYY-MM-DD as-is without conversion
 const toIsoDate = (value?: string) => {
@@ -43,7 +43,10 @@ export default function AddNewLuggage() {
 
     let externalUserId = 'system';
     try {
-      const users = await getAllExternalUsers();
+      const { items: users } = await getAllExternalUsers({
+        pageNumber: 1,
+        pageSize: EXTERNAL_USERS_SELECT_PAGE_SIZE,
+      });
       const firstValid = users.find(u => u.id);
       if (firstValid && firstValid.id) {
         externalUserId = firstValid.id;

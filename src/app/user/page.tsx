@@ -16,6 +16,7 @@ import FormModal from '../../components/popup/FormModal';
 import CommonEntityForm, { ProfileFormData } from '../../components/forms/CommonEntityForm';
 import { saveTableRow, clearTableRow, getTableRow } from '../../lib/tableRowStorage';
 import { formatDateDisplay } from '../../lib/dateUtils';
+import { resolveTableTotalPages } from '../../lib/unwrapApiList';
 import { userFields } from './fields';
 
 
@@ -51,15 +52,17 @@ const isApiSuccess = (response: any) => {
 export default function UserPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+
   const removeUserMutation = useRemoveUser();
-  const { data, isLoading } = useExternalUsers();
+  const { data, isLoading } = useExternalUsers(currentPage, pageSize);
+  const totalListPages = resolveTableTotalPages(data, pageSize);
   const { mutateAsync: createUser } = useCreateUser();
   const { mutateAsync: updateUser } = useUpdateUser();
   const { data: userTypesEnum, isLoading: isUserTypesEnumLoading } = useEnumMetadata('UserType');
   const { data: cardStatusEnum, isLoading: isCardStatusEnumLoading } = useEnumMetadata('CardStatus');
-
-  const [currentPage, setCurrentPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [localRemovedIds, setLocalRemovedIds] = useState<string[]>([]);
@@ -302,22 +305,23 @@ export default function UserPage() {
   };
 
 
-  // Map API data to table data
-  const filteredData = (data || [])
-    .filter(user => !localRemovedIds.includes(String(user.id)))
-    .map((user, idx) => ({
-      sno: idx + 1,
-      id: String(user.id),
-      name: user.name || '',
-      emailAddress: user.email || '',
-      cellNumber: user.phoneNumber || '',
-      cnic: user.cnic || '',
-      userType: mapUserType(user.userType),
-      rfidCardNo: user.rfidCardNumber || '',
-      cardIssueDate: user.cardIssueDate || '',
-      cardExpiryDate: user.cardExpiryDate || '',
-      cardStatus: user.cardStatus,
-    }));
+  // Map API data to table data (server-paginated list)
+  const filteredData = Array.isArray(data?.items)
+    ? data.items.filter(user => !localRemovedIds.includes(String(user.id)))
+        .map((user, idx) => ({
+          sno: (currentPage - 1) * pageSize + idx + 1,
+          id: String(user.id),
+          name: user.name || '',
+          emailAddress: user.email || '',
+          cellNumber: user.phoneNumber || '',
+          cnic: user.cnic || '',
+          userType: mapUserType(user.userType),
+          rfidCardNo: user.rfidCardNumber || '',
+          cardIssueDate: user.cardIssueDate || '',
+          cardExpiryDate: user.cardExpiryDate || '',
+          cardStatus: user.cardStatus,
+        }))
+    : [];
 
   const columns: Column<any>[] = [
     { key: 'sno', header: 'S.No' },
@@ -356,7 +360,14 @@ export default function UserPage() {
         addButtonLabel="Add New"
         showAddButton={false}
         currentPage={currentPage}
+        totalPages={totalListPages}
         onPageChange={setCurrentPage}
+        rowsPerPage={pageSize}
+        onRowsPerPageChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+        serverSidePagination
         loading={isLoading}
         emptyMessage={isLoading ? 'Loading users...' : 'No users found'}
       />

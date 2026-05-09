@@ -13,8 +13,9 @@ import { useCreateWorker } from '../../hooks/workers/useCreateWorker';
 import { useUpdateWorker } from '../../hooks/workers/useUpdateWorker';
 import { useDeleteWorker } from '../../hooks/workers/useDeleteWorker';
 import { formatDateDisplay } from '../../lib/dateUtils';
+import { resolveTableTotalPages } from '../../lib/unwrapApiList';
 import { workerFields } from './fields';
-import { getAllExternalUsers } from '../../services/user.service';
+import { EXTERNAL_USERS_SELECT_PAGE_SIZE, getAllExternalUsers } from '../../services/user.service';
 import type { ExternalWorker } from '../../services/worker.service';
 import CircularButton from '../../components/ui/CircularButton';
 import { useEnumMetadata } from '../../hooks/metadata/useEnumMetadata';
@@ -34,13 +35,19 @@ interface Worker {
   workerCard: string;
   issuedDate?: string;
   expiryDate?: string;
-  cardStatus?: number;
+  cardStatus?: number | string | null;
   sno?: number;
 }
 
 type SelectedWorkerRow = Pick<ExternalWorker, 'id'>;
 
-const toJobTypeLabel = (jobType?: number) => {
+const toJobTypeLabel = (jobType?: number | string | null) => {
+  if (jobType === null || jobType === undefined) return 'Unknown';
+  if (typeof jobType === 'string') {
+    const s = jobType.trim();
+    if (s && !/^\d+$/.test(s)) return s;
+    return toJobTypeLabel(Number(s));
+  }
   switch (jobType) {
     case 0:
       return 'Driver';
@@ -78,6 +85,7 @@ export default function WorkersPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState<SelectedWorkerRow | null>(null);
@@ -85,7 +93,8 @@ export default function WorkersPage() {
   const [editWorkerId, setEditWorkerId] = useState<string | undefined>();
   const [hasCheckedId, setHasCheckedId] = useState(false);
 
-  const { data, isLoading, isError, error } = useWorkers();
+  const { data, isLoading, isError, error } = useWorkers(currentPage, pageSize);
+  const totalListPages = resolveTableTotalPages(data, pageSize);
   const { data: editWorkerDetails, isLoading: isEditWorkerLoading } = useWorkerById(editWorkerId);
   const { mutateAsync: deleteWorker, isPending: isDeleting } = useDeleteWorker();
   const { mutateAsync: createWorker } = useCreateWorker();
@@ -114,18 +123,15 @@ export default function WorkersPage() {
     }
   }, [modalMode, modalId]);
 
-  const workers: Worker[] = (data?.data || [])
+  const workers: Worker[] = (data?.items || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
     .map((item, idx) => ({
-      sno: idx + 1,
+      sno: (currentPage - 1) * pageSize + idx + 1,
       id: item.id,
       workerName: item.name || '-',
       userName: item.externalUserName || '-',
       fatherOrHusbandName: item.fatherOrHusbandName || '-',
-      jobType:
-        typeof item.jobType === 'string'
-          ? item.jobType
-          : toJobTypeLabel(item.jobType),
+      jobType: toJobTypeLabel(item.jobType),
       phone: item.phoneNumber || '-',
       dob: formatDateDisplay(item.dateOfBirth),
       cnicNicopNo: item.cnic || '-',
@@ -184,12 +190,16 @@ export default function WorkersPage() {
     }
   };
 
-  const toJobTypeFormValue = (value?: number | string): string => {
+  const toJobTypeFormValue = (value?: number | string | null): string => {
+    if (value === null || value === undefined || value === '') return '';
     if (typeof value === 'string') {
       const normalized = value.trim().toLowerCase();
       if (['driver', 'cook', 'guard', 'peon', 'gardener'].includes(normalized)) {
         return normalized;
       }
+      const n = Number(value);
+      if (!Number.isNaN(n)) return toJobTypeFormValue(n);
+      return '';
     }
 
     switch (value) {
@@ -212,7 +222,7 @@ export default function WorkersPage() {
     return 0;
   };
 
-  const toCardStatusFormValue = (value?: number): string => {
+  const toCardStatusFormValue = (value?: number | string | null): string => {
     if (value === undefined || value === null) return '';
     return String(value);
   };
@@ -243,7 +253,10 @@ export default function WorkersPage() {
       let externalUserId = 'system';
       let createdBy = 'system';
       try {
-        const users = await getAllExternalUsers();
+        const { items: users } = await getAllExternalUsers({
+          pageNumber: 1,
+          pageSize: EXTERNAL_USERS_SELECT_PAGE_SIZE,
+        });
         const firstValid = users.find((u: any) => u.id);
         if (firstValid && firstValid.id) {
           externalUserId = firstValid.id;
@@ -437,7 +450,14 @@ export default function WorkersPage() {
         addButtonLabel="Add New"
         showAddButton={false}
         currentPage={currentPage}
+        totalPages={totalListPages}
         onPageChange={setCurrentPage}
+        rowsPerPage={pageSize}
+        onRowsPerPageChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+        serverSidePagination
         getRowStatus={(row) => row.workerStatus ? 'Active' : 'Inactive'}
         error={isError ? `Failed to load workers: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
       />

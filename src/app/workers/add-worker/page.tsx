@@ -4,7 +4,7 @@ import DashboardLayout from '../../../components/layout/DashboardLayout';
 import CommonEntityForm, { ProfileFormData } from '../../../components/forms/CommonEntityForm';
 import { workerFields } from '../fields';
 import { useCreateWorker } from '../../../hooks/workers/useCreateWorker';
-import { getAllExternalUsers } from 'services/user.service';
+import { EXTERNAL_USERS_SELECT_PAGE_SIZE, getAllExternalUsers } from 'services/user.service';
 
 // Return YYYY-MM-DD as-is without conversion
 const toIsoDate = (value?: string) => {
@@ -83,7 +83,10 @@ export default function AddNewWorker() {
   let externalUserId = 'system';
   let createdBy = 'system';
      try {
-       const users = await getAllExternalUsers();
+       const { items: users } = await getAllExternalUsers({
+         pageNumber: 1,
+         pageSize: EXTERNAL_USERS_SELECT_PAGE_SIZE,
+       });
        const firstValid = users.find(u => u.id);
        if (firstValid && firstValid.id) {
          externalUserId = firstValid.id;

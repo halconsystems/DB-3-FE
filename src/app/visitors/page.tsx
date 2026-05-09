@@ -9,15 +9,15 @@ import WarningModal from '../../components/popup/WarningModal';
 import FormModal from '../../components/popup/FormModal';
 import CommonEntityForm, { ProfileFormData } from '../../components/forms/CommonEntityForm';
 import { saveTableRow, clearTableRow, getTableRow } from '../../lib/tableRowStorage';
-import { getStatusConfig } from '../../lib/statusMapping';
 import { useVisitors } from '../../hooks/visitors/useVisitors';
 import { useVisitorById } from '../../hooks/visitors/useVisitorById';
 import { useCreateVisitor } from '../../hooks/visitors/useCreateVisitor';
 import { useUpdateVisitor } from '../../hooks/visitors/useUpdateVisitor';
 import { useDeleteVisitor } from '../../hooks/visitors/useDeleteVisitor';
 import { formatDateDisplay } from '../../lib/dateUtils';
+import { resolveTableTotalPages } from '../../lib/unwrapApiList';
 import { visitorFields } from './fields';
-import { getAllExternalUsers } from '../../services/user.service';
+import { EXTERNAL_USERS_SELECT_PAGE_SIZE, getAllExternalUsers } from '../../services/user.service';
 import type { ExternalVisitorPass } from '../../services/visitor.service';
 
 interface Visitor {
@@ -25,28 +25,68 @@ interface Visitor {
   visitorName: string;
   userName: string;
   vehicleInfo: string;
-  visitDetail: string;
-  issueDate: string;
-  expiryDate: string;
+  visitPassType: string;
+  validFrom: string;
+  validTill: string;
   cnicNicopNo: string;
   hostDetails: string;
   status: boolean;
-  cardStatus?: number;
+  activeStatus: string;
+  passStatus: string;
   externalUserId: string;
   sno?: number;
 }
 
 type SelectedVisitorRow = Pick<ExternalVisitorPass, 'id'>;
 
-const toVisitorPassTypeLabel = (passType?: string | number): string => {
-  if (passType === 'DayPass' || passType === 1) return 'Day Pass';
-  if (passType === 'LongDay' || passType === 2) return 'Long Stay';
-  return '-';
+const formatVisitPassTypeLabel = (passType?: string | number): string => {
+  if (passType === null || passType === undefined || passType === '') return '-';
+  if (passType === 1 || passType === '1') return 'Day pass';
+  if (passType === 2 || passType === '2') return 'Long Stay Pass';
+  const p = String(passType).trim();
+  const lower = p.toLowerCase();
+  if (p === 'DayPass' || lower === 'daypass' || lower === 'day pass' || lower === 'day') {
+    return 'Day pass';
+  }
+  if (
+    p === 'LongStay' ||
+    p === 'LongDay' ||
+    lower === 'longstay' ||
+    lower === 'long day' ||
+    lower === 'long stay' ||
+    lower === 'longstaypass' ||
+    lower.includes('long')
+  ) {
+    return 'Long Stay Pass';
+  }
+  return p ? p : '-';
 };
 
-const toCardStatusLabel = (value?: number | null): string => {
-  const status = getStatusConfig('cardStatus', value);
-  return status?.label ?? 'N/A';
+const formatVehicleDisplay = (item: ExternalVisitorPass): string => {
+  const plate = (item.vehicleLicensePlate ?? '').trim();
+  const numRaw = item.vehicleLicenseNo;
+  const numStr =
+    numRaw !== null && numRaw !== undefined && String(numRaw).trim() !== ''
+      ? String(numRaw).trim()
+      : '';
+  if (!plate && !numStr) return '-';
+  if (plate && numStr) {
+    if (plate.endsWith(`-${numStr}`)) return plate;
+    return `${plate}-${numStr}`;
+  }
+  return plate || numStr || '-';
+};
+
+const derivePassStatus = (item: ExternalVisitorPass): string => {
+  if (item.isDeleted || !item.isActive) return 'Inactive';
+  const end = new Date(item.validTo);
+  if (Number.isNaN(end.getTime())) return 'Active';
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const endDay = new Date(end);
+  endDay.setHours(0, 0, 0, 0);
+  if (endDay < today) return 'Expired';
+  return 'Active';
 };
 
 const isApiSuccess = (response: any) => {
@@ -72,6 +112,7 @@ export default function VisitorsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [hostModalOpen, setHostModalOpen] = useState(false);
   const [selectedHost, setSelectedHost] = useState<any>(null);
@@ -81,7 +122,8 @@ export default function VisitorsPage() {
   const [editVisitorId, setEditVisitorId] = useState<string | undefined>();
   const [hasCheckedId, setHasCheckedId] = useState(false);
 
-  const { data, isLoading, isError, error } = useVisitors();
+  const { data, isLoading, isError, error } = useVisitors(currentPage, pageSize);
+  const totalListPages = resolveTableTotalPages(data, pageSize);
   const { data: editVisitorDetails, isLoading: isEditVisitorLoading } = useVisitorById(editVisitorId);
   const { mutateAsync: deleteVisitor, isPending: isDeleting } = useDeleteVisitor();
   const { mutateAsync: createVisitor } = useCreateVisitor();
@@ -111,23 +153,28 @@ export default function VisitorsPage() {
 
   console.log('Fetched visitors data:', data);
 
-  const visitors: Visitor[] = (data?.data || [])
+  const visitors: Visitor[] = (data?.items || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
-    .map((item, idx) => ({
-      sno: idx + 1,
-      id: item.id,
-      visitorName: item.name,
-      userName: item.externalUserName || '-',
-      vehicleInfo: `${item.vehicleLicensePlate}`,
-      visitDetail: toVisitorPassTypeLabel(item.visitorPassType),
-      issueDate: formatDateDisplay(item.validFrom),
-      expiryDate: formatDateDisplay(item.validTo),
-      cnicNicopNo: item.cnic,
-      hostDetails: item.externalUserName || 'host',
-      status: item.isActive && !item.isDeleted,
-      cardStatus: item.cardStatus,
-      externalUserId: item.externalUserId,
-    }));
+    .map((item, idx) => {
+      const passStatus = derivePassStatus(item);
+      const isActiveRow = item.isActive && !item.isDeleted;
+      return {
+        sno: (currentPage - 1) * pageSize + idx + 1,
+        id: item.id,
+        visitorName: item.name,
+        userName: item.externalUserName || '-',
+        vehicleInfo: formatVehicleDisplay(item),
+        visitPassType: formatVisitPassTypeLabel(item.visitorPassType),
+        validFrom: formatDateDisplay(item.validFrom),
+        validTill: formatDateDisplay(item.validTo),
+        cnicNicopNo: item.cnic,
+        hostDetails: item.externalUserName || 'host',
+        status: isActiveRow,
+        activeStatus: isActiveRow ? 'Active' : 'Inactive',
+        passStatus,
+        externalUserId: item.externalUserId,
+      };
+    });
 
 
 
@@ -193,7 +240,10 @@ export default function VisitorsPage() {
 
       let externalUserId = 'system';
       try {
-        const users = await getAllExternalUsers();
+        const { items: users } = await getAllExternalUsers({
+          pageNumber: 1,
+          pageSize: EXTERNAL_USERS_SELECT_PAGE_SIZE,
+        });
         const firstValid = users.find((u: any) => u.id);
         if (firstValid && firstValid.id) {
           externalUserId = firstValid.id;
@@ -234,7 +284,6 @@ export default function VisitorsPage() {
       quickPick: toQuickPick(data.visitorPassType),
       fromDate: toDateInputValue(data.validFrom),
       toDate: toDateInputValue(data.validTo),
-      cardStatus: toCardStatusLabel(data.cardStatus),
       isActive: data.isActive,
       tagId: '',
       tagNumber: '',
@@ -247,19 +296,8 @@ export default function VisitorsPage() {
   }, [editVisitorDetails]);
 
   const modalFields = useMemo(() => {
-    const baseFields = visitorFields.filter((f) => f.name !== 'description');
-    if (!isViewMode) return baseFields;
-
-    return baseFields
-      .filter((f) => f.name !== 'status')
-      .concat({
-        name: 'cardStatus' as keyof ProfileFormData,
-        label: 'Card Status',
-        type: 'text',
-        required: false,
-        readOnly: true,
-      });
-  }, [isViewMode]);
+    return visitorFields.filter((f) => f.name !== 'description');
+  }, []);
 
   const handleUpdateVisitor = async (formData: ProfileFormData) => {
     if (!editVisitorId || !editVisitorDetails?.data) throw new Error('Visitor ID or details not found');
@@ -327,14 +365,13 @@ export default function VisitorsPage() {
   };
 
   const handleHostClick = (row: Visitor) => {
-    const visitorData = (data?.data || []).find(v => v.id === row.id);
+    const visitorData = (data?.items || []).find((v: ExternalVisitorPass) => v.id === row.id);
     if (visitorData) {
       setSelectedHost({
         id: visitorData.externalUserId,
         name: visitorData.externalUserName || 'Unknown',
         phone: '',
-        address: visitorData.visitorPassType === 'LongStay' ? 'Long Stay' : 'Day Pass',
-        imageUrl: undefined,
+        address: formatVisitPassTypeLabel(visitorData.visitorPassType),
       });
     }
     setHostModalOpen(true);
@@ -344,10 +381,10 @@ export default function VisitorsPage() {
     { key: 'sno', header: 'S.No' },
     { key: 'visitorName', header: 'Visitor Name' },
     { key: 'userName', header: 'User Name' },
-    { key: 'vehicleInfo', header: 'Vehicle Info' },
-    { key: 'visitDetail', header: 'Visit Detail' },
-    { key: 'issueDate', header: 'Issue Date' },
-    { key: 'expiryDate', header: 'Expiry Date' },
+    { key: 'vehicleInfo', header: 'Vehicle No' },
+    { key: 'visitPassType', header: 'Visit Pass Type' },
+    { key: 'validFrom', header: 'Valid From' },
+    { key: 'validTill', header: 'Valid Till' },
     { key: 'cnicNicopNo', header: 'CNIC/NICOP No.' },
     {
       key: 'hostDetails',
@@ -356,15 +393,15 @@ export default function VisitorsPage() {
         <CircularButton imagePath="/icons/Host.svg" imageAlt="Host" width={32} height={32} onClick={() => handleHostClick(row)} />
       ),
     },
-     {
-      key: 'cardStatus',
-      header: 'Card Status',
-      render: (value: number) => <StatusBadge type="tagStatus" value={value} />
+    {
+      key: 'passStatus',
+      header: 'Pass Status',
+      render: (value: string) => <StatusBadge status={value} />,
     },
     {
-      key: 'status',
+      key: 'activeStatus',
       header: 'Status',
-      render: (value: boolean) => <StatusBadge type="activeInactive" value={value} />,
+      render: (_, row) => <StatusBadge type="activeInactive" value={row.status} />,
     },
     {
       key: 'action',
@@ -387,8 +424,18 @@ export default function VisitorsPage() {
         addButtonLabel="Add New"
         showAddButton={false}
         currentPage={currentPage}
+        totalPages={totalListPages}
         onPageChange={setCurrentPage}
-        getRowStatus={(row) => row.status ? 'Active' : 'Inactive'}
+        rowsPerPage={pageSize}
+        onRowsPerPageChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+        serverSidePagination
+        getRowStatus={(row) => {
+          if (!row.status || row.passStatus === 'Expired') return 'Inactive';
+          return 'Active';
+        }}
         error={isError ? `Failed to load visitors: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
       />
 
@@ -431,7 +478,7 @@ export default function VisitorsPage() {
         )}
       </FormModal>
 
-      <HostDetailsModal open={hostModalOpen} onClose={() => setHostModalOpen(false)} host={selectedHost || { id: '', name: '', phone: '', address: '', imageUrl: '' }} />
+      <HostDetailsModal open={hostModalOpen} onClose={() => setHostModalOpen(false)} host={selectedHost || { id: '', name: '', phone: '', address: '' }} />
       <WarningModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}

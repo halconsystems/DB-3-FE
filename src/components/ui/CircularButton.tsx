@@ -38,14 +38,15 @@ export default function CircularButton({
       onClick={onClick}
       style={buttonStyle}
     >
-      <img
-        className={styles.buttonIcon}
-        src={imagePath}
-        alt={imageAlt}
-        width={resolvedImgSize}
-        height={resolvedImgSize}
-        style={{display: imagePath ? 'block' : 'none' }}
-      />
+      {imagePath && imagePath.trim() !== '' && (
+        <img
+          className={styles.buttonIcon}
+          src={imagePath}
+          alt={imageAlt}
+          width={resolvedImgSize}
+          height={resolvedImgSize}
+        />
+      )}
       {children}
     </button>
   );

@@ -1,4 +1,5 @@
 import apiClient from "../lib/apiClient";
+import { parsePagedListData, type PagedList } from "../lib/unwrapApiList";
 export interface UserFamily {
 	id: string;
 	ser: number;
@@ -16,7 +17,7 @@ export interface UserFamily {
 	externalUserId: string;
 	externalUserName: string | null;
 	created: string;
-	createdBy: string;
+	createdBy: string | null;
 	isDeleted: boolean;
 	isActive: boolean;
 	lastModified: string | null;
@@ -26,13 +27,18 @@ export interface GetAllUserFamilyResponse {
 	statusCode: number;
 	successMessage: string | null;
 	errorMessage: string | null;
-	data: UserFamily[];
+	data: UserFamily[] | { items: UserFamily[]; totalCount?: number; TotalCount?: number };
 }
-export const getAllUserFamily = async (): Promise<UserFamily[]> => {
+export const getAllUserFamily = async (
+	params?: { pageNumber?: number; pageSize?: number }
+): Promise<PagedList<UserFamily>> => {
+	const pageNumber = params?.pageNumber ?? 1;
+	const pageSize = params?.pageSize ?? 10;
 	const response = await apiClient.get<GetAllUserFamilyResponse>(
-		"/userfamily/GetAllUserFamily"
+		"/userfamily/GetAllUserFamily",
+		{ params: { PageNumber: pageNumber, PageSize: pageSize } }
 	);
-	return response.data.data;
+	return parsePagedListData<UserFamily>(response.data.data);
 };
 export const removeUserFamily = async (id: string): Promise<any> => {
 	const response = await apiClient.post(

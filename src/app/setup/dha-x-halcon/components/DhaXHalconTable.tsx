@@ -1,7 +1,13 @@
 'use client';
-import { useState } from 'react';
+
+import { useMemo, useState } from 'react';
 import DataTable, { Column, StatusBadge, Tab } from '@/components/tables/DataTable';
 import CircularButton from '@/components/ui/CircularButton';
+import { formatDateDisplay } from '@/lib/dateUtils';
+import { useInvoiceSummary } from '@/hooks/invoice/useInvoiceSummary';
+import { useInvoiceSummaryDetails } from '@/hooks/invoice/useInvoiceSummaryDetails';
+import type { InvoiceSummaryDetailItem } from '@/services/invoice.service';
+import { CalendarDays, ChevronDown } from 'lucide-react';
 import styles from './DhaXHalconTable.module.css';
 
 interface DhaXHalconTableProps {
@@ -11,92 +17,224 @@ interface DhaXHalconTableProps {
 }
 
 interface HalconRow {
+  id: string;
   invoiceNumber: string;
   date: string;
   userId: string;
   name: string;
+  entityType: string;
+  parentUserName: string;
   serviceType: string;
   amount: string;
   taxAmount: string;
-  bankCharges: string;
+  discountAmount: string;
   totalAmount: string;
-  paymentMethod: string;
-  transactionId: string;
   dhaShare: string;
   halconShare: string;
-  status: string;
+  invoiceStatus: string;
+  paymentMethod: string;
+  transactionId: string;
+  durationDays: string;
+  trialDueDate: string;
 }
 
-const rows: HalconRow[] = Array.from({ length: 8 }).map((_, idx) => ({
-  invoiceNumber: `00${idx + 1}`,
-  date: '26-Feb-2026',
-  userId: '09244',
-  name: 'User',
-  serviceType: 'RFID',
-  amount: 'PKR 1200',
-  taxAmount: 'PKR 1800',
-  bankCharges: 'PKR 600',
-  totalAmount: 'PKR 600',
-  paymentMethod: 'Cash',
-  transactionId: '123456789',
-  dhaShare: 'PKR 1000',
-  halconShare: 'PKR 300',
-  status: 'Paid',
-}));
+function formatPkr(n: number | null | undefined): string {
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return '-';
+  return `PKR ${Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+}
+
+function startOfDayIso(ymd: string): string | undefined {
+  if (!ymd?.trim()) return undefined;
+  const [y, m, d] = ymd.split('-').map(Number);
+  if (!y || !m || !d) return undefined;
+  return new Date(y, m - 1, d, 0, 0, 0, 0).toISOString();
+}
+
+function endOfDayIso(ymd: string): string | undefined {
+  if (!ymd?.trim()) return undefined;
+  const [y, m, d] = ymd.split('-').map(Number);
+  if (!y || !m || !d) return undefined;
+  return new Date(y, m - 1, d, 23, 59, 59, 999).toISOString();
+}
 
 const columns: Column<HalconRow>[] = [
   { key: 'invoiceNumber', header: 'Invoice Number' },
-  { key: 'date', header: 'Date' },
+  { key: 'date', header: 'Date', render: (v) => (v ? formatDateDisplay(String(v)) : '-') },
   { key: 'userId', header: 'User ID' },
   { key: 'name', header: 'Name' },
+  { key: 'entityType', header: 'Entity Type' },
+  { key: 'parentUserName', header: 'Parent User' },
   { key: 'serviceType', header: 'Service Type' },
   { key: 'amount', header: 'Amount' },
   { key: 'taxAmount', header: 'Tax Amount' },
-  { key: 'bankCharges', header: 'Bank Charges' },
+  { key: 'discountAmount', header: 'Discount' },
   { key: 'totalAmount', header: 'Total Amount' },
+  { key: 'dhaShare', header: 'DHA share (est.)' },
+  { key: 'halconShare', header: 'Halcon share (est.)' },
+  {
+    key: 'invoiceStatus',
+    header: 'Status',
+    render: (value) => <StatusBadge status={String(value || '-')} />,
+  },
   { key: 'paymentMethod', header: 'Payment Method' },
   { key: 'transactionId', header: 'Transaction ID' },
-  { key: 'dhaShare', header: 'DHA %' },
-  { key: 'halconShare', header: 'Halcon %' },
-  {
-    key: 'status',
-    header: 'Status',
-    render: (value) => <StatusBadge status={value} />,
-  },
+  { key: 'durationDays', header: 'Duration (days)' },
+  { key: 'trialDueDate', header: 'Trial due', render: (v) => (v ? formatDateDisplay(String(v)) : '-') },
   {
     key: 'action',
     header: 'Action',
-    render: () => (
-      <CircularButton imagePath="/icons/View.svg" imageAlt="View" width={32} height={32} />
-    ),
+    render: () => <CircularButton imagePath="/icons/View.svg" imageAlt="View" width={32} height={32} />,
   },
 ];
 
 export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHalconTableProps) {
+  const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedHead, setSelectedHead] = useState<'dha' | 'halcon'>('dha');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+
+  const fromDateIso = fromDate ? startOfDayIso(fromDate) : undefined;
+  const toDateIso = toDate ? endOfDayIso(toDate) : undefined;
+
+  const {
+    data: summaryTotals,
+    isLoading: summaryLoading,
+    isError: summaryError,
+    error: summaryErr,
+  } = useInvoiceSummary({
+    pageNumber: 1,
+    pageSize: 5,
+    fromDate: fromDateIso,
+    toDate: toDateIso,
+  });
+
+  const {
+    data: detailsData,
+    isLoading: detailsLoading,
+    isError: detailsError,
+    error: detailsErr,
+  } = useInvoiceSummaryDetails({
+    pageNumber: currentPage,
+    pageSize,
+    fromDate: fromDateIso,
+    toDate: toDateIso,
+  });
+
+  const dhaPct = summaryTotals?.dhaPercentage ?? 0;
+  const halconPct = summaryTotals?.halconPercentage ?? 0;
+
+  const tableRows: HalconRow[] = useMemo(() => {
+    const items: InvoiceSummaryDetailItem[] = detailsData?.items ?? [];
+    return items.map((item) => {
+      const total = Number(item.totalAmount) || 0;
+      const dhaPart = (total * dhaPct) / 100;
+      const halconPart = (total * halconPct) / 100;
+      return {
+        id: item.id,
+        invoiceNumber: item.invoiceNumber || '-',
+        date: item.date || '-',
+        userId: item.userId || '-',
+        name: item.username || '-',
+        entityType: item.entityType || '-',
+        parentUserName: item.parentUserName || '-',
+        serviceType: item.serviceType || '-',
+        amount: formatPkr(item.amount),
+        taxAmount: formatPkr(item.taxAmount),
+        discountAmount: formatPkr(item.discountAmount ?? null),
+        totalAmount: formatPkr(item.totalAmount),
+        dhaShare: formatPkr(dhaPart),
+        halconShare: formatPkr(halconPart),
+        invoiceStatus: item.invoiceStatus || '-',
+        paymentMethod: item.paymentMethod || '-',
+        transactionId: item.transactionId || '-',
+        durationDays: item.durationDays != null ? String(item.durationDays) : '-',
+        trialDueDate: item.trialDueDate || '-',
+      };
+    });
+  }, [detailsData?.items, dhaPct, halconPct]);
+
+  const totalListPages = Math.max(1, detailsData?.totalPages ?? 1);
+  const isLoading = summaryLoading || detailsLoading;
+  const isError = detailsError || summaryError;
+  const error = detailsErr ?? summaryErr;
+
+  const toShortDate = (value?: string) => {
+    if (!value) return '';
+    const m = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!m) return '';
+    return `${m[3]}/${m[2]}/${m[1].slice(2)}`;
+  };
+
+  const dateRangeLabel = (() => {
+    if (fromDate && toDate) return `${toShortDate(fromDate)} - ${toShortDate(toDate)}`;
+    if (fromDate) return `${toShortDate(fromDate)} - ${toShortDate(fromDate)}`;
+    return '21/02/26 - 20/03/26';
+  })();
 
   const headerContent = (
     <div className={styles.headerArea}>
-      <div className={styles.filtersRow}>
-        <div className={styles.card}>
-          <p className={styles.cardLabel}>Select Head</p>
-          <p className={styles.cardValue}>Select (DHA/Halcon)</p>
+      <div className={styles.summaryStrip}>
+        <div className={styles.leftGroup}>
+          <div className={styles.controlCard}>
+            <p className={styles.cardLabel}>Select Head</p>
+            <div className={styles.selectWrap}>
+              <select
+                value={selectedHead}
+                onChange={(e) => setSelectedHead(e.target.value as 'dha' | 'halcon')}
+                className={styles.headSelect}
+              >
+                <option value="dha">Select (DHA/Halcon)</option>
+                <option value="halcon">Halcon</option>
+              </select>
+              <ChevronDown size={13} className={styles.selectIcon} />
+            </div>
+          </div>
+          <div className={styles.controlCard}>
+            <p className={styles.cardLabel}>Date Range</p>
+            <div className={styles.dateValueRow}>
+              <span className={styles.cardValue}>{dateRangeLabel}</span>
+              <CalendarDays size={13} className={styles.calendarIcon} />
+            </div>
+            <div className={styles.hiddenDateInputs}>
+              <input
+                id="dha-x-from"
+                type="date"
+                value={fromDate}
+                onChange={(e) => {
+                  setFromDate(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+              <input
+                id="dha-x-to"
+                type="date"
+                value={toDate}
+                onChange={(e) => {
+                  setToDate(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
+          </div>
         </div>
-        <div className={styles.card}>
-          <p className={styles.cardLabel}>Date Range</p>
-          <p className={styles.cardValue}>21/03/26 - 20/03/26</p>
-        </div>
-        <div className={styles.card}>
-          <p className={styles.cardLabel}>Total Amount</p>
-          <p className={styles.cardValue}>PKR 5800</p>
-        </div>
-        <div className={styles.card}>
-          <p className={styles.cardLabel}>DHA %</p>
-          <p className={styles.cardValue}>PKR 4500</p>
-        </div>
-        <div className={styles.card}>
-          <p className={styles.cardLabel}>Halcon %</p>
-          <p className={styles.cardValue}>PKR 3300</p>
+        <div className={styles.rightGroup}>
+          <div className={styles.card}>
+            <p className={styles.cardLabel}>Total Amount</p>
+            <p className={styles.cardValue}>{formatPkr(summaryTotals?.totalAmount)}</p>
+          </div>
+          <div className={styles.card}>
+            <p className={styles.cardLabel}>DHA %</p>
+            <p className={styles.cardValue}>
+              {formatPkr(summaryTotals?.dhaAmount)}
+            </p>
+          </div>
+          <div className={styles.card}>
+            <p className={styles.cardLabel}>Halcon %</p>
+            <p className={styles.cardValue}>
+              {formatPkr(summaryTotals?.halconAmount)}
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -108,13 +246,26 @@ export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHa
       activeTab={activeTab}
       onTabChange={onTabChange}
       columns={columns}
-      data={rows}
+      data={tableRows}
       showAddButton={false}
+      loading={isLoading}
       currentPage={currentPage}
+      totalPages={totalListPages}
       onPageChange={setCurrentPage}
+      rowsPerPage={pageSize}
+      onRowsPerPageChange={(size) => {
+        setPageSize(size);
+        setCurrentPage(1);
+      }}
+      serverSidePagination
       headerContent={headerContent}
       enableSorting={false}
       enableFiltering={false}
+      error={
+        isError
+          ? `Failed to load data: ${error instanceof Error ? error.message : 'Unknown error'}`
+          : undefined
+      }
     />
   );
 }

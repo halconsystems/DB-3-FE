@@ -179,11 +179,8 @@ export default function InvoiceTable(props: InvoiceTableProps) {
     { key: 'invoiceNumber', header: 'Invoice Number', render: dashIfEmpty },
     { key: 'date', header: 'Date', render: (value) => (value ? formatDateDisplay(value) : '-') },
     { key: 'entityType', header: 'Entity Type', render: dashIfEmpty },
-    { key: 'userId', header: 'User ID', render: dashIfEmpty },
-    { key: 'username', header: 'User Name', render: dashIfEmpty },
-    { key: 'parentUserName', header: 'Parent User', render: dashIfEmpty },
-    { key: 'familyUserName', header: 'Family User', render: dashIfEmpty },
-    { key: 'serviceType', header: 'Service Type', render: dashIfEmpty },
+    { key: 'parentUserName', header: 'Entity Name', render: dashIfEmpty },
+    { key: 'serviceType', header: 'Tag Type', render: dashIfEmpty },
     { key: 'amount', header: 'Amount', render: dashIfEmpty },
     { key: 'bankCharges', header: 'Bank Charges', render: dashIfEmpty },
     { key: 'taxAmount', header: 'Tax Amount', render: dashIfEmpty },
@@ -277,17 +274,26 @@ export default function InvoiceTable(props: InvoiceTableProps) {
         onClose={handleCloseModal}
         invoice={
           selectedInvoice
-            ? selectedInvoice
+            ? {
+                id: selectedInvoice.id,
+                invoiceNumber: selectedInvoice.invoiceNumber,
+                date: selectedInvoice.date,
+                username: selectedInvoice.username,
+                amount: selectedInvoice.amount,
+                taxAmount: selectedInvoice.taxAmount,
+                discountAmount: selectedInvoice.discountAmount,
+                totalAmount: selectedInvoice.totalAmount,
+                serviceType: selectedInvoice.serviceType,
+              }
             : editInvoiceDetails?.data
               ? {
                   id: editInvoiceDetails.data.id || '',
                   invoiceNumber: editInvoiceDetails.data.invoiceNumber || '',
                   date: editInvoiceDetails.data.date || null,
-                  userId: editInvoiceDetails.data.userId || editInvoiceDetails.data.entityId || '',
                   username: editInvoiceDetails.data.username || null,
                   amount: Number(editInvoiceDetails.data.amount || 0),
                   taxAmount: Number(editInvoiceDetails.data.taxAmount || 0),
-                  bankCharges: Number(editInvoiceDetails.data.bankCharges || 0),
+                  discountAmount: Number(editInvoiceDetails.data.discountAmount || 0),
                   totalAmount: Number(editInvoiceDetails.data.totalAmount || 0),
                   serviceType: editInvoiceDetails.data.serviceType || null,
                 }

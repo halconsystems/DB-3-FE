@@ -1,4 +1,5 @@
 import apiClient from "../lib/apiClient";
+import { parsePagedListData, type PagedList } from "../lib/unwrapApiList";
 
 export interface ExternalVehicle {
   id: string;
@@ -13,10 +14,13 @@ export interface ExternalVehicle {
   eTagId: string | null;
   validFrom: string | null;
   validTo: string | null;
-  tagStatus: number | null;
+  /** Present on some API versions; list payloads may use {@link cardStatus} instead */
+  tagStatus?: number | null;
+  cardStatus?: number | null;
   externalUserId: string;
+  externalUserName?: string | null;
   created: string;
-  createdBy: string;
+  createdBy: string | null;
   isDeleted: boolean;
   isActive: boolean;
   lastModified: string | null;
@@ -73,9 +77,20 @@ export type DeleteExternalVehicleResponse = ApiResponse<ExternalVehicle | null>;
 export type GetExternalVehicleByIdResponse = ApiResponse<ExternalVehicle | null>;
 export type GetAllExternalVehicleResponse = ApiResponse<ExternalVehicle[] | null>;
 
-export const getAllExternalVehicles = async (): Promise<GetAllExternalVehicleResponse> => {
-  const { data } = await apiClient.get<GetAllExternalVehicleResponse>("/vehicle/GetAllVehicle");
-  return data;
+export const getAllExternalVehicles = async (
+  params?: { pageNumber?: number; pageSize?: number }
+): Promise<PagedList<ExternalVehicle>> => {
+  const pageNumber = params?.pageNumber ?? 1;
+  const pageSize = params?.pageSize ?? 10;
+  const { data: envelope } = await apiClient.get<{
+    statusCode: number;
+    successMessage: string | null;
+    errorMessage: string | null;
+    data: unknown;
+  }>("/vehicle/GetAllVehicle", {
+    params: { PageNumber: pageNumber, PageSize: pageSize },
+  });
+  return parsePagedListData<ExternalVehicle>(envelope?.data as never);
 };
 
 export const getExternalVehicleById = async (

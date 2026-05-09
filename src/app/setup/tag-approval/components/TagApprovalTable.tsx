@@ -16,6 +16,7 @@ import { useGetTagApprovalRequestById } from '../../../../hooks/tag-approval/use
 import { TagApprovalRequest } from '../../../../types/tag-approval.types';
 import { useGetAllTagTypes } from '@/hooks/tagtype/useGetAllTagTypes';
 import { formatDateDisplay } from '../../../../lib/dateUtils';
+import { resolveTableTotalPages } from '../../../../lib/unwrapApiList';
 import { tagApprovalFields } from '../../../../app/setup/tag-log/fields';
 
 interface TagTableProps {
@@ -35,10 +36,12 @@ export default function TagApprovalTable({
   addButtonLabel,
   searchParams
 }: TagTableProps) {
-  useSignalR(); 
+  useSignalR();
+  const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const { data, isLoading, isError } = useGetTagApprovalRequests();
-  const [Tags, setTags] = useState<TagApprovalRequest[]>([]);
+  const { data, isLoading, isError } = useGetTagApprovalRequests(currentPage, pageSize);
+  const totalListPages = resolveTableTotalPages(data, pageSize);
+  const tags = data?.items ?? [];
   const rejectMutation = useRejectTagApprovalRequest();
   const cancelMutation = useCancelTagApprovalRequest();
 
@@ -122,13 +125,6 @@ export default function TagApprovalTable({
     return foundByName?.name || tagTypeValue;
   };
 
-  useEffect(() => {
-    if (data && data.data) {
-      setTags(data.data);
-      console.log('Fetched Tag Approval Requests:', data.data);
-    }
-  }, [data]);
-  
   const handleReject = (item: TagApprovalRequest) => {
     setSelectedTag(item);
     setDeleteModalOpen(true);
@@ -155,10 +151,9 @@ export default function TagApprovalTable({
   };
 
   const TagColumns: Column<TagApprovalRequest>[] = [
-    { key: 'parentUserName', header: 'Name' },
-    { key: 'subjectName', header: 'Subject Name' },
-    { key: 'subjectId', header: 'Entity ID' },
-    { key: 'subjectType', header: 'Subject Type' },
+    { key: 'parentUserName', header: 'Username' },
+    { key: 'subjectName', header: 'Entity Name' },
+    { key: 'entityTypeDisplay', header: 'Entity Type', render: (_: any, row) => row.subjectType || '-' },
     {
       key: 'tagType',
       header: 'Tag Type',
@@ -217,13 +212,21 @@ export default function TagApprovalTable({
         activeTab={activeTab}
         onTabChange={onTabChange}
         columns={TagColumns}
-        data={Tags}
+        data={tags}
         loading={isLoading}
         showAddButton={false}
         addButtonLabel={addButtonLabel}
         currentPage={currentPage}
+        totalPages={totalListPages}
         onPageChange={setCurrentPage}
+        rowsPerPage={pageSize}
+        onRowsPerPageChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+        serverSidePagination
         getRowStatus={(row) => row.status as 'Active' | 'Inactive' | 'Pending' | undefined}
+        enableSorting={false}
         headerContent={
           <div style={{height:'40px'}}></div>
         }
@@ -238,7 +241,7 @@ export default function TagApprovalTable({
       />
       <WarningModal
         isOpen={cancelModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
+        onClose={() => setCancelModalOpen(false)}
         onConfirm={handleConfirmCancel}
         title="Cancel Tag Approval"
         message="Are you sure you want to cancel this tag approval request?"

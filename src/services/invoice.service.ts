@@ -124,3 +124,133 @@ export async function getInvoiceById(id: string): Promise<GetInvoiceByIdResponse
 	const response = await apiClient.get(`/invoices/${id}`);
 	return response.data;
 }
+
+// --- DHA × Halcon invoice summary (paginated list + split totals) ---
+
+export interface InvoiceSummaryTotals {
+	halconAmount: number;
+	dhaAmount: number;
+	totalAmount: number;
+	halconPercentage: number;
+	dhaPercentage: number;
+}
+
+export interface InvoiceSummaryDetailItem {
+	id: string;
+	invoiceNumber: string;
+	date?: string | null;
+	entityType: string;
+	userId: string;
+	username?: string | null;
+	parentUserName?: string | null;
+	serviceType?: string | null;
+	paymentMethods?: string | null;
+	amount: number;
+	taxAmount: number;
+	discountAmount?: number | null;
+	totalAmount: number;
+	invoiceStatus?: string | null;
+	paidAt?: string | null;
+	paymentMethod?: string | null;
+	transactionId?: string | null;
+	durationDays?: number | null;
+	trialDueDate?: string | null;
+}
+
+export interface GetInvoiceSummaryDetailsParams {
+	pageNumber?: number;
+	pageSize?: number;
+	/** ISO date-time */
+	fromDate?: string;
+	/** ISO date-time */
+	toDate?: string;
+}
+
+export interface InvoiceSummaryDetailsResult {
+	items: InvoiceSummaryDetailItem[];
+	totalCount: number;
+	pageNumber: number;
+	pageSize: number;
+	totalPages: number;
+}
+
+export interface GetInvoiceSummaryParams {
+	pageNumber?: number;
+	pageSize?: number;
+	fromDate?: string;
+	toDate?: string;
+}
+
+const emptyTotals = (): InvoiceSummaryTotals => ({
+	halconAmount: 0,
+	dhaAmount: 0,
+	totalAmount: 0,
+	halconPercentage: 0,
+	dhaPercentage: 0,
+});
+
+export async function getInvoiceSummary(params: GetInvoiceSummaryParams): Promise<InvoiceSummaryTotals> {
+	const pageNumber = params.pageNumber ?? 1;
+	const pageSize = params.pageSize ?? 5;
+	const query: Record<string, string | number> = {
+		PageNumber: pageNumber,
+		PageSize: pageSize,
+	};
+	if (params.fromDate?.trim()) query.FromDate = params.fromDate.trim();
+	if (params.toDate?.trim()) query.ToDate = params.toDate.trim();
+
+	const response = await apiClient.get<{
+		statusCode: number;
+		successMessage: string;
+		errorMessage: string | null;
+		data?: InvoiceSummaryTotals;
+	}>("/invoices/summary", { params: query });
+
+	return response.data?.data ?? emptyTotals();
+}
+
+export async function getInvoiceSummaryDetails(
+	params: GetInvoiceSummaryDetailsParams
+): Promise<InvoiceSummaryDetailsResult> {
+	const pageNumber = params.pageNumber ?? 1;
+	const pageSize = params.pageSize ?? 10;
+	const query: Record<string, string | number> = {
+		PageNumber: pageNumber,
+		PageSize: pageSize,
+	};
+	if (params.fromDate?.trim()) query.FromDate = params.fromDate.trim();
+	if (params.toDate?.trim()) query.ToDate = params.toDate.trim();
+
+	const response = await apiClient.get<{
+		statusCode: number;
+		successMessage: string;
+		errorMessage: string | null;
+		data?: {
+			totals?: InvoiceSummaryTotals;
+			items?: InvoiceSummaryDetailItem[];
+			totalCount?: number;
+			pageNumber?: number;
+			pageSize?: number;
+			totalPages?: number;
+		};
+	}>("/invoices/summary/details", { params: query });
+
+	const d = response.data?.data;
+	if (!d) {
+		return {
+			items: [],
+			totalCount: 0,
+			pageNumber,
+			pageSize,
+			totalPages: 1,
+		};
+	}
+
+	return {
+		items: Array.isArray(d.items) ? d.items : [],
+		totalCount: d.totalCount ?? 0,
+		pageNumber: d.pageNumber ?? pageNumber,
+		pageSize: d.pageSize ?? pageSize,
+		totalPages: Math.max(1, d.totalPages ?? 1),
+	};
+}

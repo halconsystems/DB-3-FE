@@ -12,12 +12,9 @@ export interface TagApprovalRequest {
   notes: string;
   status: string;
   trialPeriod: string;
-  parentUserName?: string;
-}
-
-export interface GetTagApprovalRequestsResponse {
-  statusCode: number;
-  successMessage: string;
-  errorMessage: string | null;
-  data: TagApprovalRequest[];
+  parentUserName?: string | null;
+  hierarchicalId?: string | null;
+  category?: string | null;
+  subCategory?: string | null;
+  cardStatus?: string | null;
 }
