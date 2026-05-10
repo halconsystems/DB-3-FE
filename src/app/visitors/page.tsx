@@ -17,11 +17,15 @@ import { useDeleteVisitor } from '../../hooks/visitors/useDeleteVisitor';
 import { formatDateDisplay } from '../../lib/dateUtils';
 import { resolveTableTotalPages } from '../../lib/unwrapApiList';
 import { visitorFields } from './fields';
-import { EXTERNAL_USERS_SELECT_PAGE_SIZE, getAllExternalUsers } from '../../services/user.service';
+import { EXTERNAL_USERS_SELECT_PAGE_SIZE, getAllExternalUsers, getUserById } from '../../services/user.service';
+import { displayDash, tableCardNumber, tableCnic, tablePhone } from '../../lib/formatDisplayFields';
+import type { HostDetailRow } from '../../components/ui/components/HostDetailsModal';
+import { getStatusConfig } from '../../lib/statusMapping';
 import type { ExternalVisitorPass } from '../../services/visitor.service';
 
 interface Visitor {
   id: string;
+  ser: number;
   visitorName: string;
   userName: string;
   vehicleInfo: string;
@@ -34,7 +38,6 @@ interface Visitor {
   activeStatus: string;
   passStatus: string;
   externalUserId: string;
-  sno?: number;
 }
 
 type SelectedVisitorRow = Pick<ExternalVisitorPass, 'id'>;
@@ -115,7 +118,8 @@ export default function VisitorsPage() {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [hostModalOpen, setHostModalOpen] = useState(false);
-  const [selectedHost, setSelectedHost] = useState<any>(null);
+  const [hostLoading, setHostLoading] = useState(false);
+  const [hostDetails, setHostDetails] = useState<HostDetailRow[]>([]);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedVisitor, setSelectedVisitor] = useState<SelectedVisitorRow | null>(null);
   const [localRemovedIds, setLocalRemovedIds] = useState<string[]>([]);
@@ -155,19 +159,19 @@ export default function VisitorsPage() {
 
   const visitors: Visitor[] = (data?.items || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
-    .map((item, idx) => {
+    .map((item) => {
       const passStatus = derivePassStatus(item);
       const isActiveRow = item.isActive && !item.isDeleted;
       return {
-        sno: (currentPage - 1) * pageSize + idx + 1,
+        ser: item.ser ?? 0,
         id: item.id,
-        visitorName: item.name,
-        userName: item.externalUserName || '-',
+        visitorName: displayDash(item.name),
+        userName: displayDash(item.externalUserName),
         vehicleInfo: formatVehicleDisplay(item),
         visitPassType: formatVisitPassTypeLabel(item.visitorPassType),
         validFrom: formatDateDisplay(item.validFrom),
         validTill: formatDateDisplay(item.validTo),
-        cnicNicopNo: item.cnic,
+        cnicNicopNo: item.cnic ?? '',
         hostDetails: item.externalUserName || 'host',
         status: isActiveRow,
         activeStatus: isActiveRow ? 'Active' : 'Inactive',
@@ -364,28 +368,61 @@ export default function VisitorsPage() {
     setSelectedVisitor(null);
   };
 
-  const handleHostClick = (row: Visitor) => {
+  const handleHostClick = async (row: Visitor) => {
     const visitorData = (data?.items || []).find((v: ExternalVisitorPass) => v.id === row.id);
-    if (visitorData) {
-      setSelectedHost({
-        id: visitorData.externalUserId,
-        name: visitorData.externalUserName || 'Unknown',
-        phone: '',
-        address: formatVisitPassTypeLabel(visitorData.visitorPassType),
-      });
-    }
     setHostModalOpen(true);
+    setHostLoading(true);
+    setHostDetails([]);
+
+    if (!visitorData?.externalUserId) {
+      setHostDetails([
+        { label: 'Name', value: displayDash(visitorData?.externalUserName) },
+        {
+          label: 'Visit pass type',
+          value: visitorData ? formatVisitPassTypeLabel(visitorData.visitorPassType) : '-',
+        },
+      ]);
+      setHostLoading(false);
+      return;
+    }
+
+    try {
+      const u = await getUserById(visitorData.externalUserId);
+      const tagLabel = getStatusConfig('cardStatus', u.cardStatus)?.label ?? displayDash(u.cardStatus);
+      setHostDetails([
+        { label: 'Name', value: displayDash(u.name) },
+        { label: 'Email', value: displayDash(u.email) },
+        { label: 'Phone', value: tablePhone(u.phoneNumber) },
+        { label: 'CNIC', value: tableCnic(u.cnic) },
+        { label: 'Address', value: displayDash(u.address) },
+        { label: 'Member No.', value: displayDash(u.memberNo) },
+        { label: 'Staff No.', value: displayDash(u.staffNo) },
+        { label: 'Category', value: displayDash(u.category) },
+        { label: 'Sub Category', value: displayDash(u.subCategory) },
+        { label: 'RFID Card No.', value: tableCardNumber(u.rfidCardNumber) },
+        { label: 'Card Issue Date', value: formatDateDisplay(u.cardIssueDate) },
+        { label: 'Card Expiry Date', value: formatDateDisplay(u.cardExpiryDate) },
+        { label: 'Tag Status', value: tagLabel },
+      ]);
+    } catch {
+      setHostDetails([
+        { label: 'Name', value: displayDash(visitorData.externalUserName) },
+        { label: 'Note', value: 'Could not load full host profile.' },
+      ]);
+    } finally {
+      setHostLoading(false);
+    }
   };
 
   const columns: Column<Visitor>[] = [
-    { key: 'sno', header: 'S.No' },
+    { key: 'ser', header: 'Ser' },
     { key: 'visitorName', header: 'Visitor Name' },
     { key: 'userName', header: 'User Name' },
     { key: 'vehicleInfo', header: 'Vehicle No' },
     { key: 'visitPassType', header: 'Visit Pass Type' },
     { key: 'validFrom', header: 'Valid From' },
     { key: 'validTill', header: 'Valid Till' },
-    { key: 'cnicNicopNo', header: 'CNIC/NICOP No.' },
+    { key: 'cnicNicopNo', header: 'CNIC/NICOP No.', render: (v: string) => tableCnic(v) },
     {
       key: 'hostDetails',
       header: 'Host Details',
@@ -432,6 +469,7 @@ export default function VisitorsPage() {
           setCurrentPage(1);
         }}
         serverSidePagination
+        enableFiltering={false}
         getRowStatus={(row) => {
           if (!row.status || row.passStatus === 'Expired') return 'Inactive';
           return 'Active';
@@ -478,7 +516,15 @@ export default function VisitorsPage() {
         )}
       </FormModal>
 
-      <HostDetailsModal open={hostModalOpen} onClose={() => setHostModalOpen(false)} host={selectedHost || { id: '', name: '', phone: '', address: '' }} />
+      <HostDetailsModal
+        open={hostModalOpen}
+        onClose={() => {
+          setHostModalOpen(false);
+          setHostDetails([]);
+        }}
+        loading={hostLoading}
+        details={hostDetails}
+      />
       <WarningModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}

@@ -12,7 +12,7 @@ export const cardColumns: Column<CardRow>[] = [
   { key: 'cardExpiryDate', header: 'Card Expiry Date' },
   {
     key: 'cardStatus',
-    header: 'Card Status',
+    header: 'Tag Status',
     render: (value) => <StatusBadge type="cardStatus" value={value} />,
   },
 ];

@@ -18,6 +18,9 @@ import { saveTableRow, clearTableRow, getTableRow } from '../../lib/tableRowStor
 import { formatDateDisplay } from '../../lib/dateUtils';
 import { resolveTableTotalPages } from '../../lib/unwrapApiList';
 import { userFields } from './fields';
+import { formatCardNumberDisplay } from '../../lib/formatCardNumber';
+import { displayDash, tableCnic, tablePhone, tableCardNumber } from '../../lib/formatDisplayFields';
+import { normalizeNumericEnum } from '../../lib/statusMapping';
 
 
 // Map API user type to display values
@@ -82,7 +85,7 @@ export default function UserPage() {
   // Build dynamic userType options from enum
   const dynamicUserFields = useMemo(() => {
     const userTypeOptions = [{ value: '', label: 'Select User Type' }];
-    const cardStatusOptions = [{ value: '', label: 'Select Card Status' }];
+    const cardStatusOptions = [{ value: '', label: 'Select Tag Status' }];
     
     if (userTypesEnum?.members) {
       userTypesEnum.members.forEach((member) => {
@@ -125,6 +128,15 @@ export default function UserPage() {
       return field;
     });
   }, [cardStatusEnum, modalMode, userTypesEnum]);
+
+  const cardStatusFilterOptions = useMemo(
+    () =>
+      (cardStatusEnum?.members ?? []).map((m) => ({
+        value: String(m.value),
+        label: m.name,
+      })),
+    [cardStatusEnum]
+  );
 
   useEffect(() => {
     if (modalMode === 'edit' || modalMode === 'view') {
@@ -249,7 +261,9 @@ export default function UserPage() {
       cellNumber: editUserDetails.phoneNumber || '',
       cnic: editUserDetails.cnic || '',
       userType: toUserTypeValue(editUserDetails.userType, userTypesEnum),
-      rfidCardNo: editUserDetails.rfidCardNumber || '',
+      rfidCardNo: editUserDetails.rfidCardNumber
+        ? formatCardNumberDisplay(editUserDetails.rfidCardNumber)
+        : '',
       cardIssueDate: toDateInputValue(editUserDetails.cardIssueDate),
       cardExpiryDate: toDateInputValue(editUserDetails.cardExpiryDate),
       cardStatus: toCardStatusValue(editUserDetails.cardStatus),
@@ -308,35 +322,49 @@ export default function UserPage() {
   // Map API data to table data (server-paginated list)
   const filteredData = Array.isArray(data?.items)
     ? data.items.filter(user => !localRemovedIds.includes(String(user.id)))
-        .map((user, idx) => ({
-          sno: (currentPage - 1) * pageSize + idx + 1,
+        .map((user) => ({
+          ser: user.ser ?? 0,
           id: String(user.id),
-          name: user.name || '',
-          emailAddress: user.email || '',
-          cellNumber: user.phoneNumber || '',
-          cnic: user.cnic || '',
+          name: displayDash(user.name),
+          emailAddress: displayDash(user.email),
+          address: displayDash(user.address),
+          memberNo: displayDash(user.memberNo),
+          staffNo: displayDash(user.staffNo),
+          category: displayDash(user.category),
+          subCategory: displayDash(user.subCategory),
+          cellNumber: user.phoneNumber ?? '',
+          cnic: user.cnic ?? '',
           userType: mapUserType(user.userType),
-          rfidCardNo: user.rfidCardNumber || '',
+          rfidCardNo: user.rfidCardNumber ?? '',
           cardIssueDate: user.cardIssueDate || '',
           cardExpiryDate: user.cardExpiryDate || '',
-          cardStatus: user.cardStatus,
+          cardStatus: normalizeNumericEnum(user.cardStatus),
         }))
     : [];
 
   const columns: Column<any>[] = [
-    { key: 'sno', header: 'S.No' },
+    { key: 'ser', header: 'Ser' },
     { key: 'name', header: 'Name' },
     { key: 'emailAddress', header: 'Email' },
-    { key: 'cellNumber', header: 'Phone' },
-    { key: 'cnic', header: 'CNIC No.' },
+    { key: 'address', header: 'Address' },
+    { key: 'memberNo', header: 'Member No.' },
+    { key: 'staffNo', header: 'Staff No.' },
+    { key: 'category', header: 'Category' },
+    { key: 'subCategory', header: 'Sub Category' },
+    { key: 'cellNumber', header: 'Phone', render: (value: string) => tablePhone(value) },
+    { key: 'cnic', header: 'CNIC No.', render: (value: string) => tableCnic(value) },
     { key: 'userType', header: 'User Type' },
-    { key: 'rfidCardNo', header: 'RFID Card No.' },
+    {
+      key: 'rfidCardNo',
+      header: 'RFID Card No.',
+      render: (value: string) => tableCardNumber(value),
+    },
     { key: 'cardIssueDate', header: 'Card Issue Date', render: (value: string) => formatDateDisplay(value) },
     { key: 'cardExpiryDate', header: 'Card Expiry Date', render: (value: string) => formatDateDisplay(value) },
     {
       key: 'cardStatus',
-      header: 'Card Status',
-      render: (value: number) => <StatusBadge type="cardStatus" value={value} />
+      header: 'Tag Status',
+      render: (value: number | null) => <StatusBadge type="cardStatus" value={value} />,
     },
     {
       key: 'action',
@@ -368,6 +396,10 @@ export default function UserPage() {
           setCurrentPage(1);
         }}
         serverSidePagination
+        enableFiltering={false}
+        columnFilterKeys={['cardStatus']}
+        columnFilterLabels={{ cardStatus: 'Tag Status' }}
+        columnFilterStaticOptions={{ cardStatus: cardStatusFilterOptions }}
         loading={isLoading}
         emptyMessage={isLoading ? 'Loading users...' : 'No users found'}
       />

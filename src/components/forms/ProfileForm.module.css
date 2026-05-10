@@ -236,19 +236,33 @@
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
+  margin-top: 2px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(222, 226, 232, 0.85);
+  background: rgba(249, 250, 251, 0.92);
+  box-shadow: inset 0 1px 2px rgba(16, 24, 40, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.selectWrapper:focus-within {
+  border-color: color-mix(in srgb, var(--primary) 45%, rgba(222, 226, 232, 0.85));
+  box-shadow: inset 0 1px 2px rgba(16, 24, 40, 0.04), 0 0 0 2px color-mix(in srgb, var(--primary) 18%, transparent);
 }
 
 .select {
   border: none;
   background: transparent;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
-  color: rgba(0, 0, 0, 0.6) !important;
+  color: rgba(0, 0, 0, 0.78) !important;
   outline: none;
-  padding: 0;
+  padding: 2px 28px 2px 4px;
   width: 100%;
   appearance: none;
   cursor: pointer;
+  min-height: 22px;
 }
 
 .radioCapsule {
@@ -340,6 +354,22 @@
   appearance: none;
   -webkit-appearance: none;
   position: relative;
+  width: 100%;
+  margin-top: 2px;
+  padding: 10px 42px 10px 12px !important;
+  min-height: 40px;
+  border-radius: 10px !important;
+  border: 1px solid rgba(222, 226, 232, 0.85) !important;
+  background: rgba(249, 250, 251, 0.92) !important;
+  box-shadow: inset 0 1px 2px rgba(16, 24, 40, 0.04);
+  font-size: 12px !important;
+  color: rgba(0, 0, 0, 0.82) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dateInput:focus {
+  border-color: color-mix(in srgb, var(--primary) 45%, rgba(222, 226, 232, 0.85)) !important;
+  box-shadow: inset 0 1px 2px rgba(16, 24, 40, 0.04), 0 0 0 2px color-mix(in srgb, var(--primary) 18%, transparent);
 }
 
 .dateInput::-webkit-calendar-picker-indicator {

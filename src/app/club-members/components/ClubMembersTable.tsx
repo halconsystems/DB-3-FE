@@ -187,7 +187,7 @@ export default function ClubMembersTable({
     { key: 'cardExpiryDate', header: 'Card Expiry Date' },
     {
       key: 'cardStatus',
-      header: 'Card Status',
+      header: 'Tag Status',
       render: (_, row) => <StatusBadge status={row.cardStatus} />,
     },
     {

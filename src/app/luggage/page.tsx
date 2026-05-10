@@ -22,12 +22,14 @@ import { resolveTableTotalPages } from '../../lib/unwrapApiList';
 import { luggageFields } from './fields';
 import { EXTERNAL_USERS_SELECT_PAGE_SIZE, getAllExternalUsers } from '../../services/user.service';
 import type { Luggage } from '../../services/luggage.service';
+import { displayDash, tableCnic } from '../../lib/formatDisplayFields';
 
 // ============================================================================
 // TYPES & INTERFACES
 // ============================================================================
 interface LuggagePass {
   id: string;
+  ser: number;
   name: string;
   userName?: string;
   vehicleInfo: string;
@@ -38,7 +40,6 @@ interface LuggagePass {
   status: boolean;
   activeStatus: string;
   passStatus: string;
-  sno?: number;
 }
 
 type SelectedLuggageRow = Pick<Luggage, 'id'>;
@@ -311,19 +312,19 @@ export default function LuggagePage() {
   // -----------------------------------------------------------------------
   const luggagePasses: LuggagePass[] = (data?.items || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
-    .map((item, idx) => {
+    .map((item) => {
       const passStatus = deriveLuggagePassStatus(item);
       const isActiveRow = item.isActive && !item.isDeleted;
       return {
-        sno: (currentPage - 1) * pageSize + idx + 1,
+        ser: item.ser ?? 0,
         id: item.id,
-        name: item.name,
-        userName: item.externalUserName || '-',
+        name: displayDash(item.name),
+        userName: displayDash(item.externalUserName),
         vehicleInfo: formatLuggageVehicleDisplay(item),
         visitPassType: formatLuggagePassTypeLabel(item.luggagePassType),
         validFrom: formatDateDisplay(item.validFrom),
         validTill: formatDateDisplay(item.validTo),
-        cnicNicopNo: item.cnic,
+        cnicNicopNo: item.cnic ?? '',
         status: isActiveRow,
         activeStatus: isActiveRow ? 'Active' : 'Inactive',
         passStatus,
@@ -375,13 +376,13 @@ export default function LuggagePage() {
   // Table Columns Configuration
   // -----------------------------------------------------------------------
   const columns: Column<LuggagePass>[] = [
-    { key: 'sno', header: 'S.No' },
+    { key: 'ser', header: 'Ser' },
     { key: 'name', header: 'Name' },
     { key: 'vehicleInfo', header: 'Vehicle No' },
     { key: 'visitPassType', header: 'Luggage Pass Type' },
     { key: 'validFrom', header: 'Valid From' },
     { key: 'validTill', header: 'Valid Till' },
-    { key: 'cnicNicopNo', header: 'CNIC/NICOP No.' },
+    { key: 'cnicNicopNo', header: 'CNIC/NICOP No.', render: (v: string) => tableCnic(v) },
     {
       key: 'passStatus',
       header: 'Pass Status',
@@ -437,6 +438,7 @@ export default function LuggagePage() {
         }}
         columnFilterKeys={['passStatus', 'visitPassType']}
         enableSorting={false}
+        enableFiltering={false}
         error={
           isError
             ? `Failed to load luggage: ${error instanceof Error ? error.message : 'Unknown error'}`

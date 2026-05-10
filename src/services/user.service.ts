@@ -26,6 +26,7 @@ export const EXTERNAL_USERS_SELECT_PAGE_SIZE = 500;
 export interface ExternalUser {
   externalUserName: string;
   id: string;
+  ser?: number;
   name: string;
   email: string;
   phoneNumber: string;
@@ -35,6 +36,11 @@ export interface ExternalUser {
   cardIssueDate: string;
   cardExpiryDate: string;
   cardStatus: number;
+  address?: string | null;
+  memberNo?: string | null;
+  staffNo?: string | null;
+  category?: string | null;
+  subCategory?: string | null;
   created: string;
   createdBy: string;
   isDeleted: boolean;

@@ -51,12 +51,16 @@ export interface DataTableProps<T> {
   columnFilterKeys?: string[];
   /** Per-table labels for column filters (overrides default FILTERABLE_COLUMNS_CONFIG labels). */
   columnFilterLabels?: Record<string, string>;
+  /** Fixed option lists for column filters (e.g. enum API). Overrides values derived from row data. */
+  columnFilterStaticOptions?: Record<string, { value: string; label: string }[]>;
 }
 
 // ================================ CONSTANTS ================================
 
 const FILTERABLE_COLUMNS_CONFIG: Record<string, string> = {
-  cardStatus: 'Card Status',
+  jobType: 'Job Type',
+  workerCardDeliveryType: 'Worker Card Delivery',
+  cardStatus: 'Tag Status',
   tagType: 'Tag Type',
   subjectType: 'Subject Type',
   tagStatus: 'Tag Status',
@@ -176,6 +180,7 @@ export default function DataTable<T extends Record<string, any>>({
   tableUpperContent = null,
   columnFilterKeys,
   columnFilterLabels,
+  columnFilterStaticOptions,
 }: DataTableProps<T>) {
   
   // ================================ STATE MANAGEMENT ================================
@@ -237,6 +242,11 @@ export default function DataTable<T extends Record<string, any>>({
   }, [columns, columnFilterKeys, columnFilterLabels]);
 
   const getFilterOptions = (filterKey: string) => {
+    const staticOpts = columnFilterStaticOptions?.[filterKey];
+    if (staticOpts && staticOpts.length > 0) {
+      return [...staticOpts].sort((a, b) => a.label.localeCompare(b.label));
+    }
+
     const uniqueValues = Array.from(
       new Set(
         data
@@ -522,19 +532,21 @@ export default function DataTable<T extends Record<string, any>>({
                 <label className={styles.controlLabel} htmlFor={`filter-${filter.key}`}>
                   {filter.label}
                 </label>
-                <select
-                  id={`filter-${filter.key}`}
-                  className={styles.sortSelect}
-                  value={columnFilters[filter.key] || 'all'}
-                  onChange={(e) => handleColumnFilterChange(filter.key, e.target.value)}
-                >
-                  <option value="all">All</option>
-                  {getFilterOptions(filter.key).map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                <div className={styles.selectShell}>
+                  <select
+                    id={`filter-${filter.key}`}
+                    className={styles.sortSelect}
+                    value={columnFilters[filter.key] || 'all'}
+                    onChange={(e) => handleColumnFilterChange(filter.key, e.target.value)}
+                  >
+                    <option value="all">All</option>
+                    {getFilterOptions(filter.key).map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             ))}
 
@@ -543,19 +555,21 @@ export default function DataTable<T extends Record<string, any>>({
               <div className={styles.sortControls}>
                 <div className={styles.filterGroup}>
                   <label className={styles.controlLabel} htmlFor="sortBySelect">Sort By</label>
-                  <select
-                    id="sortBySelect"
-                    className={styles.sortSelect}
-                    value={sortKey}
-                    onChange={(e) => setSortKey(e.target.value)}
-                  >
-                    <option value="">None</option>
-                    {columns.map((column) => (
-                      <option key={String(column.key)} value={String(column.key)}>
-                        {column.header}
-                      </option>
-                    ))}
-                  </select>
+                  <div className={styles.selectShell}>
+                    <select
+                      id="sortBySelect"
+                      className={styles.sortSelect}
+                      value={sortKey}
+                      onChange={(e) => setSortKey(e.target.value)}
+                    >
+                      <option value="">None</option>
+                      {columns.map((column) => (
+                        <option key={String(column.key)} value={String(column.key)}>
+                          {column.header}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <div className={styles.filterGroup}>
                   <button
@@ -631,20 +645,24 @@ export default function DataTable<T extends Record<string, any>>({
       <div className={styles.footerBar}>
         {renderPagination()}
         <div className={styles.rowsPerPage}>
-          <div>
-            <label htmlFor="rowsPerPageSelect" style={{ fontWeight: 500 }}>Show list</label>
-            <p className={styles.rowsPerPageValue}>{effectiveRowsPerPage}</p>
+          <label className={styles.rowsPerPageLabel} htmlFor="rowsPerPageSelect">
+            Rows per page
+          </label>
+          <div className={styles.rowsPerPageControl}>
+            <select
+              id="rowsPerPageSelect"
+              value={effectiveRowsPerPage}
+              onChange={handleRowsPerPageChange}
+              className={styles.rowsPerPageSelect}
+              aria-label="Rows per page"
+            >
+              {[5, 10, 15, 20, 50, 100].map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
           </div>
-          <select
-            id="rowsPerPageSelect"
-            value={effectiveRowsPerPage}
-            onChange={handleRowsPerPageChange}
-            className={styles.rowsPerPageSelect}
-          >
-            {[5, 10, 15, 20, 50, 100].map((option) => (
-              <option key={option} value={option}>{option}</option>
-            ))}
-          </select>
         </div>
       </div>
     );

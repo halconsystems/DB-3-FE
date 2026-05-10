@@ -19,11 +19,16 @@ import { vehicleFields } from './fields';
 import { getEnumMetadata } from '../../services/enum.service';
 import { EXTERNAL_USERS_SELECT_PAGE_SIZE, getAllExternalUsers } from '../../services/user.service';
 import type { ExternalVehicle as BaseExternalVehicle } from '../../services/vehicle.service';
+import { formatCardNumberDisplay } from '../../lib/formatCardNumber';
+import { displayDash } from '../../lib/formatDisplayFields';
+import { useEnumMetadata } from '../../hooks/metadata/useEnumMetadata';
+import { normalizeNumericEnum } from '../../lib/statusMapping';
 
 type ExternalVehicle = BaseExternalVehicle;
 
 interface Vehicle {
   id: string;
+  ser: number;
   licensePlate: string;
   vehicleETagId: string;
   issueDate: string;
@@ -35,7 +40,6 @@ interface Vehicle {
   year: string;
   color: string;
   externalUserName?: string;
-  sno?: number;
 }
 
 type SelectedVehicleRow = Pick<ExternalVehicle, 'id'>;
@@ -115,6 +119,17 @@ export default function VehiclePage() {
   const modalId = searchParams?.get('id');
   const isViewMode = modalMode === 'view';
 
+  const { data: cardStatusEnum } = useEnumMetadata('CardStatus');
+
+  const tagStatusFilterOptions = useMemo(
+    () =>
+      (cardStatusEnum?.members ?? []).map((m) => ({
+        value: String(m.value),
+        label: m.name,
+      })),
+    [cardStatusEnum]
+  );
+
   useEffect(() => {
     if (modalMode === 'edit' || modalMode === 'view') {
       if (modalId) {
@@ -182,20 +197,20 @@ export default function VehiclePage() {
 
   const vehicles: Vehicle[] = (data?.items || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
-    .map((item: ExternalVehicle, idx) => ({
-      sno: (currentPage - 1) * pageSize + idx + 1,
+    .map((item: ExternalVehicle) => ({
+      ser: item.ser ?? 0,
       id: item.id,
       licensePlate: formatLicensePlate(item.license, item.licenseNo),
       vehicleETagId: item.eTagId || '-',
       issueDate: formatDateDisplay(item.validFrom),
       expiryDate: formatDateDisplay(item.validTo),
       ownership: item.externalUserId || '-',
-      externalUserName: item.externalUserName || '-',
+      externalUserName: displayDash(item.externalUserName),
       make: item.make || '-',
       model: item.model || '-',
       year: item.year || '-',
       color: resolveVehicleColorLabel(item.color),
-      tagStatus: item.tagStatus ?? item.cardStatus ?? null,
+      tagStatus: normalizeNumericEnum(item.tagStatus ?? item.cardStatus),
     }));
 
 
@@ -398,14 +413,18 @@ export default function VehiclePage() {
   };
 
   const columns: Column<Vehicle>[] = [
-    { key: 'sno', header: 'S.No' },
+    { key: 'ser', header: 'Ser' },
     {
       key: 'externalUserName',
       header: 'Ownership',
       render: (value) => value || '-',
     },
     { key: 'licensePlate', header: 'License Plate' },
-    { key: 'vehicleETagId', header: 'Vehicle E-Tag ID' },
+    {
+      key: 'vehicleETagId',
+      header: 'Vehicle E-Tag ID',
+      render: (value: string) => (value && value !== '-' ? formatCardNumberDisplay(value) : '-'),
+    },
     { key: 'issueDate', header: 'Issue Date' },
     { key: 'expiryDate', header: 'Expiry Date' },
     // Removed Ownership ID column as requested
@@ -452,7 +471,9 @@ export default function VehiclePage() {
         }}
         serverSidePagination
         columnFilterKeys={['tagStatus']}
-        columnFilterLabels={{ tagStatus: 'Card Status' }}
+        columnFilterLabels={{ tagStatus: 'Tag Status' }}
+        columnFilterStaticOptions={{ tagStatus: tagStatusFilterOptions }}
+        enableFiltering={false}
         error={isError ? `Failed to load vehicles: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
       />
 

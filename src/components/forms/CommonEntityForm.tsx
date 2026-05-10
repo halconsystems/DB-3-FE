@@ -8,6 +8,7 @@ import SuccessModal from '../popup/SuccessModal';
 import WarningModal from '../popup/WarningModal';
 import Loader from '../ui/loader';
 import { normalizeFormStatuses } from '../../lib/statusUtils';
+import { formatCardNumberDisplay, stripCardNumberFormatting } from '../../lib/formatCardNumber';
 import type { ProfileField, ProfileFormData } from './FormTypes';
 import {
   DateInputField,
@@ -88,6 +89,7 @@ const formatPhoneValue = (value: unknown): string => {
 
 const CNIC_FIELD_NAMES = new Set(['cnic', 'idNumber']);
 const PHONE_FIELD_NAMES = new Set(['phoneNumber', 'cellNumber', 'cellNumber1', 'cellNumber2', 'nextOfKinNumber']);
+const CARD_DISPLAY_FIELD_NAMES = new Set(['cardNo', 'rfidCardNo', 'residentCardNo']);
 
 const formatValueByFieldName = (fieldName: string, value: unknown): string => {
   if (value === null || value === undefined) return '';
@@ -98,6 +100,10 @@ const formatValueByFieldName = (fieldName: string, value: unknown): string => {
 
   if (PHONE_FIELD_NAMES.has(fieldName)) {
     return formatPhoneValue(value);
+  }
+
+  if (CARD_DISPLAY_FIELD_NAMES.has(fieldName)) {
+    return formatCardNumberDisplay(value);
   }
 
   return String(value);
@@ -114,6 +120,29 @@ const withFormattedIdentityAndPhoneFields = (data: ProfileFormData): ProfileForm
   });
 
   return nextData as ProfileFormData;
+};
+
+const withFormattedCardNumberFields = (data: ProfileFormData): ProfileFormData => {
+  const nextData: Record<string, unknown> = { ...data };
+  CARD_DISPLAY_FIELD_NAMES.forEach((key) => {
+    if (nextData[key] === undefined || nextData[key] === null || nextData[key] === '') {
+      return;
+    }
+    nextData[key] = formatCardNumberDisplay(nextData[key]);
+  });
+  return nextData as ProfileFormData;
+};
+
+const withStrippedCardNumberFieldsForSubmit = (data: ProfileFormData): ProfileFormData => {
+  const next: Record<string, unknown> = { ...data };
+  CARD_DISPLAY_FIELD_NAMES.forEach((key) => {
+    if (next[key] === undefined || next[key] === null) {
+      return;
+    }
+    const stripped = stripCardNumberFormatting(next[key]);
+    next[key] = stripped;
+  });
+  return next as ProfileFormData;
 };
 export default function CommonEntityForm({
   onCancel,
@@ -148,7 +177,7 @@ export default function CommonEntityForm({
     }
 
     const normalizedData = normalizeFormStatuses({ ...initialValues }, statusFieldNames);
-    const formattedData = withFormattedIdentityAndPhoneFields(normalizedData);
+    const formattedData = withFormattedCardNumberFields(withFormattedIdentityAndPhoneFields(normalizedData));
 
     return withDerivedVehicleLicensePlate(formattedData);
   }, [fields, initialValues]);
@@ -274,6 +303,30 @@ export default function CommonEntityForm({
       let digits = value.replace(/\D/g, '');
       if (digits.length > 16) digits = digits.slice(0, 16);
       // Insert space every 4 digits
+      let formatted = '';
+      for (let i = 0; i < digits.length; i += 4) {
+        if (i > 0) formatted += ' ';
+        formatted += digits.slice(i, i + 4);
+      }
+      setFormData((prev) => ({ ...prev, [name]: formatted }));
+      return;
+    }
+
+    if (name === 'cardNo' || name === 'rfidCardNo') {
+      let digits = value.replace(/\D/g, '');
+      if (digits.length > 16) digits = digits.slice(0, 16);
+      let formatted = '';
+      for (let i = 0; i < digits.length; i += 4) {
+        if (i > 0) formatted += ' ';
+        formatted += digits.slice(i, i + 4);
+      }
+      setFormData((prev) => ({ ...prev, [name]: formatted }));
+      return;
+    }
+
+    if (name === 'residentCardNo') {
+      let digits = value.replace(/\D/g, '');
+      if (digits.length > 32) digits = digits.slice(0, 32);
       let formatted = '';
       for (let i = 0; i < digits.length; i += 4) {
         if (i > 0) formatted += ' ';
@@ -445,6 +498,23 @@ export default function CommonEntityForm({
       return;
     }
 
+    if (formData.rfidCardNo && !/^\d{4}( \d{4}){3}$/.test(formData.rfidCardNo)) {
+      setWarningTitle('Validation Error');
+      setWarningMessage('RFID Card No must be in the format 1234 5678 1234 5678.');
+      setShowWarning(true);
+      return;
+    }
+
+    if (formData.residentCardNo) {
+      const d = stripCardNumberFormatting(formData.residentCardNo);
+      if (d && !/^\d+$/.test(d)) {
+        setWarningTitle('Validation Error');
+        setWarningMessage('Resident Card No must contain digits only.');
+        setShowWarning(true);
+        return;
+      }
+    }
+
     // Tag Number 18-digit validation removed as requested
     console.log('[CommonEntityForm] submit clicked', formData);
 
@@ -490,7 +560,10 @@ export default function CommonEntityForm({
     try {
       let saveResult: void | boolean | Record<string, any> = true;
       if (onSave) {
-        saveResult = await onSave(withDerivedVehicleLicensePlate({ ...formData, isActive }));
+        const payload = withStrippedCardNumberFieldsForSubmit(
+          withDerivedVehicleLicensePlate({ ...formData, isActive })
+        );
+        saveResult = await onSave(payload);
       }
 
       if (isApiSuccess(saveResult)) {

@@ -5,7 +5,7 @@ import { familyDetails, vehicles, workers, visitors } from './familyData';
 import styles from './Family.module.css';
 
 const familyColumns: Column<any>[] = [
-  { key: 'sno', header: 'S.No' },
+  { key: 'ser', header: 'Ser' },
   { key: 'name', header: 'Name' },
   { key: 'relation', header: 'Relation' },
   { key: 'phone', header: 'Phone' },
@@ -14,11 +14,11 @@ const familyColumns: Column<any>[] = [
   { key: 'residentCard', header: 'Resident Card No.' },
   { key: 'issueDate', header: 'Issue Date' },
   { key: 'expiryDate', header: 'Expiry Date' },
-  { key: 'cardStatus', header: 'Card Status', render: (value) => <StatusBadge status={value} /> },
+  { key: 'cardStatus', header: 'Tag Status', render: (value) => <StatusBadge status={value} /> },
 ];
 
 const vehicleColumns: Column<any>[] = [
-  { key: 'sno', header: 'S.No' },
+  { key: 'ser', header: 'Ser' },
   { key: 'licensePlate', header: 'License Plate' },
   { key: 'vehicleETagId', header: 'Vehicle E-Tag ID' },
   { key: 'eTagType', header: 'E-Tag Type' },
@@ -34,7 +34,7 @@ const vehicleColumns: Column<any>[] = [
 ];
 
 const workerColumns: Column<any>[] = [
-  { key: 'sno', header: 'S.No' },
+  { key: 'ser', header: 'Ser' },
   { key: 'name', header: 'Name' },
   { key: 'jobType', header: 'Job Type' },
   { key: 'phone', header: 'Phone' },
@@ -48,7 +48,7 @@ const workerColumns: Column<any>[] = [
 ];
 
 const visitorColumns: Column<any>[] = [
-  { key: 'sno', header: 'S.No' },
+  { key: 'ser', header: 'Ser' },
   { key: 'name', header: 'Name' },
   { key: 'vehicleInfo', header: 'Vehicle Info' },
   { key: 'visitDetail', header: 'Visit Detail' },
@@ -64,11 +64,10 @@ export default function FamilyDetailsPage() {
   const getWorkerRowStatus = (row: any) => row.workerStatus;
   const getVisitorRowStatus = (row: any) => row.status;
 
-  // Add S.No to each dataset
-  const familyDetailsWithSno = familyDetails.map((row, idx) => ({ ...row, sno: idx + 1 }));
-  const vehiclesWithSno = vehicles.map((row, idx) => ({ ...row, sno: idx + 1 }));
-  const workersWithSno = workers.map((row, idx) => ({ ...row, sno: idx + 1 }));
-  const visitorsWithSno = visitors.map((row, idx) => ({ ...row, sno: idx + 1 }));
+  const familyDetailsWithSno = familyDetails.map((row, idx) => ({ ...row, ser: idx + 1 }));
+  const vehiclesWithSno = vehicles.map((row, idx) => ({ ...row, ser: idx + 1 }));
+  const workersWithSno = workers.map((row, idx) => ({ ...row, ser: idx + 1 }));
+  const visitorsWithSno = visitors.map((row, idx) => ({ ...row, ser: idx + 1 }));
 
   return (
     <DashboardLayout pageTitle="Family Details">

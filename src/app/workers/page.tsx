@@ -19,9 +19,14 @@ import { EXTERNAL_USERS_SELECT_PAGE_SIZE, getAllExternalUsers } from '../../serv
 import type { ExternalWorker } from '../../services/worker.service';
 import CircularButton from '../../components/ui/CircularButton';
 import { useEnumMetadata } from '../../hooks/metadata/useEnumMetadata';
+import { formatCardNumberDisplay, stripCardNumberFormatting } from '../../lib/formatCardNumber';
+import { workerCardDeliveryToApi, workerCardDeliveryToFormValue } from '../../lib/workerCardDelivery';
+import { displayDash, tableCnic, tablePhone } from '../../lib/formatDisplayFields';
+import { normalizeNumericEnum } from '../../lib/statusMapping';
 
 interface Worker {
   id: string;
+  ser: number;
   workerName: string;
   userName: string;
   jobType: string;
@@ -29,15 +34,26 @@ interface Worker {
   dob: string;
   cnicNicopNo: string;
   policeVerification: 'Yes' | 'No';
-  workerCardDelivery: string;
+  workerCardDeliveryType: number;
   fatherOrHusbandName?: string;
   workerStatus: boolean;
   workerCard: string;
   issuedDate?: string;
   expiryDate?: string;
   cardStatus?: number | string | null;
-  sno?: number;
 }
+
+const normalizeWorkerCardDeliveryType = (raw: unknown): number => {
+  if (raw === null || raw === undefined || raw === '') return -1;
+  if (typeof raw === 'number' && !Number.isNaN(raw)) return raw;
+  const s = String(raw).trim();
+  const n = Number(s);
+  if (!Number.isNaN(n)) return n;
+  const lower = s.toLowerCase();
+  if (lower.includes('self')) return 2;
+  if (lower.includes('owner') || lower.includes('employer')) return 1;
+  return -1;
+};
 
 type SelectedWorkerRow = Pick<ExternalWorker, 'id'>;
 
@@ -100,6 +116,8 @@ export default function WorkersPage() {
   const { mutateAsync: createWorker } = useCreateWorker();
   const { mutateAsync: updateWorker } = useUpdateWorker();
   const { data: cardStatusEnum, isLoading: isCardStatusEnumLoading } = useEnumMetadata('CardStatus');
+  const { data: workerCardDeliveryEnum, isLoading: isWorkerCardDeliveryEnumLoading } =
+    useEnumMetadata('WorkerCardDeliveryType');
 
   const [formError, setFormError] = useState('');
 
@@ -123,25 +141,49 @@ export default function WorkersPage() {
     }
   }, [modalMode, modalId]);
 
+  const deliveryLabelByValue = useMemo(() => {
+    const map: Record<number, string> = {};
+    workerCardDeliveryEnum?.members?.forEach((m) => {
+      map[Number(m.value)] = m.name;
+    });
+    return map;
+  }, [workerCardDeliveryEnum]);
+
+  const workerColumnFilterStaticOptions = useMemo(
+    () => ({
+      workerCardDeliveryType: (workerCardDeliveryEnum?.members ?? []).map((m) => ({
+        value: String(m.value),
+        label: m.name,
+      })),
+      cardStatus: (cardStatusEnum?.members ?? []).map((m) => ({
+        value: String(m.value),
+        label: m.name,
+      })),
+    }),
+    [workerCardDeliveryEnum, cardStatusEnum]
+  );
+
   const workers: Worker[] = (data?.items || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
-    .map((item, idx) => ({
-      sno: (currentPage - 1) * pageSize + idx + 1,
+    .map((item) => ({
+      ser: item.ser ?? 0,
       id: item.id,
-      workerName: item.name || '-',
-      userName: item.externalUserName || '-',
-      fatherOrHusbandName: item.fatherOrHusbandName || '-',
+      workerName: displayDash(item.name),
+      userName: displayDash(item.externalUserName),
+      fatherOrHusbandName: displayDash(item.fatherOrHusbandName),
       jobType: toJobTypeLabel(item.jobType),
-      phone: item.phoneNumber || '-',
+      phone: tablePhone(item.phoneNumber),
       dob: formatDateDisplay(item.dateOfBirth),
-      cnicNicopNo: item.cnic || '-',
+      cnicNicopNo: tableCnic(item.cnic),
       policeVerification: item.policeVerification ? 'Yes' : 'No',
-      workerCardDelivery: item.workerCardDeliveryType?.toString() || '-',
+      workerCardDeliveryType: normalizeWorkerCardDeliveryType(item.workerCardDeliveryType),
       workerStatus: !!(item.isActive && !item.isDeleted),
-      workerCard: item.workerCardNumber || '-',
+      workerCard: item.workerCardNumber
+        ? formatCardNumberDisplay(item.workerCardNumber)
+        : '-',
       issuedDate: formatDateDisplay(item.validFrom),
       expiryDate: formatDateDisplay(item.validTo),
-      cardStatus: item.cardStatus,
+      cardStatus: normalizeNumericEnum(item.cardStatus),
     }));
 
 
@@ -227,23 +269,6 @@ export default function WorkersPage() {
     return String(value);
   };
 
-  const toWorkerCardDeliveryType = (value?: string): number => {
-    const normalized = String(value ?? '').trim().toLowerCase();
-    if (normalized === 'owner' || normalized === 'owneroremployeeraddress') return 0;
-    if (normalized === 'self' || normalized === 'selfpickup') return 1;
-    return 0;
-  };
-
-  const toWorkerCardDeliveryFormValue = (value?: number | string): string => {
-    if (typeof value === 'number') {
-      return value === 1 ? 'self' : 'owner';
-    }
-
-    const normalized = String(value ?? '').trim().toLowerCase();
-    if (normalized === 'selfpickup' || normalized === 'self') return 'self';
-    return 'owner';
-  };
-
   const toPoliceVerification = (value?: string): boolean => {
     return value === 'yes';
   };
@@ -271,13 +296,13 @@ export default function WorkersPage() {
         ser: 0,
         jobType: toJobType(data.jobType),
         cnic: data.cnic || '',
-        name:data.name || '',
+        name: data.fullName || '',
         phoneNumber: data.cellNumber || '',
         dateOfBirth: toIsoDate(data.dob),
-        fatherOrHusbandName: data.fatherOrHusbandName || '',
+        fatherOrHusbandName: data.fatherOrHusband || '',
         policeVerification: toPoliceVerification(data.policeVerification),
-        workerCardDeliveryType: toWorkerCardDeliveryType(data.workerCardDelivery),
-        workerCardNumber: data.workerCardNo || '',
+        workerCardDeliveryType: workerCardDeliveryToApi(data.cardDelivery),
+        workerCardNumber: stripCardNumberFormatting(data.cardNo || ''),
         validFrom: toIsoDate(data.issuedDate),
         validTo: toIsoDate(data.expiryDate),
         cardStatus: toCardStatus(data.cardStatus),
@@ -305,8 +330,8 @@ export default function WorkersPage() {
       dob: toDateInputValue(data.dateOfBirth),
       fatherOrHusband: data.fatherOrHusbandName || '',
       policeVerification: data.policeVerification ? 'yes' : 'no',
-      cardDelivery: toWorkerCardDeliveryFormValue(data.workerCardDeliveryType),
-      cardNo: data.workerCardNumber || '',
+      cardDelivery: workerCardDeliveryToFormValue(data.workerCardDeliveryType),
+      cardNo: data.workerCardNumber ? formatCardNumberDisplay(data.workerCardNumber) : '',
       issueDate: toDateInputValue(data.validFrom),
       expiryDate: toDateInputValue(data.validTo),
       cardStatus: toCardStatusFormValue(data.cardStatus),
@@ -319,12 +344,23 @@ export default function WorkersPage() {
   }, [editWorkerDetails]);
 
   const dynamicWorkerFields = useMemo(() => {
-    const cardStatusOptions = [{ value: '', label: 'Select Card Status' }];
+    const cardStatusOptions = [{ value: '', label: 'Select Tag Status' }];
 
     if (cardStatusEnum?.members) {
       cardStatusEnum.members.forEach((member) => {
         cardStatusOptions.push({
           value: String(member.value),
+          label: member.name,
+        });
+      });
+    }
+
+    const deliveryOptions = [{ value: '', label: 'Select here' }];
+    if (workerCardDeliveryEnum?.members) {
+      workerCardDeliveryEnum.members.forEach((member) => {
+        const n = Number(member.value);
+        deliveryOptions.push({
+          value: n === 2 ? 'self' : 'owner',
           label: member.name,
         });
       });
@@ -338,9 +374,16 @@ export default function WorkersPage() {
           options: cardStatusOptions,
         };
       }
+      if (field.name === 'cardDelivery') {
+        return {
+          ...field,
+          type: 'select' as const,
+          options: deliveryOptions,
+        };
+      }
       return field;
     });
-  }, [cardStatusEnum]);
+  }, [cardStatusEnum, workerCardDeliveryEnum]);
 
   const modalFields = useMemo(() => {
     if (!isViewMode) return dynamicWorkerFields;
@@ -356,13 +399,13 @@ export default function WorkersPage() {
         ser: workerData.ser || 0,
         jobType: toJobType(formData.jobType) ?? workerData.jobType,
         cnic: formData.cnic || workerData.cnic || '',
-        name: formData.name || workerData.name || '',
+        name: formData.fullName || workerData.name || '',
         phoneNumber: formData.cellNumber || workerData.phoneNumber || '',
         dateOfBirth: toIsoDate(formData.dob || workerData.dateOfBirth),
-        fatherOrHusbandName: formData.fatherOrHusbandName || workerData.fatherOrHusbandName || '',
+        fatherOrHusbandName: formData.fatherOrHusband || workerData.fatherOrHusbandName || '',
         policeVerification: toPoliceVerification(formData.policeVerification) ?? workerData.policeVerification,
-        workerCardDeliveryType: toWorkerCardDeliveryType(formData.workerCardDelivery) ?? workerData.workerCardDeliveryType,
-        workerCardNumber: formData.workerCardNo || workerData.workerCardNumber || '',
+        workerCardDeliveryType: workerCardDeliveryToApi(formData.cardDelivery),
+        workerCardNumber: stripCardNumberFormatting(formData.cardNo || '') || workerData.workerCardNumber || '',
         validFrom: toIsoDate(formData.issuedDate || workerData.validFrom),
         validTo: toIsoDate(formData.expiryDate || workerData.validTo),
         cardStatus: toCardStatus(formData.cardStatus) ?? workerData.cardStatus,
@@ -403,9 +446,9 @@ export default function WorkersPage() {
   };
 
   const columns: Column<Worker>[] = [
-     {
-      key: 'sno',
-      header: 'S.No',
+    {
+      key: 'ser',
+      header: 'Ser',
     },
     { key: 'workerName', header: 'Worker Name' },
     { key: 'userName', header: 'User Name' },
@@ -415,7 +458,12 @@ export default function WorkersPage() {
     { key: 'cnicNicopNo', header: 'CNIC/NICOP No.' },
     { key: 'fatherOrHusbandName', header: 'Father/Husband Name' },
     { key: 'policeVerification', header: 'Police Verification' },
-    { key: 'workerCardDelivery', header: 'Worker Card Delivery' },
+    {
+      key: 'workerCardDeliveryType',
+      header: 'Worker Card Delivery',
+      render: (value: number) =>
+        value >= 0 ? deliveryLabelByValue[value] ?? displayDash(value) : '-',
+    },
     { 
       key: 'workerStatus', 
       header: 'Worker Status',
@@ -426,8 +474,8 @@ export default function WorkersPage() {
     { key: 'expiryDate', header: 'Expiry Date' },
     {
       key: 'cardStatus',
-      header: 'Card Status',
-      render: (value: number) => <StatusBadge type="tagStatus" value={value} />
+      header: 'Tag Status',
+      render: (value: number | null) => <StatusBadge type="cardStatus" value={value} />,
     },
     {
       key: 'action',
@@ -458,6 +506,10 @@ export default function WorkersPage() {
           setCurrentPage(1);
         }}
         serverSidePagination
+        enableFiltering={false}
+        columnFilterKeys={['workerCardDeliveryType', 'cardStatus']}
+        columnFilterLabels={{ workerCardDeliveryType: 'Worker Card Delivery', cardStatus: 'Tag Status' }}
+        columnFilterStaticOptions={workerColumnFilterStaticOptions}
         getRowStatus={(row) => row.workerStatus ? 'Active' : 'Inactive'}
         error={isError ? `Failed to load workers: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
       />
@@ -473,7 +525,7 @@ export default function WorkersPage() {
           onCancel={handleCloseModal}
           fields={dynamicWorkerFields}
           saveButtonText="Create"
-          loading={isCardStatusEnumLoading}
+            loading={isCardStatusEnumLoading || isWorkerCardDeliveryEnumLoading}
           showStatusToggle={false}
         />
       </FormModal>
@@ -495,7 +547,7 @@ export default function WorkersPage() {
             initialValues={initialWorkerValues}
             saveButtonText="Update"
             isViewMode={isViewMode}
-            loading={isEditWorkerLoading || isCardStatusEnumLoading}
+            loading={isEditWorkerLoading || isCardStatusEnumLoading || isWorkerCardDeliveryEnumLoading}
             showStatusToggle={false}
           />
         ) : (

@@ -29,41 +29,32 @@ const STATUS_TYPES = {
   official: { label: 'Official', color: '#388e3c', bg: '#e8f5e9' },
   service: { label: 'Service', color: '#f9a825', bg: '#fffde7' },
   commercial: { label: 'Commercial', color: '#d32f2f', bg: '#ffebee' },
+  pending: { label: 'Pending', color: '#ff9800', bg: '#fff3e0' },
 };
 
 // ============================================================================
 // Map enums to status types (reusing definitions from above)
 // ============================================================================
 
-// UserFamily CardStatus enum (0-6)
-export const userFamilyCardStatusMap: StatusMap = {
-  0: STATUS_TYPES.draft,
-  1: STATUS_TYPES.encoded,
-  2: STATUS_TYPES.active,
-  3: STATUS_TYPES.suspended,
-  4: STATUS_TYPES.blacklisted,
-  5: STATUS_TYPES.replaced,
-  6: STATUS_TYPES.expired,
-};
-
-// CardStatus enum mapping (0-6)
+/** API CardStatus: Active=1, Suspended=2, Expired=3, Pending=4 */
 export const cardStatusMap: StatusMap = {
-  0: STATUS_TYPES.draft,
-  1: STATUS_TYPES.encoded,
-  2: STATUS_TYPES.active,
-  3: STATUS_TYPES.suspended,
-  4: STATUS_TYPES.blacklisted,
-  5: STATUS_TYPES.replaced,
-  6: STATUS_TYPES.expired,
+  1: STATUS_TYPES.active,
+  2: STATUS_TYPES.suspended,
+  3: STATUS_TYPES.expired,
+  4: STATUS_TYPES.pending,
 };
 
-// TagStatus enum mapping (0-4)
+export const userFamilyCardStatusMap: StatusMap = {
+  ...cardStatusMap,
+};
+
+/** Vehicle tag / card status aligned with domain CardStatus (1–4). */
 export const tagStatusMap: StatusMap = {
   0: STATUS_TYPES.unknown,
   1: STATUS_TYPES.active,
-  2: STATUS_TYPES.blocked,
+  2: STATUS_TYPES.suspended,
   3: STATUS_TYPES.expired,
-  4: STATUS_TYPES.suspended,
+  4: STATUS_TYPES.pending,
 };
 
 // VehicleCategory enum mapping (0-3)
@@ -93,6 +84,13 @@ export const statusMappings: Record<string, StatusMap> = {
   tagStatus: tagStatusMap,
   vehicleCategory: vehicleCategoryMap,
   activeInactive: activeInactiveStatusMap, 
+};
+
+/** Coerce API enum / query values to a number for filters and badges, or null if empty/invalid. */
+export const normalizeNumericEnum = (value: unknown): number | null => {
+  if (value === null || value === undefined || value === '') return null;
+  const n = typeof value === 'number' ? value : Number(String(value).trim());
+  return Number.isNaN(n) ? null : n;
 };
 
 // Get status config for a specific table type and value

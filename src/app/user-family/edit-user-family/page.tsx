@@ -116,7 +116,7 @@ export default function EditUserFamily() {
 
   const dynamicUserFamilyFields = useMemo(() => {
     const relationOptions = [{ value: '', label: 'Select Relation' }];
-    const cardStatusOptions = [{ value: '', label: 'Select Card Status' }];
+    const cardStatusOptions = [{ value: '', label: 'Select Tag Status' }];
 
     if (relationEnum?.members) {
       relationEnum.members.forEach((member) => {

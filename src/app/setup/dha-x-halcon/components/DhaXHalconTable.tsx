@@ -3,11 +3,12 @@
 import { useMemo, useState } from 'react';
 import DataTable, { Column, StatusBadge, Tab } from '@/components/tables/DataTable';
 import CircularButton from '@/components/ui/CircularButton';
-import { formatDateDisplay } from '@/lib/dateUtils';
+import { endOfDayIso, formatDateDisplay, startOfDayIso } from '@/lib/dateUtils';
 import { useInvoiceSummary } from '@/hooks/invoice/useInvoiceSummary';
 import { useInvoiceSummaryDetails } from '@/hooks/invoice/useInvoiceSummaryDetails';
 import type { InvoiceSummaryDetailItem } from '@/services/invoice.service';
-import { CalendarDays, ChevronDown } from 'lucide-react';
+import { exportInvoicesExcel } from '@/services/invoice.service';
+import { ChevronDown, FileSpreadsheet } from 'lucide-react';
 import styles from './DhaXHalconTable.module.css';
 
 interface DhaXHalconTableProps {
@@ -41,20 +42,6 @@ interface HalconRow {
 function formatPkr(n: number | null | undefined): string {
   if (n === null || n === undefined || Number.isNaN(Number(n))) return '-';
   return `PKR ${Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-}
-
-function startOfDayIso(ymd: string): string | undefined {
-  if (!ymd?.trim()) return undefined;
-  const [y, m, d] = ymd.split('-').map(Number);
-  if (!y || !m || !d) return undefined;
-  return new Date(y, m - 1, d, 0, 0, 0, 0).toISOString();
-}
-
-function endOfDayIso(ymd: string): string | undefined {
-  if (!ymd?.trim()) return undefined;
-  const [y, m, d] = ymd.split('-').map(Number);
-  if (!y || !m || !d) return undefined;
-  return new Date(y, m - 1, d, 23, 59, 59, 999).toISOString();
 }
 
 const columns: Column<HalconRow>[] = [
@@ -93,6 +80,7 @@ export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHa
   const [selectedHead, setSelectedHead] = useState<'dha' | 'halcon'>('dha');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+  const [excelExporting, setExcelExporting] = useState(false);
 
   const fromDateIso = fromDate ? startOfDayIso(fromDate) : undefined;
   const toDateIso = toDate ? endOfDayIso(toDate) : undefined;
@@ -159,18 +147,39 @@ export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHa
   const isError = detailsError || summaryError;
   const error = detailsErr ?? summaryErr;
 
-  const toShortDate = (value?: string) => {
-    if (!value) return '';
-    const m = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (!m) return '';
-    return `${m[3]}/${m[2]}/${m[1].slice(2)}`;
+  const excelDateRangeIso = () => {
+    const toYmd = toDate.trim() || new Date().toISOString().slice(0, 10);
+    const fromYmd = fromDate.trim() || toYmd;
+    return {
+      from: startOfDayIso(fromYmd)!,
+      to: endOfDayIso(toYmd)!,
+    };
   };
 
-  const dateRangeLabel = (() => {
-    if (fromDate && toDate) return `${toShortDate(fromDate)} - ${toShortDate(toDate)}`;
-    if (fromDate) return `${toShortDate(fromDate)} - ${toShortDate(fromDate)}`;
-    return '21/02/26 - 20/03/26';
-  })();
+  const handleExportExcel = async () => {
+    const { from, to } = excelDateRangeIso();
+    setExcelExporting(true);
+    try {
+      const blob = await exportInvoicesExcel({
+        pageNumber: 0,
+        pageSize: 0,
+        invoiceNumber: '',
+        fromDate: from,
+        toDate: to,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `dha-halcon-invoices-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // eslint-disable-next-line no-alert
+      alert('Excel export failed. Please try again.');
+    } finally {
+      setExcelExporting(false);
+    }
+  };
 
   const headerContent = (
     <div className={styles.headerArea}>
@@ -184,7 +193,7 @@ export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHa
                 onChange={(e) => setSelectedHead(e.target.value as 'dha' | 'halcon')}
                 className={styles.headSelect}
               >
-                <option value="dha">Select (DHA/Halcon)</option>
+                <option value="dha">DHA</option>
                 <option value="halcon">Halcon</option>
               </select>
               <ChevronDown size={13} className={styles.selectIcon} />
@@ -192,24 +201,27 @@ export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHa
           </div>
           <div className={styles.controlCard}>
             <p className={styles.cardLabel}>Date Range</p>
-            <div className={styles.dateValueRow}>
-              <span className={styles.cardValue}>{dateRangeLabel}</span>
-              <CalendarDays size={13} className={styles.calendarIcon} />
-            </div>
-            <div className={styles.hiddenDateInputs}>
+            <div className={styles.dateInputsRow}>
               <input
                 id="dha-x-from"
                 type="date"
+                className={styles.dateInput}
                 value={fromDate}
+                aria-label="From date"
                 onChange={(e) => {
                   setFromDate(e.target.value);
                   setCurrentPage(1);
                 }}
               />
+              <span className={styles.cardValue} style={{ alignSelf: 'center' }}>
+                –
+              </span>
               <input
                 id="dha-x-to"
                 type="date"
+                className={styles.dateInput}
                 value={toDate}
+                aria-label="To date"
                 onChange={(e) => {
                   setToDate(e.target.value);
                   setCurrentPage(1);
@@ -218,6 +230,18 @@ export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHa
             </div>
           </div>
         </div>
+        <div className={styles.midGroup}>
+          <button
+            type="button"
+            className={styles.excelBtn}
+            onClick={handleExportExcel}
+            disabled={excelExporting}
+            title="Download Excel"
+            aria-label="Export Excel"
+          >
+            <FileSpreadsheet size={22} color="#217346" strokeWidth={1.75} />
+          </button>
+        </div>
         <div className={styles.rightGroup}>
           <div className={styles.card}>
             <p className={styles.cardLabel}>Total Amount</p>
@@ -225,15 +249,13 @@ export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHa
           </div>
           <div className={styles.card}>
             <p className={styles.cardLabel}>DHA %</p>
-            <p className={styles.cardValue}>
-              {formatPkr(summaryTotals?.dhaAmount)}
-            </p>
+            <p className={styles.cardSub}>{summaryTotals != null ? `${summaryTotals.dhaPercentage}%` : '—'}</p>
+            <p className={styles.cardValue}>{formatPkr(summaryTotals?.dhaAmount)}</p>
           </div>
           <div className={styles.card}>
             <p className={styles.cardLabel}>Halcon %</p>
-            <p className={styles.cardValue}>
-              {formatPkr(summaryTotals?.halconAmount)}
-            </p>
+            <p className={styles.cardSub}>{summaryTotals != null ? `${summaryTotals.halconPercentage}%` : '—'}</p>
+            <p className={styles.cardValue}>{formatPkr(summaryTotals?.halconAmount)}</p>
           </div>
         </div>
       </div>

@@ -53,12 +53,31 @@ export interface GetAllInvoicesPayload {
 	toDate?: string;
 }
 
+export interface ExportInvoicesExcelPayload {
+	pageNumber: number;
+	pageSize: number;
+	invoiceNumber: string;
+	/** ISO date-time */
+	fromDate: string;
+	/** ISO date-time */
+	toDate: string;
+}
+
+export async function exportInvoicesExcel(payload: ExportInvoicesExcelPayload): Promise<Blob> {
+	const response = await apiClient.post<Blob>("/invoices/export/excel", payload, {
+		responseType: "blob",
+	});
+	return response.data;
+}
+
 export async function getAllInvoices(payload: GetAllInvoicesPayload): Promise<GetAllInvoicesResponse> {
-	// Only send pageNumber and pageSize in the payload
-	const fullPayload = {
+	const fullPayload: Record<string, string | number> = {
 		pageNumber: payload.pageNumber ?? 1,
 		pageSize: payload.pageSize ?? 10,
 	};
+	if (payload.invoiceNumber?.trim()) fullPayload.invoiceNumber = payload.invoiceNumber.trim();
+	if (payload.fromDate?.trim()) fullPayload.fromDate = payload.fromDate.trim();
+	if (payload.toDate?.trim()) fullPayload.toDate = payload.toDate.trim();
 	const response = await apiClient.post("/invoices/GetAllInvoices", fullPayload);
 	
 	const apiData = response.data;

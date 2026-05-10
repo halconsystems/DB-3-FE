@@ -6,10 +6,10 @@ export const userFields: ProfileField[] = [
   { name: 'cellNumber' as keyof ProfileFormData, label: 'Phone', type: 'text', required: true, placeholder: '0300-1234567' },
   { name: 'cnic' as keyof ProfileFormData, label: 'CNIC No.', type: 'text', required: true, placeholder: '12345-1234567-1' },
   { name: 'userType' as keyof ProfileFormData, label: 'User Type', type: 'select', required: true, placeholder: 'Select User Type', options: [{ value: '', label: 'Select User Type' }, { value: 'admin', label: 'Admin' }, { value: 'user', label: 'User' }] },
-  { name: 'rfidCardNo' as keyof ProfileFormData, label: 'RFID Card No.', type: 'text', required: true, placeholder: 'RFID Card Number' },
+  { name: 'rfidCardNo' as keyof ProfileFormData, label: 'RFID Card No.', type: 'text', required: true, placeholder: 'e.g. 1234 5678 1234 5678' },
   { name: 'cardIssueDate' as keyof ProfileFormData, label: 'Card Issue Date', type: 'date', required: false, placeholder: 'Select Date' },
   { name: 'cardExpiryDate' as keyof ProfileFormData, label: 'Card Expiry Date', type: 'date', required: false, placeholder: 'Select Date' },
-  { name: 'cardStatus' as keyof ProfileFormData, label: 'Card Status', type: 'select', required: true, placeholder: 'Select Card Status', options: [{ value: '', label: 'Select Card Status' }] },
+  { name: 'cardStatus' as keyof ProfileFormData, label: 'Tag Status', type: 'select', required: true, placeholder: 'Select Tag Status', options: [{ value: '', label: 'Select Tag Status' }] },
 ];
 
 export const mockUserData: ProfileFormData = {

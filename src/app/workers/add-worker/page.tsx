@@ -5,6 +5,8 @@ import CommonEntityForm, { ProfileFormData } from '../../../components/forms/Com
 import { workerFields } from '../fields';
 import { useCreateWorker } from '../../../hooks/workers/useCreateWorker';
 import { EXTERNAL_USERS_SELECT_PAGE_SIZE, getAllExternalUsers } from 'services/user.service';
+import { workerCardDeliveryToApi } from '../../../lib/workerCardDelivery';
+import { stripCardNumberFormatting } from '../../../lib/formatCardNumber';
 
 // Return YYYY-MM-DD as-is without conversion
 const toIsoDate = (value?: string) => {
@@ -54,16 +56,6 @@ const toCardStatus = (value?: string | number | boolean): number => {
   return 0;
 };
 
-const toWorkerCardDeliveryType = (value?: string): number => {
-  if (value === 'owner') {
-    return 0;
-  }
-  if (value === 'self') {
-    return 1;
-  }
-  return 0;
-};
-
 const toPoliceVerification = (value?: string): boolean => {
   return value === 'yes';
 };
@@ -109,9 +101,9 @@ export default function AddNewWorker() {
         profilePicture: toAttachmentString(data.profilePicture),
         policeVerification: toPoliceVerification(data.policeVerification),
         policeVerificationAttachment: toAttachmentString(data.policeVerificationFile),
-        workerCardNumber: data.cardNo || '',
+        workerCardNumber: stripCardNumberFormatting(data.cardNo || ''),
         cardStatus: toCardStatus(data.cardStatus),
-        workerCardDeliveryType: toWorkerCardDeliveryType(data.cardDelivery),
+        workerCardDeliveryType: workerCardDeliveryToApi(data.cardDelivery),
         validFrom: toIsoDate(data.issueDate),
         validTo: toIsoDate(data.expiryDate),
         createdBy,

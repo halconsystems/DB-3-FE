@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState, useMemo } from 'react';
 import { useInvoices } from '../../../../hooks/invoice/useInvoices';
+import { useInvoiceSummary } from '../../../../hooks/invoice/useInvoiceSummary';
 import { useCreateInvoice } from '../../../../hooks/invoice/useCreateInvoice';
 import { useUpdateInvoice } from '../../../../hooks/invoice/useUpdateInvoice';
 import { useInvoiceById } from '../../../../hooks/invoice/useInvoiceById';
@@ -11,8 +12,11 @@ import FormModal from '../../../../components/popup/FormModal';
 import CommonEntityForm, { ProfileFormData } from '../../../../components/forms/CommonEntityForm';
 import InvoicePreviewModal from './InvoicePreviewModal';
 import { saveTableRow, clearTableRow, getTableRow } from '../../../../lib/tableRowStorage';
-import { formatDateDisplay } from '../../../../lib/dateUtils';
+import { endOfDayIso, formatDateDisplay, startOfDayIso } from '../../../../lib/dateUtils';
 import { invoiceFields } from '../fields';
+import { exportInvoicesExcel } from '../../../../services/invoice.service';
+import { FileSpreadsheet } from 'lucide-react';
+import toolbarStyles from './InvoiceToolbar.module.css';
 
 interface Invoice {
   id: string;
@@ -49,12 +53,42 @@ interface InvoiceTableProps {
   searchParams?: any | null;
 }
 
+function formatPkr(n: number | null | undefined): string {
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return 'PKR 0';
+  return `PKR ${Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+}
+
 export default function InvoiceTable(props: InvoiceTableProps) {
   const { tabs, activeTab, onTabChange, onAddNew, addButtonLabel, searchParams } = props;
   const [currentPage, setCurrentPage] = useState(1);
+  const [invoiceNumberFilter, setInvoiceNumberFilter] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [excelExporting, setExcelExporting] = useState(false);
   const router = useRouter();
-  // Pass required payload to useInvoices
-  const { data, isLoading } = useInvoices({ pageNumber: currentPage, pageSize: 10 });
+
+  const fromIso = fromDate ? startOfDayIso(fromDate) : undefined;
+  const toIso = toDate ? endOfDayIso(toDate) : undefined;
+
+  const invoiceQueryPayload = useMemo(
+    () => ({
+      pageNumber: currentPage,
+      pageSize: 10,
+      ...(invoiceNumberFilter.trim() ? { invoiceNumber: invoiceNumberFilter.trim() } : {}),
+      ...(fromIso ? { fromDate: fromIso } : {}),
+      ...(toIso ? { toDate: toIso } : {}),
+    }),
+    [currentPage, invoiceNumberFilter, fromIso, toIso]
+  );
+
+  const { data, isLoading } = useInvoices(invoiceQueryPayload);
+
+  const { data: summaryTotals } = useInvoiceSummary({
+    pageNumber: 1,
+    pageSize: 10,
+    fromDate: fromIso,
+    toDate: toIso,
+  });
   const [editInvoiceId, setEditInvoiceId] = useState<string | undefined>();
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [hasCheckedId, setHasCheckedId] = useState(false);
@@ -166,6 +200,140 @@ export default function InvoiceTable(props: InvoiceTableProps) {
     invoiceStatus: inv.invoiceStatus ?? null,
   }));
 
+  const pageTaxTotal = useMemo(
+    () => invoices.reduce((s, i) => s + (Number(i.taxAmount) || 0), 0),
+    [invoices]
+  );
+  const pageBankTotal = useMemo(
+    () => invoices.reduce((s, i) => s + (Number(i.bankCharges) || 0), 0),
+    [invoices]
+  );
+
+  const excelDateRangeIso = () => {
+    const toYmd = toDate.trim() || new Date().toISOString().slice(0, 10);
+    const fromYmd = fromDate.trim() || toYmd;
+    return {
+      from: startOfDayIso(fromYmd)!,
+      to: endOfDayIso(toYmd)!,
+    };
+  };
+
+  const handleExportExcel = async () => {
+    const { from, to } = excelDateRangeIso();
+    setExcelExporting(true);
+    try {
+      const blob = await exportInvoicesExcel({
+        pageNumber: 0,
+        pageSize: 0,
+        invoiceNumber: invoiceNumberFilter.trim(),
+        fromDate: from,
+        toDate: to,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `invoices-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // eslint-disable-next-line no-alert
+      alert('Excel export failed. Please try again.');
+    } finally {
+      setExcelExporting(false);
+    }
+  };
+
+  const invoiceToolbar = (
+    <div className={toolbarStyles.toolbar}>
+      <div className={toolbarStyles.row}>
+        <div className={toolbarStyles.controlCard} style={{ minWidth: 140 }}>
+          <p className={toolbarStyles.label}>Invoice No.</p>
+          <input
+            type="text"
+            className={toolbarStyles.invoiceNoInput}
+            placeholder="Type here"
+            value={invoiceNumberFilter}
+            onChange={(e) => {
+              setInvoiceNumberFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            aria-label="Filter by invoice number"
+          />
+        </div>
+        <div className={toolbarStyles.controlCard}>
+          <p className={toolbarStyles.label}>Date Range</p>
+          <div className={toolbarStyles.dateRow}>
+            <input
+              type="date"
+              className={toolbarStyles.dateInput}
+              value={fromDate}
+              onChange={(e) => {
+                setFromDate(e.target.value);
+                setCurrentPage(1);
+              }}
+              aria-label="From date"
+            />
+            <span className={toolbarStyles.sub}>–</span>
+            <input
+              type="date"
+              className={toolbarStyles.dateInput}
+              value={toDate}
+              onChange={(e) => {
+                setToDate(e.target.value);
+                setCurrentPage(1);
+              }}
+              aria-label="To date"
+            />
+          </div>
+        </div>
+        <button
+          type="button"
+          className={toolbarStyles.excelBtn}
+          onClick={handleExportExcel}
+          disabled={excelExporting}
+          title="Download Excel"
+          aria-label="Export Excel"
+        >
+          <FileSpreadsheet size={22} color="#217346" strokeWidth={1.75} />
+        </button>
+        <div className={toolbarStyles.metrics}>
+          <div className={toolbarStyles.metricCard}>
+            <p className={toolbarStyles.label}>Total Amount</p>
+            <p className={toolbarStyles.value}>{formatPkr(summaryTotals?.totalAmount)}</p>
+          </div>
+          <div className={toolbarStyles.metricCard}>
+            <p className={toolbarStyles.label}>Total Tax Amount</p>
+            <p className={toolbarStyles.value}>{formatPkr(pageTaxTotal)}</p>
+            <p className={toolbarStyles.sub}>Current page</p>
+          </div>
+          <div className={toolbarStyles.metricCard}>
+            <p className={toolbarStyles.label}>Total Bank Charges</p>
+            <p className={toolbarStyles.value}>{formatPkr(pageBankTotal)}</p>
+            <p className={toolbarStyles.sub}>Current page</p>
+          </div>
+          <div className={toolbarStyles.metricCard}>
+            <p className={toolbarStyles.label}>Total Receivables</p>
+            <p className={toolbarStyles.value}>{formatPkr(summaryTotals?.totalAmount)}</p>
+          </div>
+          <div className={toolbarStyles.metricCard}>
+            <p className={toolbarStyles.label}>DHA %</p>
+            <p className={toolbarStyles.sub}>
+              {summaryTotals != null ? `${summaryTotals.dhaPercentage}%` : '—'}
+            </p>
+            <p className={toolbarStyles.value}>{formatPkr(summaryTotals?.dhaAmount)}</p>
+          </div>
+          <div className={toolbarStyles.metricCard}>
+            <p className={toolbarStyles.label}>Halcon %</p>
+            <p className={toolbarStyles.sub}>
+              {summaryTotals != null ? `${summaryTotals.halconPercentage}%` : '—'}
+            </p>
+            <p className={toolbarStyles.value}>{formatPkr(summaryTotals?.halconAmount)}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   const handleView = (item: Invoice) => {
     setSelectedInvoice(item);
     saveTableRow('invoice', item);
@@ -217,6 +385,7 @@ export default function InvoiceTable(props: InvoiceTableProps) {
         onTabChange={onTabChange}
         columns={columns}
         data={invoices}
+        headerContent={invoiceToolbar}
         loading={isLoading}
         showAddButton={false}
         addButtonLabel={addButtonLabel}

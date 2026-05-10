@@ -17,7 +17,7 @@ export default function AddNewUser() {
   // Build dynamic userType options from enum
   const dynamicUserFields = useMemo(() => {
     const userTypeOptions = [{ value: '', label: 'Select User Type' }];
-    const cardStatusOptions = [{ value: '', label: 'Select Card Status' }];
+    const cardStatusOptions = [{ value: '', label: 'Select Tag Status' }];
     
     if (userTypesEnum?.members) {
       userTypesEnum.members.forEach((member) => {

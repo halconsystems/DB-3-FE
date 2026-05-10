@@ -7,6 +7,8 @@ import { workerFields } from '../fields';
 import { clearTableRow, getTableRow } from '../../../lib/tableRowStorage';
 import { useWorkerById } from '../../../hooks/workers/useWorkerById';
 import { useUpdateWorker } from '../../../hooks/workers/useUpdateWorker';
+import { workerCardDeliveryToApi, workerCardDeliveryToFormValue } from '../../../lib/workerCardDelivery';
+import { formatCardNumberDisplay, stripCardNumberFormatting } from '../../../lib/formatCardNumber';
 
 // Extract YYYY-MM-DD from any date format without timezone conversion
 const toDateInputValue = (value?: string | null) => {
@@ -95,26 +97,6 @@ const toCardStatusFormValue = (value?: number | string | null): string => {
   return toCardStatus(value) === 1 ? 'active' : 'inactive';
 };
 
-const toWorkerCardDeliveryType = (value?: string): number => {
-  if (value === 'owner') {
-    return 0;
-  }
-  if (value === 'self') {
-    return 1;
-  }
-  return 0;
-};
-
-const toWorkerCardDeliveryTypeFormValue = (value?: number): string => {
-  if (value === 0) {
-    return 'owner';
-  }
-  if (value === 1) {
-    return 'self';
-  }
-  return '';
-};
-
 const toPoliceVerification = (value?: string): boolean => {
   return value === 'yes';
 };
@@ -147,12 +129,10 @@ export default function EditWorker() {
         cellNumber: data.data.phoneNumber,
         cnic: data.data.cnic,
         policeVerification: toPoliceVerificationFormValue(data.data.policeVerification),
-        cardDelivery: toWorkerCardDeliveryTypeFormValue(
-          typeof data.data.workerCardDeliveryType === 'string'
-            ? toWorkerCardDeliveryType(data.data.workerCardDeliveryType)
-            : data.data.workerCardDeliveryType
-        ),
-        cardNo: data.data.workerCardNumber,
+        cardDelivery: workerCardDeliveryToFormValue(data.data.workerCardDeliveryType),
+        cardNo: data.data.workerCardNumber
+          ? formatCardNumberDisplay(data.data.workerCardNumber)
+          : '',
         issueDate: toDateInputValue(data.data.validFrom),
         expiryDate: toDateInputValue(data.data.validTo),
         cardStatus: toCardStatusFormValue(data.data.cardStatus),
@@ -205,10 +185,11 @@ export default function EditWorker() {
         profilePicture: toAttachmentString(formData.profilePicture, data.data.profilePicture),
         policeVerification: toPoliceVerification(formData.policeVerification),
         policeVerificationAttachment: toAttachmentString(formData.policeVerificationFile, data.data.policeVerificationAttachment),
-        workerCardNumber: formData.cardNo || data.data.workerCardNumber || '',
+        workerCardNumber:
+          stripCardNumberFormatting(formData.cardNo || '') || data.data.workerCardNumber || '',
         lastModifiedBy,
         cardStatus: toCardStatus(formData.cardStatus),
-        workerCardDeliveryType: toWorkerCardDeliveryType(formData.cardDelivery),
+        workerCardDeliveryType: workerCardDeliveryToApi(formData.cardDelivery),
         validFrom: toIsoDate(formData.issueDate),
         validTo: toIsoDate(formData.expiryDate),
       });

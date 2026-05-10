@@ -19,6 +19,9 @@ import { useUpdateUserFamily } from '../../hooks/user-family/useUpdateUserFamily
 import type { UserFamily } from '../../services/user-family.service';
 import { useEnumMetadata } from '../../hooks/metadata/useEnumMetadata';
 import { resolveTableTotalPages } from '../../lib/unwrapApiList';
+import { formatCardNumberDisplay } from '../../lib/formatCardNumber';
+import { displayDash, tableCnic, tablePhone, tableCardNumber } from '../../lib/formatDisplayFields';
+import { normalizeNumericEnum } from '../../lib/statusMapping';
 
 const isApiSuccess = (response: any) => {
   const statusCode = response?.statusCode;
@@ -144,7 +147,7 @@ export default function UserFamilyPage() {
 
   const dynamicUserFamilyFields = useMemo(() => {
     const relationOptions = [{ value: '', label: 'Select Relation' }];
-    const cardStatusOptions = [{ value: '', label: 'Select Card Status' }];
+    const cardStatusOptions = [{ value: '', label: 'Select Tag Status' }];
 
     if (relationEnum?.members) {
       relationEnum.members.forEach((member) => {
@@ -188,6 +191,15 @@ export default function UserFamilyPage() {
     [dynamicUserFamilyFields, isViewMode]
   );
 
+  const cardStatusFilterOptions = useMemo(
+    () =>
+      (cardStatusEnum?.members ?? []).map((m) => ({
+        value: String(m.value),
+        label: m.name,
+      })),
+    [cardStatusEnum]
+  );
+
   const handleAddFamily = async (data: ProfileFormData) => {
     try {
       const response = await createUserFamily({
@@ -223,7 +235,9 @@ export default function UserFamilyPage() {
         cnic: editFamilyDetails.cnic || '',
         relation: toRelationValue(editFamilyDetails.relation),
       fatherHusbandName: editFamilyDetails.fatherOrHusbandName || '',
-      residentCardNo: editFamilyDetails.residentCardNumber || '',
+      residentCardNo: editFamilyDetails.residentCardNumber
+        ? formatCardNumberDisplay(editFamilyDetails.residentCardNumber)
+        : '',
       dob: toDateInputValue(editFamilyDetails.dateOfBirth),
       validFrom: toDateInputValue(editFamilyDetails.validFrom),
       validTo: toDateInputValue(editFamilyDetails.validTo),
@@ -287,35 +301,39 @@ export default function UserFamilyPage() {
 
   const filteredData = userFamilyData
     .filter((family: UserFamily) => !localRemovedIds.includes(family.id))
-    .map((family, idx) => ({
-      sno: (currentPage - 1) * pageSize + idx + 1,
+    .map((family) => ({
+      ser: family.ser ?? 0,
       id: family.id,
-      name: family.name || '',
-      externalUserName: family.externalUserName || '',
-      phoneNumber: family.phoneNumber || '',
-      cnic: family.cnic || '',
+      name: displayDash(family.name),
+      externalUserName: displayDash(family.externalUserName),
+      phoneNumber: family.phoneNumber ?? '',
+      cnic: family.cnic ?? '',
       relation: family.relation || '',
-      fatherOrHusbandName: family.fatherOrHusbandName || '',
-      residentCardNumber: family.residentCardNumber || '',
+      fatherOrHusbandName: displayDash(family.fatherOrHusbandName),
+      residentCardNumber: family.residentCardNumber ?? '',
       dateOfBirth: family.dateOfBirth || '',
       validFrom: family.validFrom || '',
       validTo: family.validTo || '',
-      cardStatus: family.cardStatus,
+      cardStatus: normalizeNumericEnum(family.cardStatus),
       isActive: family.isActive,
     }));
 
   const columns: Column<any>[] = [
     {
-      key: 'sno',
-      header: 'S.No',
+      key: 'ser',
+      header: 'Ser',
     },
     { key: 'name', header: 'User Family Name' },
     { key: 'externalUserName', header: 'User Name' },
-    { key: 'phoneNumber', header: 'Phone' },
-    { key: 'cnic', header: 'CNIC No' },
+    { key: 'phoneNumber', header: 'Phone', render: (v: string) => tablePhone(v) },
+    { key: 'cnic', header: 'CNIC No', render: (v: string) => tableCnic(v) },
     { key: 'fatherOrHusbandName', header: 'Father/Husband Name' },
     { key: 'relation', header: 'Relation' },
-    { key: 'residentCardNumber', header: 'Resident Card No.' },
+    {
+      key: 'residentCardNumber',
+      header: 'Resident Card No.',
+      render: (value: string) => tableCardNumber(value),
+    },
     {
       key: 'dateOfBirth',
       header: 'DOB',
@@ -333,8 +351,8 @@ export default function UserFamilyPage() {
     },
     {
       key: 'cardStatus',
-      header: 'Card Status',
-      render: (value) => <StatusBadge type="userFamily" value={value} />,
+      header: 'Tag Status',
+      render: (value) => <StatusBadge type="cardStatus" value={value} />,
     },
     {
       key: 'isActive',
@@ -370,6 +388,10 @@ export default function UserFamilyPage() {
           setCurrentPage(1);
         }}
         serverSidePagination
+        enableFiltering={false}
+        columnFilterKeys={['cardStatus']}
+        columnFilterLabels={{ cardStatus: 'Tag Status' }}
+        columnFilterStaticOptions={{ cardStatus: cardStatusFilterOptions }}
         loading={isLoading}
         emptyMessage={isLoading ? 'Loading...' : 'No user family data found.'}
         onPageChange={setCurrentPage}

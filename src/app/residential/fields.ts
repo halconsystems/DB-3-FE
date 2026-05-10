@@ -18,7 +18,7 @@ export const residentialFields: ProfileField[] = [
   { name: 'cardNo' as keyof ProfileFormData, label: 'Card No./ID', type: 'text', required: true, placeholder: 'Type here' },
   { name: 'issueDate' as keyof ProfileFormData, label: 'Issue Date', type: 'date', required: false, placeholder: 'Select Date' },
   { name: 'expiryDate' as keyof ProfileFormData, label: 'Expiry Date', type: 'date', required: false, placeholder: 'Select Date' },
-  { name: 'cardStatus' as keyof ProfileFormData, label: 'Card Status', type: 'statusSwitch', required: false },
+  { name: 'cardStatus' as keyof ProfileFormData, label: 'Tag Status', type: 'statusSwitch', required: false },
   { name: 'profilePicture' as keyof ProfileFormData, label: 'Profile Picture', type: 'file', required: true },
   { name: 'proofOfPossession' as keyof ProfileFormData, label: 'Proof of Possession', type: 'file', required: false },
   { name: 'status' as keyof ProfileFormData, label: 'Member Status', type: 'statusSwitch', required: false },

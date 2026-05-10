@@ -9,6 +9,7 @@ import { formatDateDisplay } from '../../lib/dateUtils';
 
 interface Member {
   id: number;
+  ser?: number;
   name: string;
   email: string;
   phone: string;
@@ -67,7 +68,7 @@ export default function ResidentialPage() {
   };
 
   const columns: Column<Member>[] = [
-    { key: 'sno', header: 'S.No' },
+    { key: 'ser', header: 'Ser' },
     { key: 'name', header: 'Name' },
     { key: 'email', header: 'Email' },
     { key: 'phone', header: 'Phone' },
@@ -87,7 +88,7 @@ export default function ResidentialPage() {
     { key: 'issueDate', header: 'Issue Date', render: (value: string) => formatDateDisplay(value) },
     { key: 'expiryDate', header: 'Expiry Date', render: (value: string) => formatDateDisplay(value) },
     {
-      key: 'cardStatus', header: 'Card Status',
+      key: 'cardStatus', header: 'Tag Status',
       render: (value: 'Active' | 'Inactive') => <StatusBadge status={value} />
     },
     {
@@ -101,8 +102,7 @@ export default function ResidentialPage() {
     },
   ];
 
-  // Add S.No to each row
-  const sampleDataWithSno = sampleData.map((row, idx) => ({ ...row, sno: idx + 1 }));
+  const sampleDataWithSno = sampleData.map((row, idx) => ({ ...row, ser: idx + 1 }));
 
   return (
     <DashboardLayout pageTitle="Residential / Commercial">
