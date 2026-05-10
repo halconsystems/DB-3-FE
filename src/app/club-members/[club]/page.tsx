@@ -1,17 +1,14 @@
 'use client';
-import { useSearchParams } from 'next/navigation';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import { useClubMembers } from '../ClubMembersContext';
 import ClubMembersTable from '../components/ClubMembersTable';
 
 interface ClubMembersTabPageProps {
-  params: {
-    club: string;
-  };
+  params: { club: string };
 }
 
-export default function ClubMembersTabPage({ params }: ClubMembersTabPageProps) {
-  const searchParams = useSearchParams();
+/** `params.club` is reflected in the URL; active tab is synced from pathname in `ClubMembersProvider`. */
+export default function ClubMembersTabPage({ params: _params }: ClubMembersTabPageProps) {
   const { tabs, activeTab, handleTabChange } = useClubMembers();
 
   return (
@@ -20,7 +17,6 @@ export default function ClubMembersTabPage({ params }: ClubMembersTabPageProps) 
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={handleTabChange}
-        searchParams={searchParams}
       />
     </DashboardLayout>
   );

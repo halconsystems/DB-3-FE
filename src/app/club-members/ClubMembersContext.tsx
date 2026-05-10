@@ -1,6 +1,6 @@
 'use client';
 import React, { ReactNode, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Tab } from '@/components/tables/DataTable';
 import { CLUB_MEMBERS_TABS } from './clubMembersConfig';
 
@@ -12,16 +12,25 @@ interface ClubMembersContextType {
 
 const ClubMembersContext = React.createContext<ClubMembersContextType | undefined>(undefined);
 
+const isKnownTabKey = (key: string) => CLUB_MEMBERS_TABS.some((t) => t.key === key);
+
 export const ClubMembersProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [activeTab, setActiveTab] = useState<string>('golf-club');
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
+    const segment = pathname?.match(/^\/club-members\/([^/]+)/)?.[1];
+    if (segment && isKnownTabKey(segment)) {
+      setActiveTab(segment);
+      localStorage.setItem('activeClubMembersTab', segment);
+      return;
+    }
     const savedTab = localStorage.getItem('activeClubMembersTab');
-    if (savedTab) {
+    if (savedTab && isKnownTabKey(savedTab)) {
       setActiveTab(savedTab);
     }
-  }, []);
+  }, [pathname]);
 
   const handleTabChange = (tabKey: string) => {
     setActiveTab(tabKey);

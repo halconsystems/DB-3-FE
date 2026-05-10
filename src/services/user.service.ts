@@ -73,6 +73,24 @@ export const getAllExternalUsers = async (
   });
   return parsePagedListData<ExternalUser>(response.data?.data);
 };
+
+/** Club members list: same endpoint with fixed category and tab-specific subcategory. */
+export const getClubMemberUsers = async (
+  subCategory: string,
+  params?: { pageNumber?: number; pageSize?: number }
+): Promise<PagedList<ExternalUser>> => {
+  const pageNumber = params?.pageNumber ?? 1;
+  const pageSize = params?.pageSize ?? 10;
+  const response = await apiClient.get("/user/GetAllUser", {
+    params: {
+      Category: "Member",
+      SubCategory: subCategory,
+      PageNumber: pageNumber,
+      PageSize: pageSize,
+    },
+  });
+  return parsePagedListData<ExternalUser>(response.data?.data);
+};
 export const removeUser = async (id: string) => {
   const response = await apiClient.post(`/user/removeUser`, null, { params: { id } });
   return response.data;
