@@ -6,7 +6,7 @@
   display: flex;
   align-items: stretch;
   justify-content: space-between;
-  gap: 16px;
+  gap: 18px;
   flex-wrap: wrap;
   background: transparent;
   padding: 0;
@@ -14,7 +14,7 @@
 
 .leftGroup {
   display: grid;
-  grid-template-columns: 120px 145px;
+  grid-template-columns: 122px 145px;
   gap: 8px;
 }
 
@@ -77,23 +77,44 @@
   pointer-events: none;
 }
 
-.dateValueRow {
+.calendarIcon {
+  color: #56a46e;
+  flex-shrink: 0;
+}
+
+.datePickerButton {
+  appearance: none;
+  border: none;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
-}
-
-.calendarIcon {
-  color: #56a46e;
-}
-
-.dateInputsRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  gap: 10px;
+  width: 100%;
   margin-top: 4px;
-  flex-wrap: wrap;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  text-align: left;
+}
+
+.datePickerLabel {
+  color: #707782;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hiddenDateInput {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
 }
 
 .dateInput {
@@ -103,7 +124,6 @@
   font-size: 10px;
   color: #707782;
   background: #fff;
-  max-width: 118px;
 }
 
 .excelBtn {
@@ -141,4 +161,8 @@
   font-size: 9px;
   color: #8b929b;
   font-weight: 500;
+}
+
+.controlCard .datePickerButton {
+  min-height: 18px;
 }

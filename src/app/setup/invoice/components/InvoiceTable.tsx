@@ -315,20 +315,6 @@ export default function InvoiceTable(props: InvoiceTableProps) {
             <p className={toolbarStyles.label}>Total Receivables</p>
             <p className={toolbarStyles.value}>{formatPkr(summaryTotals?.totalAmount)}</p>
           </div>
-          <div className={toolbarStyles.metricCard}>
-            <p className={toolbarStyles.label}>DHA %</p>
-            <p className={toolbarStyles.sub}>
-              {summaryTotals != null ? `${summaryTotals.dhaPercentage}%` : '—'}
-            </p>
-            <p className={toolbarStyles.value}>{formatPkr(summaryTotals?.dhaAmount)}</p>
-          </div>
-          <div className={toolbarStyles.metricCard}>
-            <p className={toolbarStyles.label}>Halcon %</p>
-            <p className={toolbarStyles.sub}>
-              {summaryTotals != null ? `${summaryTotals.halconPercentage}%` : '—'}
-            </p>
-            <p className={toolbarStyles.value}>{formatPkr(summaryTotals?.halconAmount)}</p>
-          </div>
         </div>
       </div>
     </div>

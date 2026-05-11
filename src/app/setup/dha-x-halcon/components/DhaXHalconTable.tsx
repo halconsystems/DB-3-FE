@@ -1,14 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import DataTable, { Column, StatusBadge, Tab } from '@/components/tables/DataTable';
 import CircularButton from '@/components/ui/CircularButton';
 import { endOfDayIso, formatDateDisplay, startOfDayIso } from '@/lib/dateUtils';
 import { useInvoiceSummary } from '@/hooks/invoice/useInvoiceSummary';
 import { useInvoiceSummaryDetails } from '@/hooks/invoice/useInvoiceSummaryDetails';
 import type { InvoiceSummaryDetailItem } from '@/services/invoice.service';
-import { exportInvoicesExcel } from '@/services/invoice.service';
-import { ChevronDown, FileSpreadsheet } from 'lucide-react';
+import { Calendar, ChevronDown } from 'lucide-react';
 import styles from './DhaXHalconTable.module.css';
 
 interface DhaXHalconTableProps {
@@ -42,6 +41,16 @@ interface HalconRow {
 function formatPkr(n: number | null | undefined): string {
   if (n === null || n === undefined || Number.isNaN(Number(n))) return '-';
   return `PKR ${Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+}
+
+function formatShortDate(value: string): string {
+  if (!value) return 'Select date';
+
+  const parts = value.split('-');
+  if (parts.length !== 3) return value;
+
+  const [year, month, day] = parts;
+  return `${day}/${month}/${year.slice(-2)}`;
 }
 
 const columns: Column<HalconRow>[] = [
@@ -80,7 +89,8 @@ export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHa
   const [selectedHead, setSelectedHead] = useState<'dha' | 'halcon'>('dha');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
-  const [excelExporting, setExcelExporting] = useState(false);
+  const fromDateRef = useRef<HTMLInputElement>(null);
+  const toDateRef = useRef<HTMLInputElement>(null);
 
   const fromDateIso = fromDate ? startOfDayIso(fromDate) : undefined;
   const toDateIso = toDate ? endOfDayIso(toDate) : undefined;
@@ -156,30 +166,23 @@ export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHa
     };
   };
 
-  const handleExportExcel = async () => {
-    const { from, to } = excelDateRangeIso();
-    setExcelExporting(true);
-    try {
-      const blob = await exportInvoicesExcel({
-        pageNumber: 0,
-        pageSize: 0,
-        invoiceNumber: '',
-        fromDate: from,
-        toDate: to,
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `dha-halcon-invoices-${new Date().toISOString().slice(0, 10)}.xlsx`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      // eslint-disable-next-line no-alert
-      alert('Excel export failed. Please try again.');
-    } finally {
-      setExcelExporting(false);
+  const openDatePicker = () => {
+    if (!fromDate) {
+      fromDateRef.current?.showPicker?.();
+      return;
     }
+
+    if (!toDate) {
+      toDateRef.current?.showPicker?.();
+      return;
+    }
+
+    fromDateRef.current?.showPicker?.();
   };
+
+  const dateRangeLabel = fromDate || toDate
+    ? `${formatShortDate(fromDate || toDate)} - ${formatShortDate(toDate || fromDate)}`
+    : 'Select date';
 
   const headerContent = (
     <div className={styles.headerArea}>
@@ -201,46 +204,36 @@ export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHa
           </div>
           <div className={styles.controlCard}>
             <p className={styles.cardLabel}>Date Range</p>
-            <div className={styles.dateInputsRow}>
-              <input
-                id="dha-x-from"
-                type="date"
-                className={styles.dateInput}
-                value={fromDate}
-                aria-label="From date"
-                onChange={(e) => {
-                  setFromDate(e.target.value);
-                  setCurrentPage(1);
-                }}
-              />
-              <span className={styles.cardValue} style={{ alignSelf: 'center' }}>
-                –
-              </span>
-              <input
-                id="dha-x-to"
-                type="date"
-                className={styles.dateInput}
-                value={toDate}
-                aria-label="To date"
-                onChange={(e) => {
-                  setToDate(e.target.value);
-                  setCurrentPage(1);
-                }}
-              />
-            </div>
+            <button type="button" className={styles.datePickerButton} onClick={openDatePicker} aria-label="Select date range">
+              <span className={styles.datePickerLabel}>{dateRangeLabel}</span>
+              <Calendar size={13} className={styles.calendarIcon} />
+            </button>
+            <input
+              ref={fromDateRef}
+              id="dha-x-from"
+              type="date"
+              className={styles.hiddenDateInput}
+              value={fromDate}
+              aria-label="From date"
+              onChange={(e) => {
+                setFromDate(e.target.value);
+                setCurrentPage(1);
+                toDateRef.current?.showPicker?.();
+              }}
+            />
+            <input
+              ref={toDateRef}
+              id="dha-x-to"
+              type="date"
+              className={styles.hiddenDateInput}
+              value={toDate}
+              aria-label="To date"
+              onChange={(e) => {
+                setToDate(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
           </div>
-        </div>
-        <div className={styles.midGroup}>
-          <button
-            type="button"
-            className={styles.excelBtn}
-            onClick={handleExportExcel}
-            disabled={excelExporting}
-            title="Download Excel"
-            aria-label="Export Excel"
-          >
-            <FileSpreadsheet size={22} color="#217346" strokeWidth={1.75} />
-          </button>
         </div>
         <div className={styles.rightGroup}>
           <div className={styles.card}>
