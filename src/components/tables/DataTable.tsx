@@ -67,6 +67,8 @@ const FILTERABLE_COLUMNS_CONFIG: Record<string, string> = {
   passStatus: 'Pass Status',
   visitPassType: 'Pass Type',
   activeStatus: 'Status',
+  category: 'Category',
+  subCategory: 'Sub Category',
 };
 
 // ================================ STATUS BADGE COMPONENT ================================

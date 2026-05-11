@@ -396,9 +396,9 @@ export default function UserPage() {
           setCurrentPage(1);
         }}
         serverSidePagination
-        enableFiltering={false}
-        columnFilterKeys={['cardStatus']}
-        columnFilterLabels={{ cardStatus: 'Tag Status' }}
+        enableFiltering={true}
+        columnFilterKeys={['category', 'subCategory', 'cardStatus']}
+        columnFilterLabels={{ category: 'Category', subCategory: 'Sub Category', cardStatus: 'Tag Status' }}
         columnFilterStaticOptions={{ cardStatus: cardStatusFilterOptions }}
         loading={isLoading}
         emptyMessage={isLoading ? 'Loading users...' : 'No users found'}

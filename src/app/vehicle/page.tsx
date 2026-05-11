@@ -473,7 +473,7 @@ export default function VehiclePage() {
         columnFilterKeys={['tagStatus']}
         columnFilterLabels={{ tagStatus: 'Tag Status' }}
         columnFilterStaticOptions={{ tagStatus: tagStatusFilterOptions }}
-        enableFiltering={false}
+        enableFiltering={true}
         error={isError ? `Failed to load vehicles: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
       />
 

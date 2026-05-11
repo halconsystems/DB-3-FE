@@ -438,7 +438,7 @@ export default function LuggagePage() {
         }}
         columnFilterKeys={['passStatus', 'visitPassType']}
         enableSorting={false}
-        enableFiltering={false}
+        enableFiltering={true}
         error={
           isError
             ? `Failed to load luggage: ${error instanceof Error ? error.message : 'Unknown error'}`

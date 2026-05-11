@@ -469,7 +469,7 @@ export default function VisitorsPage() {
           setCurrentPage(1);
         }}
         serverSidePagination
-        enableFiltering={false}
+        enableFiltering={true}
         getRowStatus={(row) => {
           if (!row.status || row.passStatus === 'Expired') return 'Inactive';
           return 'Active';

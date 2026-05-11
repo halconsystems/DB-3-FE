@@ -506,7 +506,7 @@ export default function WorkersPage() {
           setCurrentPage(1);
         }}
         serverSidePagination
-        enableFiltering={false}
+        enableFiltering={true}
         columnFilterKeys={['workerCardDeliveryType', 'cardStatus']}
         columnFilterLabels={{ workerCardDeliveryType: 'Worker Card Delivery', cardStatus: 'Tag Status' }}
         columnFilterStaticOptions={workerColumnFilterStaticOptions}

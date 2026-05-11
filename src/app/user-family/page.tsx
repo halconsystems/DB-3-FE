@@ -388,7 +388,7 @@ export default function UserFamilyPage() {
           setCurrentPage(1);
         }}
         serverSidePagination
-        enableFiltering={false}
+        enableFiltering={true}
         columnFilterKeys={['cardStatus']}
         columnFilterLabels={{ cardStatus: 'Tag Status' }}
         columnFilterStaticOptions={{ cardStatus: cardStatusFilterOptions }}
