@@ -44,6 +44,22 @@ interface LuggagePass {
 
 type SelectedLuggageRow = Pick<Luggage, 'id'>;
 
+const memberTypeFilterOptions = {
+  category: [
+    { value: 'Club Member', label: 'Club Member' },
+    { value: 'Commercial Employee', label: 'Commercial Employee' },
+    { value: 'Educational Visitor', label: 'Educational Visitor' },
+    { value: 'Residential', label: 'Residential' },
+  ],
+  subCategory: [
+    { value: 'Appartment', label: 'Appartment' },
+    { value: 'Beach View', label: 'Beach View' },
+    { value: 'Faculty', label: 'Faculty' },
+    { value: 'Portion', label: 'Portion' },
+    { value: 'Staff', label: 'Staff' },
+  ],
+};
+
 // ============================================================================
 // UTILITIES
 // ============================================================================
@@ -439,6 +455,7 @@ export default function LuggagePage() {
         }}
         columnFilterKeys={['passStatus', 'visitPassType','category', 'subCategory']}
         columnFilterLabels={{category: 'Category', subCategory: 'Sub Category' }}
+        columnFilterStaticOptions={memberTypeFilterOptions}
         enableSorting={true}
         enableFiltering={true}
         error={

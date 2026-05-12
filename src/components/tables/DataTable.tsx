@@ -232,8 +232,11 @@ export default function DataTable<T extends Record<string, any>>({
     const filters: Array<{ key: string; label: string }> = [];
 
     Object.entries(FILTERABLE_COLUMNS_CONFIG).forEach(([key, label]) => {
-      // if (!columns.some((column) => String(column.key) === key)) return;
-      if (columnFilterKeys && columnFilterKeys.length > 0 && !columnFilterKeys.includes(key)) {
+      const hasVisibleColumn = columns.some((column) => String(column.key) === key);
+      const isExplicitlyRequested = !!columnFilterKeys?.includes(key);
+
+      if (!hasVisibleColumn && !isExplicitlyRequested) return;
+      if (columnFilterKeys && columnFilterKeys.length > 0 && !isExplicitlyRequested) {
         return;
       }
       

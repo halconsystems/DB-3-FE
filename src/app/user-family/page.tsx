@@ -40,6 +40,22 @@ const isApiSuccess = (response: any) => {
   return true;
 };
 
+const memberTypeFilterOptions = {
+  category: [
+    { value: 'Club Member', label: 'Club Member' },
+    { value: 'Commercial Employee', label: 'Commercial Employee' },
+    { value: 'Educational Visitor', label: 'Educational Visitor' },
+    { value: 'Residential', label: 'Residential' },
+  ],
+  subCategory: [
+    { value: 'Appartment', label: 'Appartment' },
+    { value: 'Beach View', label: 'Beach View' },
+    { value: 'Faculty', label: 'Faculty' },
+    { value: 'Portion', label: 'Portion' },
+    { value: 'Staff', label: 'Staff' },
+  ],
+};
+
 export default function UserFamilyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -391,7 +407,7 @@ export default function UserFamilyPage() {
         enableFiltering={true}
         columnFilterKeys={['category', 'subCategory', 'cardStatus']}
         columnFilterLabels={{ category: 'Category', subCategory: 'Sub Category', cardStatus: 'Tag Status' }}
-        columnFilterStaticOptions={{ cardStatus: cardStatusFilterOptions }}
+        columnFilterStaticOptions={{ cardStatus: cardStatusFilterOptions, ...memberTypeFilterOptions }}
         loading={isLoading}
         emptyMessage={isLoading ? 'Loading...' : 'No user family data found.'}
         onPageChange={setCurrentPage}

@@ -40,6 +40,22 @@ interface Visitor {
   externalUserId: string;
 }
 
+const memberTypeFilterOptions = {
+  category: [
+    { value: 'Club Member', label: 'Club Member' },
+    { value: 'Commercial Employee', label: 'Commercial Employee' },
+    { value: 'Educational Visitor', label: 'Educational Visitor' },
+    { value: 'Residential', label: 'Residential' },
+  ],
+  subCategory: [
+    { value: 'Appartment', label: 'Appartment' },
+    { value: 'Beach View', label: 'Beach View' },
+    { value: 'Faculty', label: 'Faculty' },
+    { value: 'Portion', label: 'Portion' },
+    { value: 'Staff', label: 'Staff' },
+  ],
+};
+
 type SelectedVisitorRow = Pick<ExternalVisitorPass, 'id'>;
 
 const formatVisitPassTypeLabel = (passType?: string | number): string => {
@@ -472,6 +488,7 @@ export default function VisitorsPage() {
         enableFiltering={true}
         columnFilterKeys={['category', 'subCategory']}
         columnFilterLabels={{category: 'Category', subCategory: 'Sub Category' }}
+        columnFilterStaticOptions={memberTypeFilterOptions}
         getRowStatus={(row) => {
           if (!row.status || row.passStatus === 'Expired') return 'Inactive';
           return 'Active';
