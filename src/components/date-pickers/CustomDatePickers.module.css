@@ -1,0 +1,311 @@
+.root {
+  position: relative;
+  width: 100%;
+}
+
+.trigger {
+  width: 100%;
+  min-height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  color: inherit;
+  text-align: left;
+}
+
+.trigger:disabled {
+  cursor: not-allowed;
+}
+
+.triggerValue,
+.triggerPlaceholder {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.triggerValue {
+  color: rgba(0, 0, 0, 0.86);
+}
+
+.triggerPlaceholder {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.triggerIcon {
+  position: absolute;
+  left: 100%;
+  transform: translateX(-100%);
+  bottom: 0px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  flex-shrink: 0;
+  background-color: rgb(255, 255, 255);
+  border-radius: 100%;
+  width: 26px;
+  height: 26px;
+  box-shadow: -13.8px -13.8px 27.6px 0px #FFFFFF,  4.14px 4.14px 27.6px 0px #AAAACC80;
+
+}
+
+.calendarIcon {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  object-fit: contain;
+}
+
+.panel {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 10px);
+  left: 0;
+  width: min(340px, calc(100vw - 24px));
+  padding: 16px 16px 14px;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 20px 50px rgba(18, 41, 57, 0.18), 0 3px 10px rgba(18, 41, 57, 0.08);
+  border: 1px solid rgba(39, 174, 96, 0.08);
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.navGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.navButton {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.navButton:hover {
+  background: rgba(39, 174, 96, 0.08);
+}
+
+.selectWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.selectButton {
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 18px 0 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--primary);
+  letter-spacing: 0.01em;
+  appearance: none;
+  cursor: pointer;
+}
+
+.selectButton:focus-visible {
+  outline: none;
+}
+
+.selectIcon {
+  position: absolute;
+  right: 0;
+  pointer-events: none;
+  color: var(--primary);
+}
+
+.weekHeader {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  margin-bottom: 8px;
+}
+
+.weekDay {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  color: rgba(39, 174, 96, 0.28);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px 0;
+}
+
+.dayCell {
+  height: 44px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 999px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 0;
+}
+
+.dayCell:hover:not(:disabled) {
+  background: rgba(39, 174, 96, 0.08);
+}
+
+.dayText {
+  position: relative;
+  z-index: 1;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.dayCellCurrentMonth .dayText {
+  color: #1f2937;
+}
+
+.dayCellMuted .dayText {
+  color: rgba(31, 41, 55, 0.2);
+}
+
+.dayCellSelectedSingle .dayText {
+  color: var(--primary);
+}
+
+.dayCellSelectedSingle::after,
+.dayCellSelectedRangeEdge::after,
+.dayCellRangeStart::after,
+.dayCellRangeEnd::after,
+.dayCellRangeMiddle::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+}
+
+.dayCellSelectedSingle::after,
+.dayCellSelectedRangeEdge::after {
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(56, 78, 103, 0.18);
+  border: 1px solid rgba(39, 174, 96, 0.08);
+}
+
+.dayCellRangeMiddle::after {
+  background:#C7E6BD;
+  border: 0;
+  border-radius: 0;
+}
+
+.dayCellRangeStart::after {
+  background: linear-gradient(90deg, #ffffff 0%, #ffffff 40%, rgba(39, 174, 96, 0.24) 40%, rgba(39, 174, 96, 0.24) 100%);
+  box-shadow: 0 4px 16px rgba(56, 78, 103, 0.18);
+  border: 1px solid rgba(39, 174, 96, 0.08);
+}
+
+.dayCellRangeEnd::after {
+  background: linear-gradient(90deg, rgba(39, 174, 96, 0.24) 0%, rgba(39, 174, 96, 0.24) 60%, #ffffff 60%, #ffffff 100%);
+  box-shadow: 0 4px 16px rgba(56, 78, 103, 0.18);
+  border: 1px solid rgba(39, 174, 96, 0.08);
+  border-top-right-radius: 100% !important;
+  border-bottom-right-radius: 100% !important;
+}
+
+.dayCellSelectedRangeEdge .dayText,
+.dayCellSelectedSingle .dayText {
+  color: var(--primary);
+}
+
+.dayCellRangeMiddle .dayText {
+  color: #1f2937;
+}
+
+.dayCellRangeStart,
+.dayCellRangeEnd,
+.dayCellRangeMiddle {
+  border-radius: 0;
+}
+
+.dayCellRangeStart::after {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  background: linear-gradient(90deg, #ffffff 0%, #ffffff 100%);
+}
+
+.dayCellRangeEnd::after {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  background: linear-gradient(90deg, #ffffff 0%, #ffffff 100%);
+}
+
+.dayCellRangeStart + .dayCellRangeMiddle::after,
+.dayCellRangeMiddle + .dayCellRangeEnd::after {
+  border-radius: 0;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding-top: 16px;
+}
+
+.cancelButton,
+.okButton {
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 14px;
+  transition: all 0.2s ease;
+  border-radius: 10px;
+}
+
+.cancelButton:hover {
+  background: rgba(0, 0, 0, 0.092);
+}
+
+.okButton:hover {
+  background: rgba(39, 174, 96, 0.08);
+}
+
+.cancelButton {
+  color: #111827;
+}
+
+.okButton {
+  color: var(--primary);
+}
+
+.root :global(button:focus-visible) {
+  outline: 2px solid rgba(39, 174, 96, 0.3);
+  outline-offset: 2px;
+}

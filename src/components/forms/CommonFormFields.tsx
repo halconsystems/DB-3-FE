@@ -1,6 +1,7 @@
-'use client';
+ 'use client';
 
 import React from 'react';
+import { SingleDatePicker } from '@/components/date-pickers/CustomDatePickers';
 import type { ProfileField, ProfileFormData } from './FormTypes';
 import CircularButton from '../ui/CircularButton';
 
@@ -189,7 +190,7 @@ export function DateInputField({ field, value, onChange, styles, wrapperClassNam
 
     dateInput.focus();
     dateInput.click();
-  };
+  } ;
 
   return (
     <div
@@ -200,21 +201,18 @@ export function DateInputField({ field, value, onChange, styles, wrapperClassNam
         {field.label}
         {field.required && <span style={{ color: '#ff1744', marginLeft: '4px' }}>*</span>}
       </label>
-      <input
-        ref={dateInputRef}
-        type="date"
-        name={String(field.name)}
-        className={styles.input + " " + styles.dateInput}
-        style={{ ...getInputStyle(field), ...getReadOnlyStyle(field) }}
+      <SingleDatePicker
+        className={styles.input}
+        buttonClassName={styles.dateInput}
+        label={field.label}
         value={value}
-        onChange={field.readOnly ? undefined : onChange}
+        onChange={(val) => {
+          const fakeEvent = { target: { name: String(field.name), value: val } } as unknown as React.ChangeEvent<HTMLInputElement>;
+          onChange(fakeEvent);
+        }}
         placeholder={field.placeholder || field.label}
         readOnly={field.readOnly}
-        disabled={field.readOnly}
       />
-      <div style={{ position: 'absolute', right: '3%', top: '50%', transform: 'translateY(-50%)', cursor: field.readOnly ? 'not-allowed' : 'pointer' }}>
-        <CircularButton imagePath='/icons/Calendar.svg' width="24px" height="24px" onClick={openDatePicker} />
-      </div> 
     </div>
   );
 }

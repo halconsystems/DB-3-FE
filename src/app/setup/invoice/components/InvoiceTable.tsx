@@ -1,6 +1,5 @@
 'use client';
-import { useEffect, useState, useMemo, useRef } from 'react';
-import Image from 'next/image';
+import { useEffect, useState, useMemo } from 'react';
 import { useInvoices } from '../../../../hooks/invoice/useInvoices';
 import { useInvoiceSummary } from '../../../../hooks/invoice/useInvoiceSummary';
 import { useCreateInvoice } from '../../../../hooks/invoice/useCreateInvoice';
@@ -16,7 +15,7 @@ import { saveTableRow, clearTableRow, getTableRow } from '../../../../lib/tableR
 import { endOfDayIso, formatDateDisplay, startOfDayIso } from '../../../../lib/dateUtils';
 import { invoiceFields } from '../fields';
 import { exportInvoicesExcel } from '../../../../services/invoice.service';
-import { Calendar } from 'lucide-react';
+import { RangeDatePicker } from '../../../../components/date-pickers/CustomDatePickers';
 import toolbarStyles from './InvoiceToolbar.module.css';
 
 interface Invoice {
@@ -59,16 +58,6 @@ function formatPkr(n: number | null | undefined): string {
   return `PKR ${Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 }
 
-function formatShortDate(value: string): string {
-  if (!value) return 'Select date';
-
-  const parts = value.split('-');
-  if (parts.length !== 3) return value;
-
-  const [year, month, day] = parts;
-  return `${day}/${month}/${year.slice(-2)}`;
-}
-
 export default function InvoiceTable(props: InvoiceTableProps) {
   const { tabs, activeTab, onTabChange, onAddNew, addButtonLabel, searchParams } = props;
   const [currentPage, setCurrentPage] = useState(1);
@@ -76,8 +65,6 @@ export default function InvoiceTable(props: InvoiceTableProps) {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [excelExporting, setExcelExporting] = useState(false);
-  const fromDateRef = useRef<HTMLInputElement>(null);
-  const toDateRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const fromIso = fromDate ? startOfDayIso(fromDate) : undefined;
@@ -256,24 +243,6 @@ export default function InvoiceTable(props: InvoiceTableProps) {
     }
   };
 
-  const openDatePicker = () => {
-    if (!fromDate) {
-      fromDateRef.current?.showPicker?.();
-      return;
-    }
-
-    if (!toDate) {
-      toDateRef.current?.showPicker?.();
-      return;
-    }
-
-    fromDateRef.current?.showPicker?.();
-  };
-
-  const dateRangeLabel = fromDate || toDate
-    ? `${formatShortDate(fromDate || toDate)} - ${formatShortDate(toDate || fromDate)}`
-    : 'Select date';
-
   const invoiceToolbar = (
     <div className={toolbarStyles.toolbar}>
       <div className={toolbarStyles.row}>
@@ -294,36 +263,18 @@ export default function InvoiceTable(props: InvoiceTableProps) {
           </div>
           <div className={toolbarStyles.controlCard}>
             <p className={toolbarStyles.label}>Date Range</p>
-            <button type="button" className={toolbarStyles.datePickerButton} onClick={openDatePicker} aria-label="Select date range">
-              <span className={toolbarStyles.datePickerLabel}>{dateRangeLabel}</span>
-              <span className={toolbarStyles.datePickerIcon}>
-                <img src="/icons/calendar.svg" alt="Calendar Icon" width={16} height={16} />
-              </span>
-            </button>
-            <input
-              ref={fromDateRef}
-              id="invoice-from"
-              type="date"
-              className={toolbarStyles.hiddenDateInput}
-              value={fromDate}
-              aria-label="From date"
-              onChange={(e) => {
-                setFromDate(e.target.value);
-                setCurrentPage(1);
-                toDateRef.current?.showPicker?.();
-              }}
-            />
-            <input
-              ref={toDateRef}
-              id="invoice-to"
-              type="date"
-              className={toolbarStyles.hiddenDateInput}
-              value={toDate}
-              aria-label="To date"
-              onChange={(e) => {
-                setToDate(e.target.value);
+            <RangeDatePicker
+              fromValue={fromDate}
+              toValue={toDate}
+              onFromChange={(nextValue) => {
+                setFromDate(nextValue);
                 setCurrentPage(1);
               }}
+              onToChange={(nextValue) => {
+                setToDate(nextValue);
+                setCurrentPage(1);
+              }}
+              label="Select date range"
             />
           </div>
           <div className={toolbarStyles.excelWrapper}>

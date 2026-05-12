@@ -1,7 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
-import Image from 'next/image';
+import { useMemo, useState } from 'react';
 import DataTable, { Column, StatusBadge, Tab } from '@/components/tables/DataTable';
 import CircularButton from '@/components/ui/CircularButton';
 import { endOfDayIso, formatDateDisplay, startOfDayIso } from '@/lib/dateUtils';
@@ -9,6 +8,7 @@ import { useInvoiceSummary } from '@/hooks/invoice/useInvoiceSummary';
 import { useInvoiceSummaryDetails } from '@/hooks/invoice/useInvoiceSummaryDetails';
 import type { InvoiceSummaryDetailItem } from '@/services/invoice.service';
 import { ChevronDown } from 'lucide-react';
+import { RangeDatePicker } from '@/components/date-pickers/CustomDatePickers';
 import styles from './DhaXHalconTable.module.css';
 
 interface DhaXHalconTableProps {
@@ -44,16 +44,6 @@ type HeadOption = 'all' | 'dha' | 'halcon';
 function formatPkr(n: number | null | undefined): string {
   if (n === null || n === undefined || Number.isNaN(Number(n))) return '-';
   return `PKR ${Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-}
-
-function formatShortDate(value: string): string {
-  if (!value) return 'Select date';
-
-  const parts = value.split('-');
-  if (parts.length !== 3) return value;
-
-  const [year, month, day] = parts;
-  return `${day}/${month}/${year.slice(-2)}`;
 }
 
 const columns: Column<HalconRow>[] = [
@@ -92,8 +82,6 @@ export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHa
   const [selectedHead, setSelectedHead] = useState<HeadOption>('all');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
-  const fromDateRef = useRef<HTMLInputElement>(null);
-  const toDateRef = useRef<HTMLInputElement>(null);
 
   const fromDateIso = fromDate ? startOfDayIso(fromDate) : undefined;
   const toDateIso = toDate ? endOfDayIso(toDate) : undefined;
@@ -169,24 +157,6 @@ export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHa
     };
   };
 
-  const openDatePicker = () => {
-    if (!fromDate) {
-      fromDateRef.current?.showPicker?.();
-      return;
-    }
-
-    if (!toDate) {
-      toDateRef.current?.showPicker?.();
-      return;
-    }
-
-    fromDateRef.current?.showPicker?.();
-  };
-
-  const dateRangeLabel = fromDate || toDate
-    ? `${formatShortDate(fromDate || toDate)} - ${formatShortDate(toDate || fromDate)}`
-    : 'Select date';
-
   const headerContent = (
     <div className={styles.headerArea}>
       <div className={styles.summaryStrip}>
@@ -208,36 +178,18 @@ export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHa
           </div>
           <div className={styles.controlCard}>
             <p className={styles.cardLabel}>Date Range</p>
-            <button type="button" className={styles.datePickerButton} onClick={openDatePicker} aria-label="Select date range">
-              <span className={styles.datePickerLabel}>{dateRangeLabel}</span>
-              <span className={styles.datePickerIcon}>
-                <Image src="/icons/Calendar.svg" alt="Calendar Icon" width={16} height={16} />
-              </span>
-            </button>
-            <input
-              ref={fromDateRef}
-              id="dha-x-from"
-              type="date"
-              className={styles.hiddenDateInput}
-              value={fromDate}
-              aria-label="From date"
-              onChange={(e) => {
-                setFromDate(e.target.value);
-                setCurrentPage(1);
-                toDateRef.current?.showPicker?.();
-              }}
-            />
-            <input
-              ref={toDateRef}
-              id="dha-x-to"
-              type="date"
-              className={styles.hiddenDateInput}
-              value={toDate}
-              aria-label="To date"
-              onChange={(e) => {
-                setToDate(e.target.value);
+            <RangeDatePicker
+              fromValue={fromDate}
+              toValue={toDate}
+              onFromChange={(nextValue) => {
+                setFromDate(nextValue);
                 setCurrentPage(1);
               }}
+              onToChange={(nextValue) => {
+                setToDate(nextValue);
+                setCurrentPage(1);
+              }}
+              label="Select date range"
             />
           </div>
         </div>
