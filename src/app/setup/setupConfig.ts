@@ -12,8 +12,8 @@ export const SETUP_TABS: Tab[] = [
   { key: 'dha-x-halcon', label: 'DHA x Halcon' },
   { key: 'tag', label: 'Tag' },
   { key: 'tag-approval', label: 'Approve' },
-  { key: 'tag-type', label: 'Tag Type' },
   { key: 'tag-log', label: 'Approved tags' },
+  { key: 'tag-type', label: 'Tag Type' },
   { key: 'card-management', label: 'Card Management' }
 ];
 

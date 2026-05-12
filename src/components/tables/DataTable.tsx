@@ -55,6 +55,12 @@ export interface DataTableProps<T> {
   columnFilterStaticOptions?: Record<string, { value: string; label: string }[]>;
 }
 
+// ================================ Long Fields ==============================
+let longFields: string[] = [
+  'description',
+  'notes',
+];
+
 // ================================ CONSTANTS ================================
 
 const FILTERABLE_COLUMNS_CONFIG: Record<string, string> = {
@@ -217,12 +223,27 @@ export default function DataTable<T extends Record<string, any>>({
   
   const renderCell = (column: Column<T>, row: T) => {
     const value = getRawCellValue(column, row);
+    const isLongField = longFields.includes(String(column.key).toLowerCase());
+
+    let rendered: React.ReactNode;
     if (column.render) {
-      return column.render(value, row);
+      rendered = column.render(value, row);
+    } else {
+      if (value === null || value === undefined) rendered = '-';
+      else if (typeof value === 'string' && value.trim() === '') rendered = '-';
+      else rendered = value;
     }
-    if (value === null || value === undefined) return '-';
-    if (typeof value === 'string' && value.trim() === '') return '-';
-    return value;
+
+    // If this is a long field and the rendered content is a plain string/number,
+    if (isLongField && (typeof rendered === 'string' || typeof rendered === 'number')) {
+      return (
+        <span className={styles.longText} title={String(value ?? '')}>
+          {rendered}
+        </span>
+      );
+    }
+
+    return rendered;
   };
 
   // ================================ FILTER OPTIONS GENERATION ================================

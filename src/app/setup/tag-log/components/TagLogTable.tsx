@@ -43,6 +43,8 @@ export default function TagLogTable({
     { key: 'feeScale', header: 'FeeScale' },
     { key: 'planType', header: 'Plan Type' },
     { key: 'notes', header: 'Description' },
+    { key: 'category', header: 'Category', render: (_: any, row) => row.category || '-' },
+    { key: 'subCategory', header: 'Sub Category', render: (_: any, row) => row.subCategory || '-' },
     { key: 'validFrom', header: 'Valid From', render: (value: string) => formatDateDisplay(value) },
     { key: 'validTo', header: 'Valid To', render: (value: string) => formatDateDisplay(value) },
     { key: 'trialPeriod', header: 'Trial Period' },
