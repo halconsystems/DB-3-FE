@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
+import Image from 'next/image';
 import { useInvoices } from '../../../../hooks/invoice/useInvoices';
 import { useInvoiceSummary } from '../../../../hooks/invoice/useInvoiceSummary';
 import { useCreateInvoice } from '../../../../hooks/invoice/useCreateInvoice';
@@ -15,7 +16,7 @@ import { saveTableRow, clearTableRow, getTableRow } from '../../../../lib/tableR
 import { endOfDayIso, formatDateDisplay, startOfDayIso } from '../../../../lib/dateUtils';
 import { invoiceFields } from '../fields';
 import { exportInvoicesExcel } from '../../../../services/invoice.service';
-import { FileSpreadsheet } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import toolbarStyles from './InvoiceToolbar.module.css';
 
 interface Invoice {
@@ -58,6 +59,16 @@ function formatPkr(n: number | null | undefined): string {
   return `PKR ${Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 }
 
+function formatShortDate(value: string): string {
+  if (!value) return 'Select date';
+
+  const parts = value.split('-');
+  if (parts.length !== 3) return value;
+
+  const [year, month, day] = parts;
+  return `${day}/${month}/${year.slice(-2)}`;
+}
+
 export default function InvoiceTable(props: InvoiceTableProps) {
   const { tabs, activeTab, onTabChange, onAddNew, addButtonLabel, searchParams } = props;
   const [currentPage, setCurrentPage] = useState(1);
@@ -65,6 +76,8 @@ export default function InvoiceTable(props: InvoiceTableProps) {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [excelExporting, setExcelExporting] = useState(false);
+  const fromDateRef = useRef<HTMLInputElement>(null);
+  const toDateRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const fromIso = fromDate ? startOfDayIso(fromDate) : undefined;
@@ -243,59 +256,89 @@ export default function InvoiceTable(props: InvoiceTableProps) {
     }
   };
 
+  const openDatePicker = () => {
+    if (!fromDate) {
+      fromDateRef.current?.showPicker?.();
+      return;
+    }
+
+    if (!toDate) {
+      toDateRef.current?.showPicker?.();
+      return;
+    }
+
+    fromDateRef.current?.showPicker?.();
+  };
+
+  const dateRangeLabel = fromDate || toDate
+    ? `${formatShortDate(fromDate || toDate)} - ${formatShortDate(toDate || fromDate)}`
+    : 'Select date';
+
   const invoiceToolbar = (
     <div className={toolbarStyles.toolbar}>
       <div className={toolbarStyles.row}>
-        <div className={toolbarStyles.controlCard} style={{ minWidth: 140 }}>
-          <p className={toolbarStyles.label}>Invoice No.</p>
-          <input
-            type="text"
-            className={toolbarStyles.invoiceNoInput}
-            placeholder="Type here"
-            value={invoiceNumberFilter}
-            onChange={(e) => {
-              setInvoiceNumberFilter(e.target.value);
-              setCurrentPage(1);
-            }}
-            aria-label="Filter by invoice number"
-          />
-        </div>
-        <div className={toolbarStyles.controlCard}>
-          <p className={toolbarStyles.label}>Date Range</p>
-          <div className={toolbarStyles.dateRow}>
+        <div className={toolbarStyles.metricsLeft}>
+          <div className={toolbarStyles.controlCard} style={{ minWidth: 140 }}>
+            <p className={toolbarStyles.label}>Invoice No.</p>
             <input
+              type="text"
+              className={toolbarStyles.invoiceNoInput}
+              placeholder="Type here"
+              value={invoiceNumberFilter}
+              onChange={(e) => {
+                setInvoiceNumberFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              aria-label="Filter by invoice number"
+            />
+          </div>
+          <div className={toolbarStyles.controlCard}>
+            <p className={toolbarStyles.label}>Date Range</p>
+            <button type="button" className={toolbarStyles.datePickerButton} onClick={openDatePicker} aria-label="Select date range">
+              <span className={toolbarStyles.datePickerLabel}>{dateRangeLabel}</span>
+              <span className={toolbarStyles.datePickerIcon}>
+                <img src="/icons/calendar.svg" alt="Calendar Icon" width={16} height={16} />
+              </span>
+            </button>
+            <input
+              ref={fromDateRef}
+              id="invoice-from"
               type="date"
-              className={toolbarStyles.dateInput}
+              className={toolbarStyles.hiddenDateInput}
               value={fromDate}
+              aria-label="From date"
               onChange={(e) => {
                 setFromDate(e.target.value);
                 setCurrentPage(1);
+                toDateRef.current?.showPicker?.();
               }}
-              aria-label="From date"
             />
-            <span className={toolbarStyles.sub}>–</span>
             <input
+              ref={toDateRef}
+              id="invoice-to"
               type="date"
-              className={toolbarStyles.dateInput}
+              className={toolbarStyles.hiddenDateInput}
               value={toDate}
+              aria-label="To date"
               onChange={(e) => {
                 setToDate(e.target.value);
                 setCurrentPage(1);
               }}
-              aria-label="To date"
             />
           </div>
+          <div className={toolbarStyles.excelWrapper}>
+            <button
+              type="button"
+              className={toolbarStyles.excelBtn}
+              onClick={handleExportExcel}
+              disabled={excelExporting}
+              title="Download Excel"
+              aria-label="Export Excel"
+            >
+                <img src="/icons/excel.svg" alt="Excel Icon" width={20} height={20}></img>
+            </button>
+          </div>
         </div>
-        <button
-          type="button"
-          className={toolbarStyles.excelBtn}
-          onClick={handleExportExcel}
-          disabled={excelExporting}
-          title="Download Excel"
-          aria-label="Export Excel"
-        >
-          <FileSpreadsheet size={22} color="#217346" strokeWidth={1.75} />
-        </button>
         <div className={toolbarStyles.metrics}>
           <div className={toolbarStyles.metricCard}>
             <p className={toolbarStyles.label}>Total Amount</p>
@@ -304,18 +347,16 @@ export default function InvoiceTable(props: InvoiceTableProps) {
           <div className={toolbarStyles.metricCard}>
             <p className={toolbarStyles.label}>Total Tax Amount</p>
             <p className={toolbarStyles.value}>{formatPkr(pageTaxTotal)}</p>
-            <p className={toolbarStyles.sub}>Current page</p>
           </div>
           <div className={toolbarStyles.metricCard}>
             <p className={toolbarStyles.label}>Total Bank Charges</p>
             <p className={toolbarStyles.value}>{formatPkr(pageBankTotal)}</p>
-            <p className={toolbarStyles.sub}>Current page</p>
           </div>
           <div className={toolbarStyles.metricCard}>
             <p className={toolbarStyles.label}>Total Receivables</p>
             <p className={toolbarStyles.value}>{formatPkr(summaryTotals?.totalAmount)}</p>
           </div>
-        </div>
+        </div>  
       </div>
     </div>
   );

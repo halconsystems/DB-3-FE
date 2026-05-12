@@ -1,13 +1,14 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import DataTable, { Column, StatusBadge, Tab } from '@/components/tables/DataTable';
 import CircularButton from '@/components/ui/CircularButton';
 import { endOfDayIso, formatDateDisplay, startOfDayIso } from '@/lib/dateUtils';
 import { useInvoiceSummary } from '@/hooks/invoice/useInvoiceSummary';
 import { useInvoiceSummaryDetails } from '@/hooks/invoice/useInvoiceSummaryDetails';
 import type { InvoiceSummaryDetailItem } from '@/services/invoice.service';
-import { Calendar, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import styles from './DhaXHalconTable.module.css';
 
 interface DhaXHalconTableProps {
@@ -206,7 +207,9 @@ export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHa
             <p className={styles.cardLabel}>Date Range</p>
             <button type="button" className={styles.datePickerButton} onClick={openDatePicker} aria-label="Select date range">
               <span className={styles.datePickerLabel}>{dateRangeLabel}</span>
-              <Calendar size={13} className={styles.calendarIcon} />
+              <span className={styles.datePickerIcon}>
+                <Image src="/icons/Calendar.svg" alt="Calendar Icon" width={16} height={16} />
+              </span>
             </button>
             <input
               ref={fromDateRef}
