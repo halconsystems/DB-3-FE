@@ -175,7 +175,7 @@ export default function DataTable<T extends Record<string, any>>({
   getRowStatus,
   headerContent,
   enableFiltering = true,
-  enableSorting = false,
+  enableSorting = true,
   filterPlaceholder = 'Search',
   searchVariant = 'default',
   showSearchActionButton = false,

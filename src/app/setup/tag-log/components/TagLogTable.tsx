@@ -62,7 +62,7 @@ export default function TagLogTable({
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status as 'Active' | 'Inactive' | 'Pending' | undefined}
-        enableSorting={false}
+        enableSorting={true}
         headerContent={
           <div style={{height:'40px'}}></div>
         }

@@ -437,7 +437,7 @@ export default function LuggagePage() {
           return 'Active';
         }}
         columnFilterKeys={['passStatus', 'visitPassType']}
-        enableSorting={false}
+        enableSorting={true}
         enableFiltering={true}
         error={
           isError

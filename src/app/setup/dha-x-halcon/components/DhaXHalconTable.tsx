@@ -280,7 +280,7 @@ export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHa
       }}
       serverSidePagination
       headerContent={headerContent}
-      enableSorting={false}
+      enableSorting={true}
       enableFiltering={false}
       error={
         isError

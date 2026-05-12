@@ -24,7 +24,7 @@ export default function NonResidentCardTable({ tabs, activeTab, onTabChange, mai
       showAddButton={false}
       currentPage={currentPage}
       onPageChange={setCurrentPage}
-      enableSorting={false}
+      enableSorting={true}
       filterPlaceholder="Name"
       searchVariant="card-management"
       showSearchActionButton

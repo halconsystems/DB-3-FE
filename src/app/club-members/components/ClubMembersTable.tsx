@@ -125,7 +125,7 @@ export default function ClubMembersTable({
       error={loadError}
       emptyMessage="No club members found for this club"
       enableFiltering={true}
-      enableSorting={false}
+      enableSorting={true}
       filterPlaceholder="Search members..."
     />
   );

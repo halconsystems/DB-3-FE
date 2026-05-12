@@ -226,7 +226,7 @@ export default function TagApprovalTable({
         }}
         serverSidePagination
         getRowStatus={(row) => row.status as 'Active' | 'Inactive' | 'Pending' | undefined}
-        enableSorting={false}
+        enableSorting={true}
         headerContent={
           <div style={{height:'40px'}}></div>
         }
