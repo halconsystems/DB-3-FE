@@ -507,8 +507,8 @@ export default function WorkersPage() {
         }}
         serverSidePagination
         enableFiltering={true}
-        columnFilterKeys={['workerCardDeliveryType', 'cardStatus']}
-        columnFilterLabels={{ workerCardDeliveryType: 'Worker Card Delivery', cardStatus: 'Tag Status' }}
+        columnFilterKeys={['workerCardDeliveryType', 'cardStatus','category', 'subCategory']}
+        columnFilterLabels={{ workerCardDeliveryType: 'Worker Card Delivery', cardStatus: 'Tag Status', category: 'Category', subCategory: 'Sub Category' }}
         columnFilterStaticOptions={workerColumnFilterStaticOptions}
         getRowStatus={(row) => row.workerStatus ? 'Active' : 'Inactive'}
         error={isError ? `Failed to load workers: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}

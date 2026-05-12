@@ -232,10 +232,11 @@ export default function DataTable<T extends Record<string, any>>({
     const filters: Array<{ key: string; label: string }> = [];
 
     Object.entries(FILTERABLE_COLUMNS_CONFIG).forEach(([key, label]) => {
-      if (!columns.some((column) => String(column.key) === key)) return;
+      // if (!columns.some((column) => String(column.key) === key)) return;
       if (columnFilterKeys && columnFilterKeys.length > 0 && !columnFilterKeys.includes(key)) {
         return;
       }
+      
       const displayLabel = columnFilterLabels?.[key] ?? label;
       filters.push({ key, label: displayLabel });
     });

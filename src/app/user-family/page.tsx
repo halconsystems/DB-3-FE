@@ -389,8 +389,8 @@ export default function UserFamilyPage() {
         }}
         serverSidePagination
         enableFiltering={true}
-        columnFilterKeys={['cardStatus']}
-        columnFilterLabels={{ cardStatus: 'Tag Status' }}
+        columnFilterKeys={['category', 'subCategory', 'cardStatus']}
+        columnFilterLabels={{ category: 'Category', subCategory: 'Sub Category', cardStatus: 'Tag Status' }}
         columnFilterStaticOptions={{ cardStatus: cardStatusFilterOptions }}
         loading={isLoading}
         emptyMessage={isLoading ? 'Loading...' : 'No user family data found.'}

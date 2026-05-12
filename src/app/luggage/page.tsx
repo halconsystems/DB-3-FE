@@ -431,12 +431,14 @@ export default function LuggagePage() {
           setPageSize(size);
           setCurrentPage(1);
         }}
+        
         serverSidePagination
         getRowStatus={(row) => {
           if (!row.status || row.passStatus === 'Expired') return 'Inactive';
           return 'Active';
         }}
-        columnFilterKeys={['passStatus', 'visitPassType']}
+        columnFilterKeys={['passStatus', 'visitPassType','category', 'subCategory']}
+        columnFilterLabels={{category: 'Category', subCategory: 'Sub Category' }}
         enableSorting={true}
         enableFiltering={true}
         error={

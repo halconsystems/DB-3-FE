@@ -470,6 +470,8 @@ export default function VisitorsPage() {
         }}
         serverSidePagination
         enableFiltering={true}
+        columnFilterKeys={['category', 'subCategory']}
+        columnFilterLabels={{category: 'Category', subCategory: 'Sub Category' }}
         getRowStatus={(row) => {
           if (!row.status || row.passStatus === 'Expired') return 'Inactive';
           return 'Active';

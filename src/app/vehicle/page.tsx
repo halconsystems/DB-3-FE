@@ -470,8 +470,8 @@ export default function VehiclePage() {
           setCurrentPage(1);
         }}
         serverSidePagination
-        columnFilterKeys={['tagStatus']}
-        columnFilterLabels={{ tagStatus: 'Tag Status' }}
+        columnFilterKeys={['tagStatus','category', 'subCategory']}
+        columnFilterLabels={{ tagStatus: 'Tag Status', category: 'Category', subCategory: 'Sub Category' }}
         columnFilterStaticOptions={{ tagStatus: tagStatusFilterOptions }}
         enableFiltering={true}
         error={isError ? `Failed to load vehicles: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
