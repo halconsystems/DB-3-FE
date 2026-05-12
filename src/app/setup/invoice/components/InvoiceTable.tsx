@@ -419,7 +419,7 @@ export default function InvoiceTable(props: InvoiceTableProps) {
         onAddClick={() => router.push('/setup/invoice?modal=add')}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
-        enableFiltering={true}
+        enableFiltering={false}
         serverSidePagination
       />
       

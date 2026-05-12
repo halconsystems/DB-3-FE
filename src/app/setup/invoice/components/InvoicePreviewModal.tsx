@@ -3,6 +3,7 @@
 import jsPDF from 'jspdf';
 import styles from './InvoicePreviewModal.module.css';
 import { formatDateDisplay } from '@/lib/dateUtils';
+import { X } from 'lucide-react';
 
 interface InvoicePreviewData {
   id: string;
@@ -184,7 +185,7 @@ export default function InvoicePreviewModal({ isOpen, onClose, invoice }: Invoic
               Download PDF
             </button>
             <button type="button" className={styles.closeButton} onClick={onClose} aria-label="Close">
-              x
+              <X size={16} />
             </button>
           </div>
         </div>

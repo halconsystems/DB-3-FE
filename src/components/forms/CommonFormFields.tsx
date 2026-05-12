@@ -158,7 +158,7 @@ export function SelectInputField({ field, value, onChange, styles, wrapperClassN
             </option>
           ))}
         </select>
-        <div style={{ position: 'absolute', right: '0', top: '50%', transform: 'translateY(-50%)', cursor: field.readOnly ? 'not-allowed' : 'pointer' }}>
+        <div style={{ position: 'absolute', right: '0', top: '50%', transform: 'translateY(-100%)', cursor: field.readOnly ? 'not-allowed' : 'pointer' }}>
           <CircularButton imagePath='/icons/DownArrow.svg' width="24px" height="24px" onClick={openSelectDropdown} />
         </div>
       </div>
@@ -212,7 +212,7 @@ export function DateInputField({ field, value, onChange, styles, wrapperClassNam
         readOnly={field.readOnly}
         disabled={field.readOnly}
       />
-      <div style={{ position: 'absolute', right: '0', top: '50%', transform: 'translateY(-50%)', cursor: field.readOnly ? 'not-allowed' : 'pointer' }}>
+      <div style={{ position: 'absolute', right: '3%', top: '50%', transform: 'translateY(-50%)', cursor: field.readOnly ? 'not-allowed' : 'pointer' }}>
         <CircularButton imagePath='/icons/Calendar.svg' width="24px" height="24px" onClick={openDatePicker} />
       </div> 
     </div>
