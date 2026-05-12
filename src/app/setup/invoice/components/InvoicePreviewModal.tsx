@@ -3,7 +3,7 @@
 import jsPDF from 'jspdf';
 import styles from './InvoicePreviewModal.module.css';
 import { formatDateDisplay } from '@/lib/dateUtils';
-import { X } from 'lucide-react';
+import { X } from 'lucide-react'; 
 
 interface InvoicePreviewData {
   id: string;

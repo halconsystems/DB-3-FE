@@ -39,6 +39,8 @@ interface HalconRow {
   trialDueDate: string;
 }
 
+type HeadOption = 'all' | 'dha' | 'halcon';
+
 function formatPkr(n: number | null | undefined): string {
   if (n === null || n === undefined || Number.isNaN(Number(n))) return '-';
   return `PKR ${Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
@@ -87,7 +89,7 @@ const columns: Column<HalconRow>[] = [
 export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHalconTableProps) {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedHead, setSelectedHead] = useState<'dha' | 'halcon'>('dha');
+  const [selectedHead, setSelectedHead] = useState<HeadOption>('all');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const fromDateRef = useRef<HTMLInputElement>(null);
@@ -194,9 +196,10 @@ export default function DhaXHalconTable({ tabs, activeTab, onTabChange }: DhaXHa
             <div className={styles.selectWrap}>
               <select
                 value={selectedHead}
-                onChange={(e) => setSelectedHead(e.target.value as 'dha' | 'halcon')}
+                onChange={(e) => setSelectedHead(e.target.value as HeadOption)}
                 className={styles.headSelect}
               >
+                <option value="all">All</option>
                 <option value="dha">DHA</option>
                 <option value="halcon">Halcon</option>
               </select>
