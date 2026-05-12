@@ -120,6 +120,16 @@ export interface ProfileFormData {
   feeCategory?: string;
   amount?: string | number;
   taxPercentage?: string | number;
+  discountPercentage?: string | number;
+  halconPercentage?: string | number;
+  dhaPercentage?: string | number;
+  mdrPercentage?: string | number;
+  fedTaxPercentage?: string | number;
+  discountValidFrom?: string;
+  discountValidTo?: string;
+  currency?: string;
+  createdBy?: string;
+  lastModifiedBy?: string;
   invoiceNumber?: string;
   invoiceDate?: string;
   paymentMethod?: string;

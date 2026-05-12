@@ -15,6 +15,18 @@ export default function EditFeeScale() {
   const [initialValues, setInitialValues] = useState<ProfileFormData | undefined>(undefined);
   const updateFeeScaleMutation = useUpdateFeeScale();
 
+  const getCreatedBy = () => {
+    if (typeof window === 'undefined') return 'system';
+    const userRaw = localStorage.getItem('user');
+    if (!userRaw) return 'system';
+    try {
+      const user = JSON.parse(userRaw);
+      return user?.fullName || user?.name || user?.email || 'system';
+    } catch {
+      return 'system';
+    }
+  };
+
   // On mount, get the ID from table row storage
   useEffect(() => {
     const selected = getTableRow<any>('fee-scale');
@@ -42,8 +54,16 @@ export default function EditFeeScale() {
         applicableVehicleCategory: feeScale.applicableVehicleCategory ?? "",
         isTaxApplicable: !!feeScale.isTaxApplicable,
         taxPercentage: feeScale.taxPercentage !== undefined && feeScale.taxPercentage !== null ? String(feeScale.taxPercentage) : "",
+        discountPercentage: feeScale.discountPercentage !== undefined && feeScale.discountPercentage !== null ? String(feeScale.discountPercentage) : "",
+        halconPercentage: feeScale.halconPercentage !== undefined && feeScale.halconPercentage !== null ? String(feeScale.halconPercentage) : "",
+        dhaPercentage: feeScale.dhaPercentage !== undefined && feeScale.dhaPercentage !== null ? String(feeScale.dhaPercentage) : "",
+        mdrPercentage: feeScale.mdrPercentage !== undefined && feeScale.mdrPercentage !== null ? String(feeScale.mdrPercentage) : "",
+        fedTaxPercentage: feeScale.fedTaxPercentage !== undefined && feeScale.fedTaxPercentage !== null ? String(feeScale.fedTaxPercentage) : "",
+        discountValidFrom: feeScale.discountValidFrom ?? "",
+        discountValidTo: feeScale.discountValidTo ?? "",
         currency: feeScale.currency ?? "",
         status: !!feeScale.isActive,
+        createdBy: feeScale.createdBy ?? getCreatedBy(),
       });
     }
   }, [data]);
@@ -66,8 +86,16 @@ export default function EditFeeScale() {
       applicableVehicleCategory: String(formData.applicableVehicleCategory ?? ""),
       isTaxApplicable: !!formData.isTaxApplicable,
       taxPercentage: Number(formData.taxPercentage ?? 0),
+      discountPercentage: formData.discountPercentage !== undefined && formData.discountPercentage !== '' ? Number(formData.discountPercentage) : undefined,
+      halconPercentage: formData.halconPercentage !== undefined && formData.halconPercentage !== '' ? Number(formData.halconPercentage) : undefined,
+      dhaPercentage: formData.dhaPercentage !== undefined && formData.dhaPercentage !== '' ? Number(formData.dhaPercentage) : undefined,
+      mdrPercentage: formData.mdrPercentage !== undefined && formData.mdrPercentage !== '' ? Number(formData.mdrPercentage) : undefined,
+      fedTaxPercentage: formData.fedTaxPercentage !== undefined && formData.fedTaxPercentage !== '' ? Number(formData.fedTaxPercentage) : undefined,
+      discountValidFrom: String(formData.discountValidFrom ?? ""),
+      discountValidTo: String(formData.discountValidTo ?? ""),
       currency: String(formData.currency ?? ""),
-      lastModifiedBy: String(formData.lastModifiedBy ?? ""),
+      createdBy: String(formData.createdBy ?? getCreatedBy()),
+      lastModifiedBy: String(formData.lastModifiedBy ?? getCreatedBy()),
     };
 
     updateFeeScaleMutation.mutate(payload, {

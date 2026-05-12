@@ -4,13 +4,13 @@ export const feeScaleFields: ProfileField[] = [
   { name: 'name' as keyof ProfileFormData, label: 'Name', type: 'text', required: true, placeholder: 'Enter Name' },
   { name: 'feeCategory' as keyof ProfileFormData, label: 'Fee Category', type: 'select', required: true, options: [
     { value: '', label: 'Select Fee Category' },
-    { value: '0', label: 'OneTime' },
-    { value: '1', label: 'Recurring' },
-    { value: '2', label: 'PerEntry' },
-    { value: '3', label: 'ByTime' }
+    { value: 'oneTime', label: 'One Time' },
+    { value: 'recurring', label: 'Recurring' },
+    { value: 'perEntry', label: 'Per Entry' },
+    { value: 'byTime', label: 'By Time' }
   ]},
   { name: 'amount' as keyof ProfileFormData, label: 'Amount', type: 'text', required: true, placeholder: 'Enter Amount' },
-  { name: 'description' as keyof ProfileFormData, label: 'Description', type: 'text', required: true, placeholder: 'Enter Description' },
+  { name: 'description' as keyof ProfileFormData, label: 'Description', type: 'text', required: false, placeholder: 'Enter Description' },
   { name: 'applicableUserTypes' as keyof ProfileFormData, label: 'Applicable User Types', type: 'select', required: true, options: [
     { value: '', label: 'Select User Type' },
     { value: 'Member', label: 'Member' },
@@ -25,16 +25,18 @@ export const feeScaleFields: ProfileField[] = [
   ] },
   { name: 'applicableVehicleCategory' as keyof ProfileFormData, label: 'Applicable Vehicle Category', type: 'select', required: true, options: [
     { value: '', label: 'Select Vehicle Category' },
-    { value: '0', label: 'Private' },
-    { value: '1', label: 'Official' },
-    { value: '2', label: 'Service' },
-    { value: '3', label: 'Commercial' }
+    { value: 'private', label: 'Private' },
+    { value: 'official', label: 'Official' },
+    { value: 'service', label: 'Service' },
+    { value: 'commercial', label: 'Commercial' }
   ]},
   { name: 'isTaxApplicable' as keyof ProfileFormData, label: 'Is Tax Applicable', type: 'statusSwitch', required: true },
-  { name: 'taxPercentage' as keyof ProfileFormData, label: 'Tax Percentage', type: 'text', required: true, placeholder: 'Enter Tax Percentage' },
-  { name: 'discountPercentage' as keyof ProfileFormData, label: 'Discount Percentage', type: 'text', required: true, placeholder: 'Enter Discount Percentage' },
-  { name: 'mdrPercentage' as keyof ProfileFormData, label: 'MDR Percentage', type: 'text', required: true, placeholder: 'Enter MDR Percentage' },
-  { name: 'fedTaxPercentage' as keyof ProfileFormData, label: 'FED Tax Percentage', type: 'text', required: true, placeholder: 'Enter FED Tax Percentage' },
+  { name: 'taxPercentage' as keyof ProfileFormData, label: 'Tax Percentage', type: 'text', required: false, placeholder: 'Enter Tax Percentage' },
+  { name: 'discountPercentage' as keyof ProfileFormData, label: 'Discount Percentage', type: 'text', required: false, placeholder: 'Enter Discount Percentage' },
+  { name: 'halconPercentage' as keyof ProfileFormData, label: 'Halcon Percentage', type: 'text', required: false, placeholder: 'Enter Halcon Percentage' },
+  { name: 'dhaPercentage' as keyof ProfileFormData, label: 'DHA Percentage', type: 'text', required: false, placeholder: 'Enter DHA Percentage' },
+  { name: 'mdrPercentage' as keyof ProfileFormData, label: 'MDR Percentage', type: 'text', required: false, placeholder: 'Enter MDR Percentage' },
+  { name: 'fedTaxPercentage' as keyof ProfileFormData, label: 'FED Tax Percentage', type: 'text', required: false, placeholder: 'Enter FED Tax Percentage' },
   { name: 'discountValidFrom' as keyof ProfileFormData, label: 'Discount Valid From', type: 'date', required: true },
   { name: 'discountValidTo' as keyof ProfileFormData, label: 'Discount Valid To', type: 'date', required: true },
   { name: 'currency' as keyof ProfileFormData, label: 'Currency', type: 'text', required: true, placeholder: 'Enter Currency' }
@@ -50,6 +52,8 @@ export const mockFeeScaleData: ProfileFormData = {
   isTaxApplicable: true,
   taxPercentage: 0,
   discountPercentage: 0,
+  halconPercentage: 0,
+  dhaPercentage: 0,
   mdrPercentage: 0,
   fedTaxPercentage: 0,
   discountValidFrom: new Date().toISOString(),

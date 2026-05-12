@@ -398,8 +398,8 @@ export default function CustomDatePicker(props: CustomDatePickerProps) {
           </div>
 
           <div className={styles.weekHeader}>
-            {dayHeaders.map((day) => (
-              <span key={day} className={styles.weekDay}>{day}</span>
+            {dayHeaders.map((day, index) => (
+              <span key={`${day}-${index}`} className={styles.weekDay}>{day}</span>
             ))}
           </div>
 

@@ -11,6 +11,18 @@ export default function AddFeeScale() {
   const createFeeScaleMutation = useCreateFeeScale();
   const [fields, setFields] = useState(feeScaleFields);
 
+  const getCreatedBy = () => {
+    if (typeof window === 'undefined') return 'system';
+    const userRaw = localStorage.getItem('user');
+    if (!userRaw) return 'system';
+    try {
+      const user = JSON.parse(userRaw);
+      return user?.fullName || user?.name || user?.email || 'system';
+    } catch {
+      return 'system';
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
     async function fetchEnums() {
@@ -66,7 +78,27 @@ export default function AddFeeScale() {
   const handleSave = async (formData: ProfileFormData) => {
     setSuccessMsg("");
 
-    createFeeScaleMutation.mutate(formData as any, {
+    const payload = {
+      name: String(formData.name ?? ''),
+      feeCategory: String(formData.feeCategory ?? ''),
+      amount: Number(formData.amount ?? 0),
+      description: String(formData.description ?? ''),
+      applicableUserTypes: String(formData.applicableUserTypes ?? ''),
+      applicableVehicleCategory: String(formData.applicableVehicleCategory ?? ''),
+      isTaxApplicable: !!formData.isTaxApplicable,
+      taxPercentage: Number(formData.taxPercentage ?? 0),
+      discountPercentage: formData.discountPercentage !== undefined && formData.discountPercentage !== '' ? Number(formData.discountPercentage) : undefined,
+      halconPercentage: formData.halconPercentage !== undefined && formData.halconPercentage !== '' ? Number(formData.halconPercentage) : undefined,
+      dhaPercentage: formData.dhaPercentage !== undefined && formData.dhaPercentage !== '' ? Number(formData.dhaPercentage) : undefined,
+      mdrPercentage: formData.mdrPercentage !== undefined && formData.mdrPercentage !== '' ? Number(formData.mdrPercentage) : undefined,
+      fedTaxPercentage: formData.fedTaxPercentage !== undefined && formData.fedTaxPercentage !== '' ? Number(formData.fedTaxPercentage) : undefined,
+      discountValidFrom: String(formData.discountValidFrom ?? ''),
+      discountValidTo: String(formData.discountValidTo ?? ''),
+      currency: String(formData.currency ?? ''),
+      createdBy: getCreatedBy(),
+    };
+
+    createFeeScaleMutation.mutate(payload as any, {
       onSuccess: () => {
         setSuccessMsg('Fee Scale added successfully!');
         setTimeout(() => {
@@ -83,6 +115,25 @@ export default function AddFeeScale() {
     <DashboardLayout pageTitle="Add Fee Scale">
       <CommonEntityForm
         fields={fields}
+        initialValues={{
+          name: '',
+          feeCategory: '',
+          amount: '',
+          description: '',
+          applicableUserTypes: '',
+          applicableVehicleCategory: '',
+          isTaxApplicable: false,
+          taxPercentage: '0',
+          discountPercentage: '0',
+          halconPercentage: '0',
+          dhaPercentage: '0',
+          mdrPercentage: '0',
+          fedTaxPercentage: '0',
+          discountValidFrom: '',
+          discountValidTo: '',
+          currency: '',
+          createdBy: getCreatedBy(),
+        }}
         onSave={handleSave}
         title="Add New Fee Scale"
         saveButtonText="Add Fee Scale"

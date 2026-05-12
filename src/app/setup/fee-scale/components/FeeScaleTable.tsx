@@ -26,6 +26,8 @@ interface FeeScale {
   isTaxApplicable: boolean;
   taxPercentage: number;
   discountPercentage: number | null;
+  halconPercentage: number | null;
+  dhaPercentage: number | null;
   mdrPercentage: number | null;
   fedTaxPercentage: number | null;
   discountValidFrom: string | null;
@@ -44,6 +46,129 @@ interface FeeScaleTableProps {
   addButtonLabel: string;
   searchParams?: any | null;
 }
+
+const feeScaleFieldNames = feeScaleFields.map((field) => field.name);
+
+const toStringValue = (value: unknown) => (value === null || value === undefined ? '' : String(value));
+
+const toNumberValue = (value: unknown, fallback = 0) => {
+  if (value === null || value === undefined || value === '') {
+    return fallback;
+  }
+
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? fallback : parsed;
+};
+
+const toOptionalNumberValue = (value: unknown) => {
+  if (value === null || value === undefined || value === '') {
+    return undefined;
+  }
+
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? undefined : parsed;
+};
+
+const normalizeDateValue = (value: unknown) => {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+
+  const stringValue = String(value);
+  return stringValue.includes('T') ? stringValue.split('T')[0] : stringValue;
+};
+
+const getCreatedByFromStorage = () => {
+  if (typeof window === 'undefined') {
+    return 'system';
+  }
+
+  const userRaw = localStorage.getItem('user');
+  if (!userRaw) {
+    return 'system';
+  }
+
+  try {
+    const user = JSON.parse(userRaw);
+    return user?.fullName || user?.name || user?.email || 'system';
+  } catch {
+    return 'system';
+  }
+};
+
+const buildFeeScalePayload = (
+  formData: ProfileFormData,
+  fallback?: Partial<FeeScale>
+) => {
+  const source = fallback ?? {};
+
+  return {
+    name: toStringValue(formData.name ?? source.packageName),
+    feeCategory: toStringValue(formData.feeCategory ?? source.feeCategory),
+    amount: toNumberValue(formData.amount ?? source.amount, 0),
+    description: toStringValue(formData.description ?? source.description),
+    applicableUserTypes: toStringValue(formData.applicableUserTypes ?? source.applicableUserTypes),
+    applicableVehicleCategory: toStringValue(formData.applicableVehicleCategory ?? source.applicableVehicleCategory),
+    isTaxApplicable: formData.isTaxApplicable !== undefined
+      ? Boolean(formData.isTaxApplicable)
+      : Boolean(source.isTaxApplicable),
+    taxPercentage: toNumberValue(formData.taxPercentage ?? source.taxPercentage, 0),
+    discountPercentage: toOptionalNumberValue(formData.discountPercentage ?? source.discountPercentage),
+    halconPercentage: toOptionalNumberValue(formData.halconPercentage ?? source.halconPercentage),
+    dhaPercentage: toOptionalNumberValue(formData.dhaPercentage ?? source.dhaPercentage),
+    mdrPercentage: toOptionalNumberValue(formData.mdrPercentage ?? source.mdrPercentage),
+    fedTaxPercentage: toOptionalNumberValue(formData.fedTaxPercentage ?? source.fedTaxPercentage),
+    discountValidFrom: normalizeDateValue(formData.discountValidFrom ?? source.discountValidFrom),
+    discountValidTo: normalizeDateValue(formData.discountValidTo ?? source.discountValidTo),
+    currency: toStringValue(formData.currency ?? source.currency),
+    createdBy: toStringValue(formData.createdBy ?? source.createdBy ?? getCreatedByFromStorage()),
+  };
+};
+
+const buildFeeScaleInitialValues = (details?: any): ProfileFormData | null => {
+  if (!details?.data) {
+    return null;
+  }
+
+  const feeScale = details.data;
+
+  return feeScaleFieldNames.reduce((values, fieldName) => {
+    switch (fieldName) {
+      case 'amount':
+      case 'taxPercentage':
+      case 'discountPercentage':
+      case 'halconPercentage':
+      case 'dhaPercentage':
+      case 'mdrPercentage':
+      case 'fedTaxPercentage':
+        return {
+          ...values,
+          [fieldName]: feeScale[fieldName] !== null && feeScale[fieldName] !== undefined ? String(feeScale[fieldName]) : '',
+        };
+      case 'discountValidFrom':
+      case 'discountValidTo':
+        return {
+          ...values,
+          [fieldName]: normalizeDateValue(feeScale[fieldName]),
+        };
+      case 'isTaxApplicable':
+        return {
+          ...values,
+          [fieldName]: Boolean(feeScale[fieldName]),
+        };
+      case 'createdBy':
+        return {
+          ...values,
+          [fieldName]: toStringValue(feeScale[fieldName]),
+        };
+      default:
+        return {
+          ...values,
+          [fieldName]: toStringValue(feeScale[fieldName]),
+        };
+    }
+  }, {} as ProfileFormData);
+};
 
 export default function FeeScaleTable({
   tabs,
@@ -96,17 +221,7 @@ export default function FeeScaleTable({
   const handleAddFeeScale = async (data: ProfileFormData) => {
     setFormError('');
     try {
-      await createFeeScale({
-        name: data.name || '',
-        feeCategory: data.feeCategory || '',
-        amount: data.amount ? Number(data.amount) : 0,
-        taxPercentage: data.taxPercentage ? Number(data.taxPercentage) : 0,
-        currency: data.currency || '',
-        isTaxApplicable: Boolean(data.isTaxApplicable),
-        applicableUserTypes: data.applicableUserTypes || '',
-        applicableVehicleCategory: data.applicableVehicleCategory || '',
-        description: data.description || '',
-      });
+      await createFeeScale(buildFeeScalePayload({ ...data, createdBy: getCreatedByFromStorage() }));
       handleCloseModal();
     } catch (err: any) {
       const message = err?.response?.data?.errorMessage || err?.message || 'Failed to create fee scale';
@@ -115,18 +230,7 @@ export default function FeeScaleTable({
   };
 
   const initialFeeScaleValues = useMemo<ProfileFormData | null>(() => {
-    if (!editFeeScaleDetails?.data) return null;
-    return {
-      name: editFeeScaleDetails.data.name || '',
-      feeCategory: editFeeScaleDetails.data.feeCategory || '',
-      amount: String(editFeeScaleDetails.data.amount || ''),
-      taxPercentage: String(editFeeScaleDetails.data.taxPercentage || ''),
-      currency: editFeeScaleDetails.data.currency || '',
-      isTaxApplicable: editFeeScaleDetails.data.isTaxApplicable,
-      applicableUserTypes: editFeeScaleDetails.data.applicableUserTypes || '',
-      applicableVehicleCategory: editFeeScaleDetails.data.applicableVehicleCategory || '',
-      description: editFeeScaleDetails.data.description || '',
-    };
+    return buildFeeScaleInitialValues(editFeeScaleDetails);
   }, [editFeeScaleDetails]);
 
   const handleUpdateFeeScale = async (formData: ProfileFormData) => {
@@ -135,15 +239,9 @@ export default function FeeScaleTable({
     try {
       await updateFeeScale({
         id: editFeeScaleId,
-        name: formData.name || editFeeScaleDetails.data.name || '',
-        feeCategory: formData.feeCategory || editFeeScaleDetails.data.feeCategory || '',
-        amount: formData.amount ? Number(formData.amount) : editFeeScaleDetails.data.amount,
-        taxPercentage: formData.taxPercentage ? Number(formData.taxPercentage) : editFeeScaleDetails.data.taxPercentage,
-        currency: formData.currency || editFeeScaleDetails.data.currency || '',
-        isTaxApplicable: formData.isTaxApplicable !== undefined ? Boolean(formData.isTaxApplicable) : editFeeScaleDetails.data.isTaxApplicable,
-        applicableUserTypes: formData.applicableUserTypes || editFeeScaleDetails.data.applicableUserTypes || '',
-        applicableVehicleCategory: formData.applicableVehicleCategory || editFeeScaleDetails.data.applicableVehicleCategory || '',
-        description: formData.description || editFeeScaleDetails.data.description || '',
+        ...buildFeeScalePayload(formData, editFeeScaleDetails.data),
+        isActive: editFeeScaleDetails.data.isActive,
+        createdBy: editFeeScaleDetails.data.createdBy ?? getCreatedByFromStorage(),
       });
       handleCloseModal();
     } catch (err: any) {
@@ -162,6 +260,8 @@ export default function FeeScaleTable({
     isTaxApplicable: item.isTaxApplicable,
     taxPercentage: item.taxPercentage ?? 0,
     discountPercentage: item.discountPercentage ?? null,
+    halconPercentage: item.halconPercentage ?? null,
+    dhaPercentage: item.dhaPercentage ?? null,
     mdrPercentage: item.mdrPercentage ?? null,
     fedTaxPercentage: item.fedTaxPercentage ?? null,
     discountValidFrom: item.discountValidFrom ?? null,
@@ -262,12 +362,20 @@ export default function FeeScaleTable({
             name: '',
             feeCategory: '',
             amount: '',
-            taxPercentage: '',
+            taxPercentage: '0',
+            discountPercentage: '0',
+            halconPercentage: '0',
+            dhaPercentage: '0',
+            mdrPercentage: '0',
+            fedTaxPercentage: '0',
+            discountValidFrom: '',
+            discountValidTo: '',
             currency: '',
             isTaxApplicable: false,
             applicableUserTypes: '',
             applicableVehicleCategory: '',
             description: '',
+            createdBy: getCreatedByFromStorage(),
           }}
           onSave={handleAddFeeScale}
           onCancel={handleCloseModal}
@@ -287,7 +395,7 @@ export default function FeeScaleTable({
           <CommonEntityForm
             title=""
             fields={feeScaleFields}
-            initialValues={initialFeeScaleValues || { name: '', feeCategory: '', amount: '', taxPercentage: '', currency: '', isTaxApplicable: false, applicableUserTypes: '', applicableVehicleCategory: '', description: '' }}
+            initialValues={initialFeeScaleValues || { name: '', feeCategory: '', amount: '', taxPercentage: '0', discountPercentage: '0', halconPercentage: '0', dhaPercentage: '0', mdrPercentage: '0', fedTaxPercentage: '0', discountValidFrom: '', discountValidTo: '', currency: '', isTaxApplicable: false, applicableUserTypes: '', applicableVehicleCategory: '', description: '', createdBy: getCreatedByFromStorage() }}
             onSave={handleUpdateFeeScale}
             onCancel={handleCloseModal}
             loading={false}

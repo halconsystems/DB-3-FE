@@ -27,6 +27,8 @@ export interface CreateFeeScalePayload {
   isTaxApplicable: boolean;
   taxPercentage: number;
   discountPercentage?: number;
+  halconPercentage?: number;
+  dhaPercentage?: number;
   mdrPercentage?: number;
   fedTaxPercentage?: number;
   discountValidFrom?: string;
@@ -51,11 +53,14 @@ export interface UpdateFeeScalePayload {
   isTaxApplicable: boolean;
   taxPercentage: number;
   discountPercentage?: number;
+  halconPercentage?: number;
+  dhaPercentage?: number;
   mdrPercentage?: number;
   fedTaxPercentage?: number;
   discountValidFrom?: string;
   discountValidTo?: string;
   currency: string;
+  createdBy?: string;
   lastModifiedBy?: string;
 }
 

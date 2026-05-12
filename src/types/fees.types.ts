@@ -9,6 +9,8 @@ export interface FeeScale {
   isTaxApplicable: boolean;
   taxPercentage: number;
   discountPercentage?: number;
+  halconPercentage?: number;
+  dhaPercentage?: number;
   mdrPercentage?: number;
   fedTaxPercentage?: number;
   discountValidFrom?: string;
