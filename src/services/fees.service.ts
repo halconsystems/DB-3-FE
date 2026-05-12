@@ -26,6 +26,11 @@ export interface CreateFeeScalePayload {
   applicableVehicleCategory: string;
   isTaxApplicable: boolean;
   taxPercentage: number;
+  discountPercentage?: number;
+  mdrPercentage?: number;
+  fedTaxPercentage?: number;
+  discountValidFrom?: string;
+  discountValidTo?: string;
   currency: string;
   createdBy?: string;
 }
@@ -45,6 +50,11 @@ export interface UpdateFeeScalePayload {
   applicableVehicleCategory: string;
   isTaxApplicable: boolean;
   taxPercentage: number;
+  discountPercentage?: number;
+  mdrPercentage?: number;
+  fedTaxPercentage?: number;
+  discountValidFrom?: string;
+  discountValidTo?: string;
   currency: string;
   lastModifiedBy?: string;
 }

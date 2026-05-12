@@ -359,6 +359,23 @@ export default function CommonEntityForm({
       return;
     }
 
+    // Numeric-only enforcement for percentage fields
+    const numericPercentageFields = new Set(['taxPercentage', 'discountPercentage', 'mdrPercentage', 'fedTaxPercentage']);
+    if (numericPercentageFields.has(name)) {
+      let cleaned = String(value ?? '').replace(/[^0-9.]/g, '');
+      // allow only one decimal point
+      const parts = cleaned.split('.');
+      if (parts.length > 2) {
+        cleaned = parts[0] + '.' + parts.slice(1).join('');
+      }
+      // trim leading zeros except single zero
+      if (/^0\d+/.test(cleaned)) {
+        cleaned = cleaned.replace(/^0+(\d)/, '$1');
+      }
+      setFormData((prev) => withDerivedVehicleLicensePlate({ ...prev, [name]: cleaned }));
+      return;
+    }
+
     if (type === 'checkbox') {
       setFormData((prev) => ({ ...prev, [name]: (event.target as HTMLInputElement).checked }));
       return;

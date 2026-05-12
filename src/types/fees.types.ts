@@ -8,6 +8,11 @@ export interface FeeScale {
   applicableVehicleCategory: string;
   isTaxApplicable: boolean;
   taxPercentage: number;
+  discountPercentage?: number;
+  mdrPercentage?: number;
+  fedTaxPercentage?: number;
+  discountValidFrom?: string;
+  discountValidTo?: string;
   currency: string;
   created: string;
   createdBy: string;
