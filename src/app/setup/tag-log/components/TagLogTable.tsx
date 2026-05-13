@@ -35,7 +35,7 @@ export default function TagLogTable({
   }, [data]);
 
   const TagColumns: Column<TagApprovalRequest>[] = [
-    { key: 'parentUserName', header: 'Username' },
+    { key: 'hierarchicalId', header: 'User Id', render: (_: any, row) => row.hierarchicalId || '-' },
     { key: 'subjectName', header: 'Entity Name' },
     { key: 'entityTypeDisplay', header: 'Entity Type', render: (_: any, row) => row.subjectType || '-' },
     { key: 'tagType', header: 'Tag Type' },

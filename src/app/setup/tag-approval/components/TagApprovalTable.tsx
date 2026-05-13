@@ -151,7 +151,8 @@ export default function TagApprovalTable({
   };
 
   const TagColumns: Column<TagApprovalRequest>[] = [
-    { key: 'parentUserName', header: 'Username' },
+    { key: 'hierarchicalId', header: 'User Id', render: (_: any, row) => row.hierarchicalId || '-' },
+     { key: 'parentUserName', header: 'Username' },
     { key: 'subjectName', header: 'Entity Name' },
     { key: 'entityTypeDisplay', header: 'Entity Type', render: (_: any, row) => row.subjectType || '-' },
     {
@@ -162,6 +163,8 @@ export default function TagApprovalTable({
     { key: 'tagNumber', header: 'Tag Number' },
     { key: 'feeScale', header: 'Fee Scale' },
     { key: 'planType', header: 'Plan Type' },
+    { key: 'category', header: 'Category', render: (_: any, row) => row.category || '-' },
+    { key: 'subCategory', header: 'Sub Category', render: (_: any, row) => row.subCategory || '-' },
     { key: 'validFrom', header: 'Valid From', render: (value: string) => formatDateDisplay(value) },
     { key: 'validTo', header: 'Valid To', render: (value: string) => formatDateDisplay(value) },
     { key: 'notes', header: 'Notes' },
