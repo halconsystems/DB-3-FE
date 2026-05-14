@@ -20,6 +20,8 @@ import { resolveTableTotalPages } from '../../lib/unwrapApiList';
 import { userFields } from './fields';
 import { formatCardNumberDisplay } from '../../lib/formatCardNumber';
 import { displayDash, tableCnic, tablePhone, tableCardNumber } from '../../lib/formatDisplayFields';
+import { resolvePublicMediaUrl } from '../../lib/resolveMediaUrl';
+import avatarStyles from './UserNameColumnAvatar.module.css';
 import { normalizeNumericEnum } from '../../lib/statusMapping';
 
 
@@ -32,6 +34,13 @@ const mapUserType = (type: number | string) => {
     default: return 'User';
   }
 };
+
+/** Inline SVG data URL when the user has no profile image (avoids missing static placeholder files). */
+const EMPTY_PROFILE_AVATAR =
+  'data:image/svg+xml,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="35" fill="#f3f4f6" stroke="#e5e7eb"/><circle cx="36" cy="27" r="9" fill="#d1d5db"/><path d="M20 56c0-9 7-16 16-16s16 7 16 16" fill="none" stroke="#d1d5db" stroke-width="3" stroke-linecap="round"/></svg>`
+  );
 
 const isApiSuccess = (response: any) => {
   const statusCode = response?.statusCode;
@@ -326,7 +335,7 @@ export default function UserPage() {
           ser: user.ser ?? 0,
           id: String(user.id),
           name: displayDash(user.name),
-          profilePicture: user.profilePicture || '',
+          profilePicture: user.profilePictureUrl ?? user.profilePicture ?? '',
           emailAddress: displayDash(user.email),
           address: displayDash(user.address),
           memberNo: displayDash(user.memberNo),
@@ -347,34 +356,26 @@ export default function UserPage() {
     { key: 'ser', header: 'Ser' },
     { key: 'name', header: 'Name',
       render: (value: string, row: any) => {
-        const imageUrl = row.profilePicture
-          ? `https://sdga-apistagging.dhakarachi.org${row.profilePicture}`
-          : '/icons/profile-placeholder.png';
+        const rawPic = row.profilePicture;
+        const hasPic = rawPic != null && String(rawPic).trim() !== '';
+        const imageUrl = hasPic ? resolvePublicMediaUrl(String(rawPic)) : EMPTY_PROFILE_AVATAR;
 
-      return (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-          }}
-        >
-          <img
-            src={imageUrl}
-            alt={value}
+        return (
+          <div
             style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              objectFit: 'cover',
-              border: '1px solid #e5e7eb',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
             }}
-          />
+          >
+            <span className={avatarStyles.avatarCell}>
+              <img className={avatarStyles.avatarImg} src={imageUrl} alt="" />
+            </span>
 
-          <span>{value}</span>
-        </div>
-      );
-    },
+            <span>{value}</span>
+          </div>
+        );
+      },
     },
     { key: 'emailAddress', header: 'Email' },
     { key: 'address', header: 'Address' },

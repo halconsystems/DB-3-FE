@@ -17,7 +17,6 @@ import { TagApprovalRequest } from '../../../../types/tag-approval.types';
 import { useGetAllTagTypes } from '@/hooks/tagtype/useGetAllTagTypes';
 import { formatDateDisplay } from '../../../../lib/dateUtils';
 import { resolveTableTotalPages } from '../../../../lib/unwrapApiList';
-import { tagApprovalFields } from '../../../../app/setup/tag-log/fields';
 
 interface TagTableProps {
   tabs: Tab[];
@@ -154,7 +153,12 @@ export default function TagApprovalTable({
     { key: 'hierarchicalId', header: 'User Id', render: (_: any, row) => row.hierarchicalId || '-' },
      { key: 'parentUserName', header: 'Username' },
     { key: 'subjectName', header: 'Entity Name' },
-    { key: 'entityTypeDisplay', header: 'Entity Type', render: (_: any, row) => row.subjectType || '-' },
+    {
+      key: 'subjectType',
+      header: 'Entity Type',
+      render: (value: string | null | undefined) =>
+        value != null && String(value).trim() !== '' ? String(value) : '-',
+    },
     {
       key: 'tagType',
       header: 'Tag Type',
@@ -228,12 +232,8 @@ export default function TagApprovalTable({
           setCurrentPage(1);
         }}
         serverSidePagination
-        columnFilterKeys={[
-    'tagType',
-    'category',
-    'subCategory',
-    'entityType',
-  ]}
+        columnFilterKeys={['subjectType', 'tagType', 'category', 'subCategory']}
+        columnFilterLabels={{ subjectType: 'Entity Type' }}
         getRowStatus={(row) => row.status as 'Active' | 'Inactive' | 'Pending' | undefined}
         enableSorting={true}
         headerContent={

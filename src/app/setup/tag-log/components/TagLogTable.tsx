@@ -37,7 +37,12 @@ export default function TagLogTable({
   const TagColumns: Column<TagApprovalRequest>[] = [
     { key: 'hierarchicalId', header: 'User Id', render: (_: any, row) => row.hierarchicalId || '-' },
     { key: 'subjectName', header: 'Entity Name' },
-    { key: 'entityTypeDisplay', header: 'Entity Type', render: (_: any, row) => row.subjectType || '-' },
+    {
+      key: 'subjectType',
+      header: 'Entity Type',
+      render: (value: string | null | undefined) =>
+        value != null && String(value).trim() !== '' ? String(value) : '-',
+    },
     { key: 'tagType', header: 'Tag Type' },
     { key: 'tagNumber', header: 'Tag Number' },
     { key: 'feeScale', header: 'FeeScale' },
@@ -61,6 +66,8 @@ export default function TagLogTable({
         data={Tags}
         loading={isLoading}
         showAddButton={false}
+        columnFilterKeys={['subjectType', 'category', 'subCategory']}
+        columnFilterLabels={{ subjectType: 'Entity Type' }}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         getRowStatus={(row) => row.status as 'Active' | 'Inactive' | 'Pending' | undefined}

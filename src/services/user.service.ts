@@ -28,7 +28,8 @@ export interface ExternalUser {
   id: string;
   ser?: number;
   name: string;
-  profilePicture?: string;
+  profilePicture?: string | null;
+  profilePictureUrl?: string | null;
   email: string;
   phoneNumber: string;
   cnic: string;

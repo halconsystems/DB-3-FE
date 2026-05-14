@@ -60,9 +60,12 @@ const toPoliceVerification = (value?: string): boolean => {
   return value === 'yes';
 };
 
-const toAttachmentString = (value?: File | null): string => {
+const toAttachmentString = (value?: File | string | null): string => {
   if (!value) {
     return '';
+  }
+  if (typeof value === 'string') {
+    return value;
   }
   return value.name;
 };

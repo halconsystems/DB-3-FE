@@ -68,14 +68,12 @@ const FILTERABLE_COLUMNS_CONFIG: Record<string, string> = {
   workerCardDeliveryType: 'Worker Card Delivery',
   cardStatus: 'Tag Status',
   tagType: 'Tag Type',
-  subjectType: 'Subject Type',
   tagStatus: 'Tag Status',
   passStatus: 'Pass Status',
   visitPassType: 'Pass Type',
   activeStatus: 'Status',
   category: 'Category',
   subCategory: 'Sub Category',
-  entityType: 'Entity Type',
 };
 
 // ================================ STATUS BADGE COMPONENT ================================
@@ -261,8 +259,18 @@ export default function DataTable<T extends Record<string, any>>({
       if (columnFilterKeys && columnFilterKeys.length > 0 && !isExplicitlyRequested) {
         return;
       }
-      
+
       const displayLabel = columnFilterLabels?.[key] ?? label;
+      filters.push({ key, label: displayLabel });
+    });
+
+    // Keys listed in columnFilterKeys but not in FILTERABLE_COLUMNS_CONFIG (e.g. subjectType as "Entity Type" on tag screens only)
+    columnFilterKeys?.forEach((key) => {
+      if (filters.some((f) => f.key === key)) return;
+      const displayLabel =
+        columnFilterLabels?.[key] ??
+        FILTERABLE_COLUMNS_CONFIG[key] ??
+        key.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase());
       filters.push({ key, label: displayLabel });
     });
 
@@ -425,7 +433,11 @@ export default function DataTable<T extends Record<string, any>>({
 
   const handleColumnFilterChange = (key: string, value: string) => {
     setColumnFilters(prev => ({ ...prev, [key]: value }));
-    if (!isPaginationControlled) setInternalCurrentPage(1);
+    if (!isPaginationControlled) {
+      setInternalCurrentPage(1);
+    } else {
+      onPageChange?.(1);
+    }
   };
 
   // ================================ PAGINATION UI RENDERER ================================

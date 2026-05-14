@@ -22,6 +22,7 @@ import { useEnumMetadata } from '../../hooks/metadata/useEnumMetadata';
 import { formatCardNumberDisplay, stripCardNumberFormatting } from '../../lib/formatCardNumber';
 import { workerCardDeliveryToApi, workerCardDeliveryToFormValue } from '../../lib/workerCardDelivery';
 import { displayDash, tableCnic, tablePhone } from '../../lib/formatDisplayFields';
+import { resolvePublicMediaUrl } from '../../lib/resolveMediaUrl';
 import { normalizeNumericEnum } from '../../lib/statusMapping';
 
 interface Worker {
@@ -322,10 +323,10 @@ export default function WorkersPage() {
       issueDate: toDateInputValue(data.validFrom),
       expiryDate: toDateInputValue(data.validTo),
       cardStatus: toCardStatusFormValue(data.cardStatus),
-      profilePicture: null,
-      policeVerificationFile: null,
-      cnicFront: null,
-      cnicBack: null,
+      profilePicture: resolvePublicMediaUrl(data.profilePicture) || null,
+      policeVerificationFile: resolvePublicMediaUrl(data.policeVerificationAttachment) || null,
+      cnicFront: resolvePublicMediaUrl(data.cnicFront) || null,
+      cnicBack: resolvePublicMediaUrl(data.cnicBack) || null,
       isActive: data.isActive,
     };
   }, [editWorkerDetails]);

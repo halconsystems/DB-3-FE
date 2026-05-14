@@ -9,6 +9,7 @@ import WarningModal from '../popup/WarningModal';
 import Loader from '../ui/loader';
 import { normalizeFormStatuses } from '../../lib/statusUtils';
 import { formatCardNumberDisplay, stripCardNumberFormatting } from '../../lib/formatCardNumber';
+import { isLikelyImageUrl } from '../../lib/resolveMediaUrl';
 import type { ProfileField, ProfileFormData } from './FormTypes';
 import {
   DateInputField,
@@ -594,23 +595,66 @@ export default function CommonEntityForm({
         : displayValue;
 
     if (isViewMode && field.type === 'file') {
-      const url =
-        typeof rawValue === 'string' && rawValue.trim() ? rawValue.trim() : '';
+      const rawStr = typeof rawValue === 'string' ? rawValue.trim() : '';
+      const url = /^https:\/\//i.test(rawStr) ? rawStr : '';
+      const isImage = Boolean(url) && isLikelyImageUrl(url);
+      const fieldLayoutStyle: React.CSSProperties = {
+        ...(field.fieldWidth !== undefined
+          ? { width: typeof field.fieldWidth === 'number' ? `${field.fieldWidth}px` : field.fieldWidth }
+          : {}),
+        ...(field.fieldHeight !== undefined
+          ? { minHeight: typeof field.fieldHeight === 'number' ? `${field.fieldHeight}px` : field.fieldHeight }
+          : {}),
+        ...(field.colSpan ? { gridColumn: `span ${field.colSpan}` } : {}),
+      };
+      const useCircularImagePreview =
+        field.name === 'profilePicture' || field.name === 'cnicFront' || field.name === 'cnicBack';
       return (
         <div
           key={String(field.name)}
-          className={wrapperClassName}
-          style={{ marginBottom: 16, textAlign: 'left' }}
+          className={`${styles.capsule} ${wrapperClassName ?? ''}`.trim()}
+          style={fieldLayoutStyle}
         >
-          <label className={styles.formTitle}>{field.label}</label>
-          {url ? (
-            <div style={{ marginTop: 8 }}>
-              <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#30b33d' }}>
-                Open attachment
+          <label className={styles.labelGreen}>
+            {field.label}
+            {field.required && <span style={{ color: '#ff1744', marginLeft: '4px' }}>*</span>}
+          </label>
+          {url && isImage ? (
+            <div style={{ marginTop: 6 }}>
+              <img
+                src={url}
+                alt=""
+                style={
+                  useCircularImagePreview
+                    ? {
+                        width: 96,
+                        height: 96,
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: '1px solid #e5e7eb',
+                        display: 'block',
+                      }
+                    : {
+                        maxWidth: '100%',
+                        maxHeight: 200,
+                        objectFit: 'contain',
+                        borderRadius: 8,
+                        border: '1px solid #e5e7eb',
+                        display: 'block',
+                      }
+                }
+              />
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'inline-block', marginTop: 8, fontSize: 11, fontWeight: 500, color: 'var(--primary, #27ae60)' }}
+              >
+                Open full size
               </a>
             </div>
           ) : (
-            <div style={{ marginTop: 8, color: '#707070' }}>N/A</div>
+            <input type="text" readOnly className={styles.input} value="N/A" tabIndex={-1} aria-readonly />
           )}
         </div>
       );

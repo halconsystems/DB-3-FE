@@ -25,7 +25,7 @@ export interface ProfileFormData {
   issueDate?: string;
   expiryDate?: string;
   cardStatus?: string | boolean;
-  profilePicture?: File | null;
+  profilePicture?: File | string | null;
   proofOfPossession?: File | null;
   isActive?: boolean;
   idNumber?: string;
@@ -33,7 +33,7 @@ export interface ProfileFormData {
   userName?: string;
   cnic?: string;
   vehicleTagId?: string;
-  cnicFront?: File | null;
+  cnicFront?: File | string | null;
   vehicleNo?: string;
   vehicleNo2?: string;
   licensePlate?: string;
@@ -42,7 +42,7 @@ export interface ProfileFormData {
   quickPick?: string;
   fromDate?: string;
   toDate?: string;
-  cnicBack?: File | null;
+  cnicBack?: File | string | null;
   search?: string;
   dob?: string;
   cardDelivery?: string;
@@ -51,7 +51,7 @@ export interface ProfileFormData {
   cellNumber?: string;
   policeVerification?: string;
   address?: string;
-  policeVerificationFile?: File | null;
+  policeVerificationFile?: File | string | null;
   make?: string;
   model?: string;
   color?: string;

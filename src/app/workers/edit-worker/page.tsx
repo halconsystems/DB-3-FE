@@ -105,8 +105,11 @@ const toPoliceVerificationFormValue = (value?: boolean): string => {
   return value ? 'yes' : 'no';
 };
 
-const toAttachmentString = (value?: File | null, fallback?: string | null): string => {
+const toAttachmentString = (value?: File | string | null, fallback?: string | null): string => {
   if (value) {
+    if (typeof value === 'string') {
+      return value;
+    }
     return value.name;
   }
   return fallback || '';

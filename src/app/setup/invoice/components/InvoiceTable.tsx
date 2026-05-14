@@ -371,6 +371,7 @@ export default function InvoiceTable(props: InvoiceTableProps) {
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         enableFiltering={false}
+        enableSorting={false}
         serverSidePagination
       />
       

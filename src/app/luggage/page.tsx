@@ -437,7 +437,7 @@ export default function LuggagePage() {
           if (!row.status || row.passStatus === 'Expired') return 'Inactive';
           return 'Active';
         }}
-        columnFilterKeys={['passStatus', 'visitPassType','category', 'subCategory']}
+        columnFilterKeys={['passStatus', 'visitPassType']}
         enableSorting={true}
         enableFiltering={true}
         error={

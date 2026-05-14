@@ -4,6 +4,7 @@ import React from 'react';
 import { SingleDatePicker } from '@/components/date-pickers/CustomDatePickers';
 import type { ProfileField, ProfileFormData } from './FormTypes';
 import CircularButton from '../ui/CircularButton';
+import { resolvePublicMediaUrl } from '@/lib/resolveMediaUrl';
 
 type CssModule = Record<string, string>;
 
@@ -269,7 +270,26 @@ export function RadioCardInputField({ field, value, onChange, styles, wrapperCla
   );
 }
 
+const IMAGE_ATTACHMENT_FIELDS = new Set<keyof ProfileFormData>([
+  'profilePicture',
+  'cnicFront',
+  'cnicBack',
+  'policeVerificationFile',
+]);
+
 export function FileInputField({ field, formData, onFileChange, styles, wrapperClassName }: FileFieldProps) {
+  const raw = formData[field.name];
+  const hasUploaded =
+    (typeof raw === 'string' && raw.trim() !== '') || raw instanceof File;
+  let previewSrc = '';
+  if (typeof raw === 'string' && raw.trim()) {
+    previewSrc = resolvePublicMediaUrl(raw);
+  } else if (raw instanceof File) {
+    previewSrc = URL.createObjectURL(raw);
+  }
+  const showImagePreview =
+    previewSrc && IMAGE_ATTACHMENT_FIELDS.has(field.name);
+
   return (
     <div className={`${styles.capsuleFileWithPreview} ${wrapperClassName ?? ''}`.trim()} style={getWrapperStyle(field)}>
       <div className={styles.fileLabelRow}>
@@ -288,15 +308,32 @@ export function FileInputField({ field, formData, onFileChange, styles, wrapperC
       </div>
       <div className={styles.fileInfo}>
         <span className={styles.fileText}>Add Picture</span>
-        <span className={formData[field.name] ? styles.fileSubtext : styles.fileSubtextInactive}>{formData[field.name] ? 'File has been uploaded' : 'No file chosen'}</span>
+        <span className={hasUploaded ? styles.fileSubtext : styles.fileSubtextInactive}>
+          {hasUploaded ? 'File has been uploaded' : 'No file chosen'}
+        </span>
       </div>
-      {field.name === 'profilePicture' && formData.profilePicture && (
-        <div className={styles.profilePreviewWrapper}>
-          <div className={styles.profilePreview}>
-            <img src={URL.createObjectURL(formData.profilePicture)} alt="Preview" />
+      {showImagePreview &&
+        (field.name === 'profilePicture' ? (
+          <div className={styles.profilePreviewWrapper}>
+            <div className={styles.profilePreview}>
+              <img src={previewSrc} alt="" />
+            </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div style={{ marginTop: 10, width: '100%', maxWidth: 280 }}>
+            <div
+              style={{
+                maxHeight: 180,
+                borderRadius: 8,
+                overflow: 'hidden',
+                border: '1px solid #e0e0e0',
+                background: '#fafafa',
+              }}
+            >
+              <img src={previewSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', maxHeight: 180 }} />
+            </div>
+          </div>
+        ))}
     </div>
   );
 }
