@@ -13,12 +13,6 @@ export default function DateRangeSelector({ onDateRangeChange }: DateRangeSelect
   const [from, setFrom] = useState<string>('21/02/26');
   const [to, setTo] = useState<string>('20/03/26');
 
-  const handleDateChange = (fromDate: string, toDate: string) => {
-    setFrom(fromDate);
-    setTo(toDate);
-    onDateRangeChange?.(fromDate, toDate);
-  };
-
   return (
     <div className={styles.dateRangeContainer}>
       <button 
@@ -33,7 +27,17 @@ export default function DateRangeSelector({ onDateRangeChange }: DateRangeSelect
         <div className={styles.datePickerWrapper}>
           <CustomDatePicker
             mode="range"
-            onDateChange={handleDateChange}
+            label="Select date range"
+            fromValue={from}
+            toValue={to}
+            onFromChange={(fromDate) => {
+              setFrom(fromDate);
+              onDateRangeChange?.(fromDate, to);
+            }}
+            onToChange={(toDate) => {
+              setTo(toDate);
+              onDateRangeChange?.(from, toDate);
+            }}
             placeholder="Select date range"
           />
         </div>
