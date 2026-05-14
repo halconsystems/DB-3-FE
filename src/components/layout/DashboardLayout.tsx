@@ -80,7 +80,7 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
       <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : styles.sidebarClosed}`}>
         <div className={styles.sidebarHeader}>
           <div className={styles.logoSection}>
-            <img src="/images/PDOHA.png" alt="Logo" className={styles.logo} />
+            <img src="/images/dha.png" alt="DHA" className={styles.logo} />
             <div className={styles.logoSeparator} />
           </div>
           {/* <button className={styles.closeSidebarBtn} onClick={() => setSidebarOpen(false)}>

@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <title>Next.js Application</title>
+        <title>Halcon Identity Management System</title>
       </head>
       <body style={{ fontFamily: `${poppins.style.fontFamily}, sans-serif` }}>
         <ReactQueryProvider>
