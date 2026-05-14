@@ -489,6 +489,10 @@
   margin-top: 32px;
 }
 
+.compactFormActions {
+  margin-top: 18px;
+}
+
 .cancelButton {
   width: 269px;
   height: 44px;

@@ -13,9 +13,9 @@ const data = [
 const COLORS = ["#35b53f", "#ffbf00", "#ff1a14"];
 
 const legendItems = [
-  { label: "Pending - 9592", color: COLORS[0] },
-  { label: "Approved - 3197", color: COLORS[1] },
-  { label: "Rejected - 3197", color: COLORS[2] },
+  { label: "Pending - 300", color: COLORS[0] },
+  { label: "Approved - 100", color: COLORS[1] },
+  { label: "Rejected - 100", color: COLORS[2] },
 ];
 
 function renderCustomLabel(props: PieLabelRenderProps) {
@@ -61,25 +61,22 @@ function renderCustomLabel(props: PieLabelRenderProps) {
   );
 }
 
-export default function PackageChart() {
+export default function TagsRequestedTodayCard() {
   return (
-    <div className={styles.tagsRoot}>
-      <div className={styles.tagsHeader}>
-        <h2 className={styles.tagsTitle}>3- Tags (Overall)</h2>
-        <div className={styles.tagsDropdown} aria-hidden="true">
-          <span className={styles.tagsDropdownIcon}>⌄</span>
-        </div>
+    <div className={styles.tagsRequestedRoot}>
+      <div className={styles.tagsRequestedHeader}>
+        <h2 className={styles.tagsRequestedTitle}>5- Tags Requested Today</h2>
       </div>
 
-      <div className={styles.tagsBody}>
-        <div className={styles.tagsChartArea}>
-          <ResponsiveContainer width="100%" height={206}>
+      <div className={styles.tagsRequestedBody}>
+        <div className={styles.tagsRequestedChartArea}>
+          <ResponsiveContainer width="100%" height={274}>
             <PieChart>
               <Pie
                 data={data}
                 dataKey="value"
-                outerRadius={88}
-                innerRadius={60}
+                outerRadius={98}
+                innerRadius={72}
                 startAngle={225}
                 endAngle={-135}
                 label={renderCustomLabel}
@@ -93,17 +90,18 @@ export default function PackageChart() {
               </Pie>
             </PieChart>
           </ResponsiveContainer>
-          <div className={styles.tagsCenter}>
-            <div className={styles.tagsCenterValue}>15,998</div>
-            <div className={styles.tagsCenterLabel}>Total Tags</div>
+
+          <div className={styles.tagsRequestedCenter}>
+            <div className={styles.tagsRequestedCenterValue}>500</div>
+            <div className={styles.tagsRequestedCenterLabel}>Total Tags</div>
           </div>
         </div>
 
-        <div className={styles.tagsLegend}>
+        <div className={styles.tagsRequestedLegend}>
           {legendItems.map((item) => (
-            <div key={item.label} className={styles.tagsLegendItem}>
-              <span className={styles.tagsLegendSwatch} style={{ background: item.color }} />
-              <span className={styles.tagsLegendText}>{item.label}</span>
+            <div key={item.label} className={styles.tagsRequestedLegendItem}>
+              <span className={styles.tagsRequestedLegendSwatch} style={{ background: item.color }} />
+              <span className={styles.tagsRequestedLegendText}>{item.label}</span>
             </div>
           ))}
         </div>

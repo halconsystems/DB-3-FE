@@ -537,8 +537,8 @@
 .contentSection {
   flex: 1;
   min-height: 0;
-  background: #f6f9fb;
-  border-radius: 16px;
+  background: transparent;
+  border-radius: 0;
   padding: 12px 24px 24px;
   overflow: auto;
   display: flex;

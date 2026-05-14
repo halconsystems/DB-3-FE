@@ -26,6 +26,11 @@ export default function ApprovalModal({
   onClose,
   data,
 }: ApprovalModalProps) {
+  const isQrTagType = Boolean(data?.tagType?.trim().toLowerCase().includes('qr'));
+  const hidePassSpecificFields = Boolean(
+    data?.subjectType?.trim().toLowerCase().includes('visitor') ||
+    data?.subjectType?.trim().toLowerCase().includes('luggage')
+  );
   const { data: feeScaleData, isLoading: isFeeScaleLoading } = useFeeScales();
   const { data: zoneData, isLoading: isZoneLoading } = useZones();
   const { data: tagTypeData, isLoading: isTagTypeLoading } = useGetAllTagTypes();
@@ -94,18 +99,7 @@ export default function ApprovalModal({
     ...(zoneData?.data?.map((zone: any) => ({ value: zone.id, label: zone.name })) || []),
   ];
 
-  const approveFields: ProfileField[] = [
-    { name: 'tagApprovalRequestId' as keyof ProfileFormData, label: 'Tag Approval Request ID', type: 'text', required: true, placeholder: 'Tag Approval Request ID here', readOnly: true },
-    { name: 'name' as keyof ProfileFormData, label: 'Entity Name', type: 'text', required: true, placeholder: 'Entity Name here', readOnly: true },
-    { name: 'entityId' as keyof ProfileFormData, label: 'Entity ID', type: 'text', required: true, placeholder: 'Enter Entity ID here', readOnly: true },
-    {
-      name: 'tagType' as keyof ProfileFormData,
-      label: 'Tag Type',
-      type: 'text',
-      required: true,
-      readOnly: true,
-    },
-    { name: 'tagNumber' as keyof ProfileFormData, label: 'Tag Number', type: 'text', required: true, placeholder: 'Enter Tag Number here' },
+  const passSpecificFields: ProfileField[] = hidePassSpecificFields ? [] : [
     {
       name: 'feeScaleId' as keyof ProfileFormData,
       label: 'Fee Scale',
@@ -122,9 +116,6 @@ export default function ApprovalModal({
       placeholder: 'Select Plan Type',
       options: planTypeOptions,
     },
-    { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: true, placeholder: 'Select Date' },
-    { name: 'validTo' as keyof ProfileFormData, label: 'Valid To', type: 'date', required: true, placeholder: 'Select Date' },
-    { name: 'status' as keyof ProfileFormData, label: 'Status', type: 'statusSwitch', required: false, placeholder: 'Status' },
     {
       name: 'trialPeriod' as keyof ProfileFormData,
       label: 'Trial Period (Days)',
@@ -139,6 +130,27 @@ export default function ApprovalModal({
       ],
     },
   ];
+
+  const approveFields: ProfileField[] = [
+    { name: 'tagApprovalRequestId' as keyof ProfileFormData, label: 'Tag Approval Request ID', type: 'text', required: true, placeholder: 'Tag Approval Request ID here', readOnly: true },
+    { name: 'name' as keyof ProfileFormData, label: 'Entity Name', type: 'text', required: true, placeholder: 'Entity Name here', readOnly: true },
+    { name: 'entityId' as keyof ProfileFormData, label: 'Entity ID', type: 'text', required: true, placeholder: 'Enter Entity ID here', readOnly: true },
+    {
+      name: 'tagType' as keyof ProfileFormData,
+      label: 'Tag Type',
+      type: 'text',
+      required: true,
+      readOnly: true,
+    },
+    { name: 'tagNumber' as keyof ProfileFormData, label: 'Tag Number', type: 'text', required: true, placeholder: 'Enter Tag Number here' },
+    ...passSpecificFields.slice(0, 2),
+    { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: true, placeholder: 'Select Date' },
+    { name: 'validTo' as keyof ProfileFormData, label: 'Valid To', type: 'date', required: true, placeholder: 'Select Date' },
+    
+    ...passSpecificFields.slice(2),
+  ];
+
+  const visibleFields = isQrTagType ? [] : approveFields;
 
   const initialValues = useMemo(() => {
     if (!data) return {};
@@ -202,10 +214,10 @@ export default function ApprovalModal({
     >
       {data ? (
         <CommonEntityForm
-          title="Please provide details below!"
+          title={isQrTagType ? '' : 'Please provide details below!'}
           onSave={handleSave}
           onCancel={onClose}
-          fields={approveFields}
+          fields={visibleFields}
           saveButtonText="Approve"
           initialValues={initialValues}
           loading={isFeeScaleLoading || isZoneLoading || isTagTypeLoading || isApprovePending}

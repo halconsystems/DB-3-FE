@@ -186,19 +186,12 @@ export default function AddNewTag() {
     { value: '', label: 'Select Zone' },
     ...(zoneData?.data?.map((zone) => ({ value: zone.id, label: zone.name })) || []),
   ];
-  
-  const approveFields: ProfileField[] = [
-    { name: 'tagApprovalRequestId' as keyof ProfileFormData, label: 'Tag Approval Request ID', type: 'text', required: true, placeholder: 'Tag Approval Request ID here', readOnly: true },
-     { name: 'name' as keyof ProfileFormData, label: 'Entity Name', type: 'text', required: true, placeholder: 'Entity Name here', readOnly: true },
-    { name: 'entityId' as keyof ProfileFormData, label: 'Entity ID', type: 'text', required: true, placeholder: 'Enter Entity ID here', readOnly: true },
-    {
-      name: 'tagType' as keyof ProfileFormData,
-      label: 'Tag Type',
-      type: 'text',
-      required: true,
-      readOnly: true,
-    },
-    { name: 'tagNumber' as keyof ProfileFormData, label: 'Tag Number', type: 'text', required: true, placeholder: 'Enter Tag Number here' },
+
+  const subjectType = data?.data?.subjectType?.trim().toLowerCase() || '';
+  const hidePassSpecificFields = subjectType.includes('visitor') || subjectType.includes('luggage');
+  const isQrTagType = Boolean(data?.data?.tagType?.trim().toLowerCase().includes('qr'));
+
+  const passSpecificFields: ProfileField[] = hidePassSpecificFields ? [] : [
     {
       name: 'feeScaleId' as keyof ProfileFormData,
       label: 'Fee Scale',
@@ -216,9 +209,6 @@ export default function AddNewTag() {
       options: planTypeOptions,
       onChange: (value: string | number | boolean) => setPlanType(String(value)),
     },
-    { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: true, placeholder: 'Select Date', readOnly: true },
-    { name: 'validTo' as keyof ProfileFormData, label: 'Valid To', type: 'date', required: true, placeholder: 'Select Date', readOnly: true },
-    { name: 'status' as keyof ProfileFormData, label: 'Status', type: 'statusSwitch', required: false, placeholder: 'Status' },
     {
       name: 'trialPeriod' as keyof ProfileFormData,
       label: 'Trial Period (Days)',
@@ -233,6 +223,27 @@ export default function AddNewTag() {
       ],
     },
   ];
+  
+  const approveFields: ProfileField[] = [
+    { name: 'tagApprovalRequestId' as keyof ProfileFormData, label: 'Tag Approval Request ID', type: 'text', required: true, placeholder: 'Tag Approval Request ID here', readOnly: true },
+     { name: 'name' as keyof ProfileFormData, label: 'Entity Name', type: 'text', required: true, placeholder: 'Entity Name here', readOnly: true },
+    { name: 'entityId' as keyof ProfileFormData, label: 'Entity ID', type: 'text', required: true, placeholder: 'Enter Entity ID here', readOnly: true },
+    {
+      name: 'tagType' as keyof ProfileFormData,
+      label: 'Tag Type',
+      type: 'text',
+      required: true,
+      readOnly: true,
+    },
+    { name: 'tagNumber' as keyof ProfileFormData, label: 'Tag Number', type: 'text', required: true, placeholder: 'Enter Tag Number here' },
+    ...passSpecificFields.slice(0, 2),
+    { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: true, placeholder: 'Select Date', readOnly: true },
+    { name: 'validTo' as keyof ProfileFormData, label: 'Valid To', type: 'date', required: true, placeholder: 'Select Date', readOnly: true },
+    { name: 'status' as keyof ProfileFormData, label: 'Status', type: 'statusSwitch', required: false, placeholder: 'Status' },
+    ...passSpecificFields.slice(2),
+  ];
+
+  const visibleFields = isQrTagType ? [] : approveFields;
 
   const handleSave = async (formData: ProfileFormData) => {
     if (!data?.data) {
@@ -327,10 +338,10 @@ export default function AddNewTag() {
           <div>Failed to load tag approval request.</div>
         ) : (
           <CommonEntityForm
-            title="Please provide details below!"
+            title={isQrTagType ? '' : 'Please provide details below!'}
             onSave={handleSave}
             onCancel={() => window.history.back()}
-            fields={approveFields}
+            fields={visibleFields}
             saveButtonText="Approve"
             initialValues={initialValues}
             loading={isFeeScaleLoading || isZoneLoading || isTagTypeLoading || isApprovePending}

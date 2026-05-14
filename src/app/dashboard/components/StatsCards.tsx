@@ -1,30 +1,83 @@
 
 import styles from "./DashboardComponents.module.css";
-import { useSyncSummary } from "../../../hooks/dashboard/useSyncSummary";
+
+interface StatItem {
+  title: string;
+  value: string | number;
+  change?: string;
+  changeType?: 'positive' | 'negative' | 'neutral';
+  iconPath: string;
+  iconAlt: string;
+}
 
 export default function StatsCards() {
-  const { data, isLoading, isError } = useSyncSummary();
-
-  const syncStats = [
-    { title: "Total Records", value: data?.data.totalRecords ?? "-", iconPath: "/icons/Stats/Stats.CPAgents.svg", iconAlt: "Total Records" },
-    { title: "Total Success", value: data?.data.totalSuccess ?? "-", iconPath: "/icons/Stats/Stats.Member.svg", iconAlt: "Total Success" },
-    { title: "Total Failed", value: data?.data.totalFailed ?? "-", iconPath: "/icons/Stats/Stats.Active.svg", iconAlt: "Total Failed" },
-    { title: "Total Pending Retry", value: data?.data.totalPendingRetry ?? "-", iconPath: "/icons/Stats/Stats.Employees.svg", iconAlt: "Total Pending Retry" },
+  // Dashboard statistics - can be replaced with API data
+  const dashboardStats: StatItem[] = [
+    { 
+      title: "Total Users", 
+      value: "24,687", 
+      change: "+12.5%",
+      changeType: 'positive',
+      iconPath: "/icons/Stats/Stats.Member.svg", 
+      iconAlt: "Total Users" 
+    },
+    { 
+      title: "Today Users", 
+      value: "1,565", 
+      change: "+8.4%",
+      changeType: 'positive',
+      iconPath: "/icons/Stats/Stats.Active.svg", 
+      iconAlt: "Today Users" 
+    },
+    { 
+      title: "Total Tags", 
+      value: "15,998", 
+      iconPath: "/icons/Stats/Stats.CPAgents.svg", 
+      iconAlt: "Total Tags" 
+    },
+    { 
+      title: "Total Invoices", 
+      value: "9,694", 
+      iconPath: "/icons/Stats/Stats.Employees.svg", 
+      iconAlt: "Total Invoices" 
+    },
+    { 
+      title: "Total Employees", 
+      value: "765", 
+      iconPath: "/icons/Stats/Stats.Member.svg", 
+      iconAlt: "Total Employees" 
+    },
+    { 
+      title: "Total Packages", 
+      value: "122", 
+      iconPath: "/icons/Stats/Stats.CPAgents.svg", 
+      iconAlt: "Total Packages" 
+    },
   ];
-
-  if (isError) return <div>Failed to load sync summary.</div>;
 
   return (
     <div className={styles.statsContainer}>
       <div className={styles.statsGrid}>
-        {syncStats.map((item, i) => (
+        {dashboardStats.map((item, i) => (
           <div key={i} className={styles.statsCard}>
-            <div className={styles.statsIconBox}>
-              <img src={item.iconPath} alt={item.iconAlt} className={styles.statsIconImg} />
+            <div className={styles.statsLeftSection}>
+              <div className={styles.statsIconBox}>
+                <img src={item.iconPath} alt={item.iconAlt} className={styles.statsIconImg} />
+              </div>
+              {item.change && (
+                <div className={`${styles.statsPercentage} ${styles[`statsPercentage${item.changeType || 'neutral'}`]}`}>
+                  {item.change}
+                </div>
+              )}
             </div>
-            <div>
+            <div className={styles.statsContent}>
               <div className={styles.statsTitle}>{item.title}</div>
               <div className={styles.statsValue}>{item.value}</div>
+              {item.change && (
+                <div className={`${styles.statsChange} ${styles[`statsChange${item.changeType || 'neutral'}`]}`}>
+                  vs last 7 days
+                </div>
+              )}
             </div>
           </div>
         ))}

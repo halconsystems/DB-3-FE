@@ -13,11 +13,12 @@ interface FormModalProps {
 
 const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
+  const isCompact = !title.trim();
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.header}>
+      <div className={`${styles.modal} ${isCompact ? styles.compactModal : ''}`.trim()} onClick={(e) => e.stopPropagation()}>
+        <div className={`${styles.header} ${isCompact ? styles.compactHeader : ''}`.trim()}>
           <h2 className={styles.title}>{title}</h2>
           {/* <button
             onClick={onClose}
@@ -28,7 +29,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, title, children 
           </button> */}
           <CircularButton imagePath="/icons/close.svg" imageAlt="Close" onClick={onClose} className={styles.closeButton} imgSize={12} />
         </div>
-        <div className={styles.content}>
+        <div className={`${styles.content} ${isCompact ? styles.compactContent : ''}`.trim()}>
           {children}
         </div>
       </div>

@@ -199,15 +199,12 @@ export default function DashboardLayout({ children, pageTitle = "Dashboard", use
             <div className={styles.headerTitle}>{pageTitle}</div>
           </div>
           <div className={styles.headerRight}>
-            <Link href="/notification" className={styles.notificationWrapper}>
-              <img src="/icons/basil_notification-on-solid.png" alt="" className={styles.notificationIconImg} />
-            </Link>
             <div className={styles.userInfoWrapper}>
               <div 
                 className={styles.userInfo} 
                 onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
               >
-                <img src={userAvatarUrl || "/icons/Profile Picture.jpg"} alt="User" className={styles.userAvatar} />
+                <img src={userAvatarUrl || "/images/Halcon.png"} alt="User" className={styles.userAvatar} />
                 <div className={styles.userTextWrapper}>
                   <span className={styles.welcomeText}>👋 Welcome Back,</span>
                   <span className={styles.userName}>{displayName}</span>

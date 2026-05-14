@@ -166,6 +166,7 @@ export default function CommonEntityForm({
   if (pageName.includes('Residential')) {
     pageName = 'Member';
   } else pageName = '';
+  const isCompactModal = title.trim() === '';
 
   const normalizedInitialValues = React.useMemo(() => {
     const statusFieldNames = fields
@@ -341,21 +342,6 @@ export default function CommonEntityForm({
     }
 
     if (name === 'licensePlate') {
-      return;
-    }
-
-    // Autofill validFrom and validTo when trialPeriod changes
-    if (name === 'trialPeriod') {
-      const today = new Date();
-      const validFrom = today.toISOString().split('T')[0];
-      let validTo = validFrom;
-      const days = Number(value);
-      if (!isNaN(days) && days > 0) {
-        const toDate = new Date(today);
-        toDate.setDate(toDate.getDate() + days);
-        validTo = toDate.toISOString().split('T')[0];
-      }
-      setFormData((prev) => withDerivedVehicleLicensePlate({ ...prev, [name]: value, validFrom, validTo }));
       return;
     }
 
@@ -847,7 +833,7 @@ export default function CommonEntityForm({
     <div className={styles.formContainer}>
       <div className={styles.innerForm}>
         <div className={styles.formHeader}>
-          <h2 className={styles.formTitle}>{title}</h2>
+          {title ? <h2 className={styles.formTitle}>{title}</h2> : null}
           {statusSwitchFields.length > 0 && (
             <div className={styles.statusWrapper} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               {statusSwitchFields.map(field => (
@@ -870,7 +856,7 @@ export default function CommonEntityForm({
       </div>
 
       {!isViewMode && (
-        <div className={styles.formActions}>
+        <div className={`${styles.formActions} ${isCompactModal ? styles.compactFormActions : ''}`.trim()}>
           <button type="button" className={styles.cancelButton} onClick={onCancel} disabled={loading}>
             {cancelButtonText}
           </button>

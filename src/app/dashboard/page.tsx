@@ -3,7 +3,7 @@ import Dashboard from './components/Dashboard';
 
 export default function DashboardPage() {
   return (
-    <DashboardLayout pageTitle="Dashboard">
+    <DashboardLayout pageTitle="Halcon Identity Management System">
         <Dashboard />
     </DashboardLayout>
   );
