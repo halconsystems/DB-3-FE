@@ -40,22 +40,6 @@ const isApiSuccess = (response: any) => {
   return true;
 };
 
-const memberTypeFilterOptions = {
-  category: [
-    { value: 'Club Member', label: 'Club Member' },
-    { value: 'Commercial Employee', label: 'Commercial Employee' },
-    { value: 'Educational Visitor', label: 'Educational Visitor' },
-    { value: 'Residential', label: 'Residential' },
-  ],
-  subCategory: [
-    { value: 'Appartment', label: 'Appartment' },
-    { value: 'Beach View', label: 'Beach View' },
-    { value: 'Faculty', label: 'Faculty' },
-    { value: 'Portion', label: 'Portion' },
-    { value: 'Staff', label: 'Staff' },
-  ],
-};
-
 export default function UserFamilyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -320,6 +304,7 @@ export default function UserFamilyPage() {
     .map((family) => ({
       ser: family.ser ?? 0,
       id: family.id,
+      profilePicture: family.profilePicture || '',
       name: displayDash(family.name),
       externalUserName: displayDash(family.externalUserName),
       phoneNumber: family.phoneNumber ?? '',
@@ -339,7 +324,91 @@ export default function UserFamilyPage() {
       key: 'ser',
       header: 'Ser',
     },
-    { key: 'name', header: 'User Family Name' },
+    {
+  key: 'profilePicture',
+  header: 'Photo',
+  render: (_: any, row: any) => {
+  const imageUrl = row.profilePicture
+    ? row.profilePicture.startsWith('http')
+      ? row.profilePicture
+      : `https://sdga-apistagging.dhakarachi.org${row.profilePicture}`
+    : '';
+
+  
+// const handleDownload = async (e: React.MouseEvent) => {
+//   e.preventDefault();
+//   e.stopPropagation();
+
+//   const filename = `user-profile-${row.id}.jpg`;
+//   const proxyUrl = `/api/download-image?url=${encodeURIComponent(imageUrl)}&filename=${encodeURIComponent(filename)}`;
+
+//   try {
+//     const response = await fetch(proxyUrl);
+//     if (!response.ok) {
+//       const errorText = await response.text();
+//       console.error('Proxy failed:', response.status, errorText);
+//       throw new Error('Download failed');
+//     }
+
+//     const blob = await response.blob();
+//     const blobUrl = window.URL.createObjectURL(blob);
+//     const a = document.createElement('a');
+//     a.href = blobUrl;
+//     a.download = filename;
+//     document.body.appendChild(a);
+//     a.click();
+//     a.remove();
+//     window.URL.revokeObjectURL(blobUrl);
+//   } catch (err) {
+//     console.error('Download failed:', err);
+//   }
+// };
+  return imageUrl ? (
+    <button
+      //onClick={handleDownload}
+      style={{
+        border: 'none',
+        background: 'transparent',
+        padding: 0,
+        cursor: 'pointer',
+      }}
+    >
+      <img
+        src={imageUrl}
+        alt="user"
+        style={{
+          width: '40px',
+          height: '40px',
+          borderRadius: '50%',
+          objectFit: 'cover',
+          border: '1px solid #e5e7eb',
+        }}
+      />
+    </button>
+  ) : (
+    <span>-</span>
+  );
+}
+},
+    {
+  key: 'name',
+  header: 'User Family Name',
+  render: (value: string, row: any) => {
+
+    return (
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+        }}
+      >
+
+        <span>{value}</span>
+      </div>
+    );
+  },
+},
     { key: 'externalUserName', header: 'User Name' },
     { key: 'phoneNumber', header: 'Phone', render: (v: string) => tablePhone(v) },
     { key: 'cnic', header: 'CNIC No', render: (v: string) => tableCnic(v) },
@@ -405,9 +474,7 @@ export default function UserFamilyPage() {
         }}
         serverSidePagination
         enableFiltering={true}
-        columnFilterKeys={['category', 'subCategory', 'cardStatus']}
         columnFilterLabels={{ category: 'Category', subCategory: 'Sub Category', cardStatus: 'Tag Status' }}
-        columnFilterStaticOptions={{ cardStatus: cardStatusFilterOptions, ...memberTypeFilterOptions }}
         loading={isLoading}
         emptyMessage={isLoading ? 'Loading...' : 'No user family data found.'}
         onPageChange={setCurrentPage}

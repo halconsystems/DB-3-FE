@@ -97,21 +97,6 @@ const isApiSuccess = (response: any) => {
   return true;
 };
 
-const memberTypeFilterOptions = {
-  category: [
-    { value: 'Club Member', label: 'Club Member' },
-    { value: 'Commercial Employee', label: 'Commercial Employee' },
-    { value: 'Educational Visitor', label: 'Educational Visitor' },
-    { value: 'Residential', label: 'Residential' },
-  ],
-  subCategory: [
-    { value: 'Appartment', label: 'Appartment' },
-    { value: 'Beach View', label: 'Beach View' },
-    { value: 'Faculty', label: 'Faculty' },
-    { value: 'Portion', label: 'Portion' },
-    { value: 'Staff', label: 'Staff' },
-  ],
-};
 
 export default function WorkersPage() {
   const router = useRouter();
@@ -164,21 +149,6 @@ export default function WorkersPage() {
     });
     return map;
   }, [workerCardDeliveryEnum]);
-
-  const workerColumnFilterStaticOptions = useMemo(
-    () => ({
-      workerCardDeliveryType: (workerCardDeliveryEnum?.members ?? []).map((m) => ({
-        value: String(m.value),
-        label: m.name,
-      })),
-      cardStatus: (cardStatusEnum?.members ?? []).map((m) => ({
-        value: String(m.value),
-        label: m.name,
-      })),
-      ...memberTypeFilterOptions,
-    }),
-    [workerCardDeliveryEnum, cardStatusEnum]
-  );
 
   const workers: Worker[] = (data?.items || [])
     .filter((item) => item && !localRemovedIds.includes(item.id))
@@ -524,9 +494,7 @@ export default function WorkersPage() {
         }}
         serverSidePagination
         enableFiltering={true}
-        columnFilterKeys={['workerCardDeliveryType', 'cardStatus','category', 'subCategory']}
         columnFilterLabels={{ workerCardDeliveryType: 'Worker Card Delivery', cardStatus: 'Tag Status', category: 'Category', subCategory: 'Sub Category' }}
-        columnFilterStaticOptions={workerColumnFilterStaticOptions}
         getRowStatus={(row) => row.workerStatus ? 'Active' : 'Inactive'}
         error={isError ? `Failed to load workers: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
       />

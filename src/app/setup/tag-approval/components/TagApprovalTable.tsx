@@ -228,6 +228,12 @@ export default function TagApprovalTable({
           setCurrentPage(1);
         }}
         serverSidePagination
+        columnFilterKeys={[
+    'tagType',
+    'category',
+    'subCategory',
+    'entityType',
+  ]}
         getRowStatus={(row) => row.status as 'Active' | 'Inactive' | 'Pending' | undefined}
         enableSorting={true}
         headerContent={

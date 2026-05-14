@@ -235,6 +235,7 @@ export default function AddNewTag() {
       required: true,
       readOnly: true,
     },
+    {name: 'entityType' as keyof ProfileFormData, label: 'Entity Type', type: 'text', required: true, placeholder: 'Select Entity Type', readOnly: true},
     { name: 'tagNumber' as keyof ProfileFormData, label: 'Tag Number', type: 'text', required: true, placeholder: 'Enter Tag Number here' },
     ...passSpecificFields.slice(0, 2),
     { name: 'validFrom' as keyof ProfileFormData, label: 'Valid From', type: 'date', required: true, placeholder: 'Select Date', readOnly: true },
@@ -313,6 +314,7 @@ export default function AddNewTag() {
     initialValues = {
       tagApprovalRequestId: tag.id,
       name: tag.subjectName,
+      entityType: tag.subjectType || '',
       entityId: tag.subjectId,
       tagType: tag.tagType || '',
       tagNumber: tag.tagNumber,

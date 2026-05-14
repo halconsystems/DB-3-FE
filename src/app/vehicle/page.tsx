@@ -44,22 +44,6 @@ interface Vehicle {
 
 type SelectedVehicleRow = Pick<ExternalVehicle, 'id'>;
 
-const memberTypeFilterOptions = {
-  category: [
-    { value: 'Club Member', label: 'Club Member' },
-    { value: 'Commercial Employee', label: 'Commercial Employee' },
-    { value: 'Educational Visitor', label: 'Educational Visitor' },
-    { value: 'Residential', label: 'Residential' },
-  ],
-  subCategory: [
-    { value: 'Appartment', label: 'Appartment' },
-    { value: 'Beach View', label: 'Beach View' },
-    { value: 'Faculty', label: 'Faculty' },
-    { value: 'Portion', label: 'Portion' },
-    { value: 'Staff', label: 'Staff' },
-  ],
-};
-
 const formatLicensePlate = (license?: string | null, licenseNo?: number | null) => {
   const first = (license || '').trim();
   const second = licenseNo === null || licenseNo === undefined ? '' : String(licenseNo);
@@ -486,9 +470,7 @@ export default function VehiclePage() {
           setCurrentPage(1);
         }}
         serverSidePagination
-        columnFilterKeys={['tagStatus','category', 'subCategory']}
         columnFilterLabels={{ tagStatus: 'Tag Status', category: 'Category', subCategory: 'Sub Category' }}
-        columnFilterStaticOptions={{ tagStatus: tagStatusFilterOptions, ...memberTypeFilterOptions }}
         enableFiltering={true}
         error={isError ? `Failed to load vehicles: ${error instanceof Error ? error.message : 'Unknown error'}` : undefined}
       />

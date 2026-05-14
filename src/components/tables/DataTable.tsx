@@ -75,6 +75,7 @@ const FILTERABLE_COLUMNS_CONFIG: Record<string, string> = {
   activeStatus: 'Status',
   category: 'Category',
   subCategory: 'Sub Category',
+  entityType: 'Entity Type',
 };
 
 // ================================ STATUS BADGE COMPONENT ================================

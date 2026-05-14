@@ -326,6 +326,7 @@ export default function UserPage() {
           ser: user.ser ?? 0,
           id: String(user.id),
           name: displayDash(user.name),
+          profilePicture: user.profilePicture || '',
           emailAddress: displayDash(user.email),
           address: displayDash(user.address),
           memberNo: displayDash(user.memberNo),
@@ -344,7 +345,37 @@ export default function UserPage() {
 
   const columns: Column<any>[] = [
     { key: 'ser', header: 'Ser' },
-    { key: 'name', header: 'Name' },
+    { key: 'name', header: 'Name',
+      render: (value: string, row: any) => {
+        const imageUrl = row.profilePicture
+          ? `https://sdga-apistagging.dhakarachi.org${row.profilePicture}`
+          : '/icons/profile-placeholder.png';
+
+      return (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+          }}
+        >
+          <img
+            src={imageUrl}
+            alt={value}
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: '1px solid #e5e7eb',
+            }}
+          />
+
+          <span>{value}</span>
+        </div>
+      );
+    },
+    },
     { key: 'emailAddress', header: 'Email' },
     { key: 'address', header: 'Address' },
     { key: 'memberNo', header: 'Member No.' },

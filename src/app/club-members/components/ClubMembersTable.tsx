@@ -32,21 +32,6 @@ interface ClubMembersTableProps {
   searchParams?: unknown | null;
 }
 
-const memberTypeFilterOptions = {
-  category: [
-    { value: 'Club Member', label: 'Club Member' },
-    { value: 'Commercial Employee', label: 'Commercial Employee' },
-    { value: 'Educational Visitor', label: 'Educational Visitor' },
-    { value: 'Residential', label: 'Residential' },
-  ],
-  subCategory: [
-    { value: 'Appartment', label: 'Appartment' },
-    { value: 'Beach View', label: 'Beach View' },
-    { value: 'Faculty', label: 'Faculty' },
-    { value: 'Portion', label: 'Portion' },
-    { value: 'Staff', label: 'Staff' },
-  ],
-};
 
 const mapUserType = (type: number | string) => {
   if (typeof type === 'string') return type;
@@ -145,9 +130,6 @@ export default function ClubMembersTable({
       error={loadError}
       emptyMessage="No club members found for this club"
       enableFiltering={true}
-      columnFilterKeys={['category', 'subCategory']}
-      columnFilterLabels={{ category: 'Category', subCategory: 'Sub Category' }}
-      columnFilterStaticOptions={memberTypeFilterOptions}
       enableSorting={true}
       filterPlaceholder="Search members..."
     />
