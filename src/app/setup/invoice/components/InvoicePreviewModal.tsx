@@ -131,8 +131,8 @@ export default function InvoicePreviewModal({ isOpen, onClose, invoice }: Invoic
     y += 22;
     doc.setFont('helvetica', 'bold');
     doc.text('Sr No.', left, y);
-    doc.text('Invoice ID', left + 90, y);
-    doc.text('Tag Type', left + 220, y);
+    doc.text('Invoice ID', left + 120, y);
+    doc.text('Tag Type', left + 300, y);
     doc.text('Amount', right, y, { align: 'right' });
     doc.setFont('helvetica', 'normal');
 
@@ -142,8 +142,8 @@ export default function InvoicePreviewModal({ isOpen, onClose, invoice }: Invoic
 
     const rowService = invoice.serviceType || 'RFID (Card Printing)';
     doc.text('01', left, y);
-    doc.text(invoice.invoiceNumber || '-', left + 90, y);
-    doc.text(rowService, left + 220, y);
+    doc.text(invoice.invoiceNumber || '-', left + 120, y);
+    doc.text(rowService, left + 300, y);
     doc.text(currency(lineAmount), right, y, { align: 'right' });
     y += 20;
 

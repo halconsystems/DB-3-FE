@@ -174,7 +174,7 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  min-width: 148px;
+  min-width: 100px;
   border: 1px solid rgba(222, 226, 232, 0.95);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.98);
@@ -210,10 +210,11 @@
   font-size: 12px;
   font-weight: 500;
   background: transparent;
-  color: rgba(0, 0, 0, 0.8);
+  color: #666;
   outline: none;
   appearance: none;
   cursor: pointer;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .searchWrapper {
@@ -373,7 +374,7 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 11px;
 }
 
 .table thead {
@@ -408,7 +409,7 @@
 }
 
 .table td {
-  padding: 14px 12px;
+  padding: 8px 12px;
   color: #444;
   white-space: nowrap;
 }
@@ -434,12 +435,12 @@
 
 .table td:first-child,
 .table th:first-child {
-  padding-left: 24px;
+  padding-left: 20px;
 }
 
 .table td:last-child,
 .table th:last-child {
-  padding-right: 24px;
+  padding-right: 20px;
 }
 
 
@@ -490,7 +491,7 @@
   align-items: center;
   gap: 4px;
   /* padding: 16px 24px; */
-  margin-top: 32px;
+  margin-top: 10px;
   background: transparent;
 }
 
@@ -498,8 +499,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  margin-top: 16px;
+  gap: 4px;
+  margin-top: 2px;
   flex-shrink: 0;
 }
 

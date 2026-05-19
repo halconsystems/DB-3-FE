@@ -354,29 +354,34 @@ export default function UserPage() {
 
   const columns: Column<any>[] = [
     { key: 'ser', header: 'Ser' },
+    {
+  key: 'photo',
+  header: 'Picture',
+  render: (_: string, row: any) => {
+    const rawPic = row.profilePicture;
+
+    const hasPic =
+      rawPic != null && String(rawPic).trim() !== '';
+
+    const imageUrl = hasPic
+      ? resolvePublicMediaUrl(String(rawPic))
+      : EMPTY_PROFILE_AVATAR;
+
+    return (
+      <span className={avatarStyles.avatarCell}>
+        <img
+          className={avatarStyles.avatarImg}
+          src={imageUrl}
+          alt={row.name}
+        />
+      </span>
+    );
+  },
+},
     { key: 'name', header: 'Name',
-      render: (value: string, row: any) => {
-        const rawPic = row.profilePicture;
-        const hasPic = rawPic != null && String(rawPic).trim() !== '';
-        const imageUrl = hasPic ? resolvePublicMediaUrl(String(rawPic)) : EMPTY_PROFILE_AVATAR;
-
-        return (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-            }}
-          >
-            <span className={avatarStyles.avatarCell}>
-              <img className={avatarStyles.avatarImg} src={imageUrl} alt="" />
-            </span>
-
-            <span>{value}</span>
-          </div>
-        );
+      
+      
       },
-    },
     { key: 'emailAddress', header: 'Email' },
     { key: 'address', header: 'Address' },
     { key: 'memberNo', header: 'Member No.' },

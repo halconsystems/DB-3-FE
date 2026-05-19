@@ -53,6 +53,10 @@ export interface DataTableProps<T> {
   columnFilterLabels?: Record<string, string>;
   /** Fixed option lists for column filters (e.g. enum API). Overrides values derived from row data. */
   columnFilterStaticOptions?: Record<string, { value: string; label: string }[]>;
+  tabVariant?: 'tabs' | 'dropdown';
+  clubOptions?: string[];
+  selectedClub?: string;
+  onClubChange?: (value: string) => void;
 }
 
 // ================================ Long Fields ==============================
@@ -188,6 +192,10 @@ export default function DataTable<T extends Record<string, any>>({
   columnFilterKeys,
   columnFilterLabels,
   columnFilterStaticOptions,
+  tabVariant = 'tabs',
+   clubOptions,
+  selectedClub,
+  onClubChange,
 }: DataTableProps<T>) {
   
   // ================================ STATE MANAGEMENT ================================
@@ -494,7 +502,6 @@ export default function DataTable<T extends Record<string, any>>({
   
   const renderTabs = () => {
     if (!tabs || tabs.length === 0) return null;
-    
     const chunkTabs = (tabs: Tab[], size: number): Tab[][] => {
       const chunks: Tab[][] = [];
       for (let i = 0; i < tabs.length; i += size) {
@@ -531,105 +538,166 @@ export default function DataTable<T extends Record<string, any>>({
   // ================================ CONTROLS BAR RENDERER ================================
   
   const renderControlsBar = () => {
-    if (!enableFiltering && !enableSorting && availableFilters.length === 0) return null;
+  if (!enableFiltering && !enableSorting && availableFilters.length === 0)
+    return null;
 
-    return (
-      <div className={styles.controlsBar}>
-        <div className={styles.leftControls}>
-          {enableFiltering && (
-            <div
-              className={`${styles.searchWrapper} ${
-                searchVariant === 'card-management' ? styles.searchWrapperCardManagement : ''
-              }`}
-            >
-              <Search
-                size={16}
-                className={`${styles.searchIcon} ${
-                  searchVariant === 'card-management' ? styles.searchIconCardManagement : ''
-                }`}
-              />
-              <input
-                type="text"
-                className={`${styles.filterInput} ${
-                  searchVariant === 'card-management' ? styles.filterInputCardManagement : ''
-                }`}
-                placeholder={filterPlaceholder}
-                value={filterTerm}
-                onChange={(e) => {
-                  setFilterTerm(e.target.value);
-                  if (!isPaginationControlled) setInternalCurrentPage(1);
-                }}
-              />
-            </div>
-          )}
-        </div>
+  return (
+    <div className={styles.controlsBar}>
+      <div className={styles.leftControls}>
+        {enableFiltering && (
+          <div
+            className={`${styles.searchWrapper} ${
+              searchVariant === 'card-management'
+                ? styles.searchWrapperCardManagement
+                : ''
+            }`}
+          >
+            <Search size={16} className={styles.searchIcon} />
 
-        {(availableFilters.length > 0 || enableSorting) && (
-          <div className={styles.rightControls}>
-            {/* Dynamic column filters */}
-            {availableFilters.map((filter) => (
-              <div key={filter.key} className={styles.filterGroup}>
-                <label className={styles.controlLabel} htmlFor={`filter-${filter.key}`}>
-                  {filter.label}
-                </label>
-                <div className={styles.selectShell}>
-                  <select
-                    id={`filter-${filter.key}`}
-                    className={styles.sortSelect}
-                    value={columnFilters[filter.key] || 'all'}
-                    onChange={(e) => handleColumnFilterChange(filter.key, e.target.value)}
-                  >
-                    <option value="all">All</option>
-                    {getFilterOptions(filter.key).map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            ))}
+            <input
+              type="text"
+              className={styles.filterInput}
+              placeholder={filterPlaceholder}
+              value={filterTerm}
+              onChange={(e) => {
+                setFilterTerm(e.target.value);
 
-            {/* Sort controls */}
-            {enableSorting && (
-              <div className={styles.sortControls}>
-                <div className={styles.filterGroup}>
-                  <label className={styles.controlLabel} htmlFor="sortBySelect">Sort By</label>
-                  <div className={styles.selectShell}>
-                    <select
-                      id="sortBySelect"
-                      className={styles.sortSelect}
-                      value={sortKey}
-                      onChange={(e) => setSortKey(e.target.value)}
-                    >
-                      <option value="">None</option>
-                      {columns.map((column) => (
-                        <option key={String(column.key)} value={String(column.key)}>
-                          {column.header}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className={styles.filterGroup}>
-                  <button
-                    id="sortDirectionSelect"
-                    type="button"
-                    className={styles.sortToggleButton}
-                    onClick={() => setSortDirection((current) => (current === 'asc' ? 'desc' : 'asc'))}
-                    disabled={!sortKey}
-                    aria-label={`Sort direction ${sortDirection === 'asc' ? 'ascending' : 'descending'}`}
-                  >
-                    {sortDirection === 'asc' ? <ArrowUp size={18} /> : <ArrowDown size={18} />}
-                  </button>
-                </div>
-              </div>
-            )}
+                if (!isPaginationControlled)
+                  setInternalCurrentPage(1);
+              }}
+            />
           </div>
         )}
       </div>
-    );
-  };
+
+      <div className={styles.rightControls}>
+
+        {/* ✅ CLUB DROPDOWN
+        {clubOptions && selectedClub !== undefined && (
+          <div className={styles.filterGroup}>
+            <label className={styles.controlLabel}>Club</label>
+
+            <div className={styles.selectShell}>
+              <select
+                className={styles.sortSelect}
+                value={selectedClub}
+                onChange={(e) => onClubChange?.(e.target.value)}
+              >
+                {clubOptions.map((club) => (
+                  <option key={club} value={club}>
+                    {club}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )} */}
+
+        {/* Dynamic column filters */}
+        {availableFilters.map((filter) => (
+          <div key={filter.key} className={styles.filterGroup}>
+            <label className={styles.controlLabel}>
+              {filter.label}
+            </label>
+
+            <div className={styles.selectShell}>
+              <select
+                className={styles.sortSelect}
+                value={columnFilters[filter.key] || 'all'}
+                onChange={(e) =>
+                  handleColumnFilterChange(
+                    filter.key,
+                    e.target.value
+                  )
+                }
+              >
+                <option value="all">All</option>
+
+                {getFilterOptions(filter.key).map((option) => (
+                  <option
+                    key={option.value}
+                    value={option.value}
+                  >
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        ))}
+
+        {/* Sort controls */}
+        {enableSorting && (
+          <div className={styles.sortControls}>
+            <div className={styles.filterGroup}>
+              <label className={styles.controlLabel}>
+                Sort By
+              </label>
+
+              <div className={styles.selectShell}>
+                <select
+                  className={styles.sortSelect}
+                  value={sortKey}
+                  onChange={(e) => setSortKey(e.target.value)}
+                >
+                  <option value="">None</option>
+
+                  {columns.map((column) => (
+                    <option
+                      key={String(column.key)}
+                      value={String(column.key)}
+                    >
+                      {column.header}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+              {/* Rows Per Page (FIXED to match other controls) */}
+<div className={styles.filterGroup}>
+  <label className={styles.controlLabel}>
+    Rows per page
+  </label>
+
+  <div className={styles.selectShell}>
+    <select
+      value={effectiveRowsPerPage}
+      onChange={handleRowsPerPageChange}
+      className={styles.sortSelect}
+    >
+      {[5, 10, 15, 20, 50, 100].map((option) => (
+        <option key={option} value={option}>
+          {option}
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
+            <div className={styles.filterGroup}>
+              <button
+                type="button"
+                className={styles.sortToggleButton}
+                onClick={() =>
+                  setSortDirection((d) =>
+                    d === 'asc' ? 'desc' : 'asc'
+                  )
+                }
+                disabled={!sortKey}
+              >
+                {sortDirection === 'asc' ? (
+                  <ArrowUp size={18} />
+                ) : (
+                  <ArrowDown size={18} />
+                )}
+              </button>
+            </div>
+            
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
   // ================================ TABLE RENDERER ================================
   
@@ -684,26 +752,7 @@ export default function DataTable<T extends Record<string, any>>({
     return (
       <div className={styles.footerBar}>
         {renderPagination()}
-        <div className={styles.rowsPerPage}>
-          <label className={styles.rowsPerPageLabel} htmlFor="rowsPerPageSelect">
-            Rows per page
-          </label>
-          <div className={styles.rowsPerPageControl}>
-            <select
-              id="rowsPerPageSelect"
-              value={effectiveRowsPerPage}
-              onChange={handleRowsPerPageChange}
-              className={styles.rowsPerPageSelect}
-              aria-label="Rows per page"
-            >
-              {[5, 10, 15, 20, 50, 100].map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        
       </div>
     );
   };

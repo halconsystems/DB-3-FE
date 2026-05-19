@@ -1,137 +1,206 @@
 'use client';
+
 import { useEffect, useMemo, useState } from 'react';
-import DataTable, { Column, Tab, StatusBadge } from '../../../components/tables/DataTable';
-import { useClubMemberUsers } from '../../../hooks/club-members/useClubMemberUsers';
-import { getClubMembersSubCategory } from '../clubMembersConfig';
-import type { ExternalUser } from '../../../services/user.service';
+import DataTable, { Column, StatusBadge } from '../../../components/tables/DataTable';
+
+import { useAllClubMembers } from '../../../hooks/club-members/useAllClubMembers';
+
 import { formatDateDisplay } from '../../../lib/dateUtils';
-import { resolveTableTotalPages } from '../../../lib/unwrapApiList';
-import { tableCnic, tablePhone, tableCardNumber, displayDash } from '../../../lib/formatDisplayFields';
+
+import {
+  tableCnic,
+  tablePhone,
+  tableCardNumber,
+  displayDash,
+} from '../../../lib/formatDisplayFields';
+
 import { normalizeNumericEnum } from '../../../lib/statusMapping';
 
+import type { ClubMemberApiResponse } from '@/services/clubmember.service';
+
+/* ===================== TYPES ===================== */
+
 export interface ClubMember {
-  id: string;
+  ser: number;
+  profilePictureUrl: string;
   userName: string;
   email: string;
-  phone: string;
-  category: string;
+  phoneNumber: string;
+  cnic: string;
   subCategory: string;
-  cnicNo: string;
-  clubMemberType: string;
-  rfidCardNo: string;
-  cardIssueDate: string;
-  cardExpiryDate: string;
+  memberNo: string;
+  address: string | null;
+  cardNumber: string | null;
+  validFrom: string;
+  validTo: string;
   cardStatus: number | null;
-  isActive: boolean;
+  isActive: string;
 }
 
-interface ClubMembersTableProps {
-  tabs: Tab[];
-  activeTab: string;
-  onTabChange: (tab: string) => void;
-  searchParams?: unknown | null;
-}
+/* ===================== MAPPING ===================== */
 
-
-const mapUserType = (type: number | string) => {
-  if (typeof type === 'string') return type;
-  switch (type) {
-    case 1:
-      return 'Admin';
-    case 2:
-      return 'User';
-    default:
-      return String(type);
-  }
-};
-
-function mapExternalUserToClubMember(u: ExternalUser): ClubMember {
+function mapApiClubMemberToTableRow(
+  u: ClubMemberApiResponse
+): ClubMember {
   return {
-    id: u.id,
-    userName: displayDash(u.name),
+    ser: (u as any).ser ?? 0,
+
+    profilePictureUrl: u.profileImage,
+
+    userName: displayDash(u.username),
+
     email: displayDash(u.email),
-    phone: tablePhone(u.phoneNumber),
-    category: displayDash(u.category),
+
+    phoneNumber: tablePhone(u.phone),
+
+    cnic: tableCnic(u.cnic),
+
     subCategory: displayDash(u.subCategory),
-    cnicNo: tableCnic(u.cnic),
-    clubMemberType: mapUserType(u.userType),
-    rfidCardNo: tableCardNumber(u.rfidCardNumber),
-    cardIssueDate: formatDateDisplay(u.cardIssueDate),
-    cardExpiryDate: formatDateDisplay(u.cardExpiryDate),
+
+    memberNo: displayDash(u.memberNo),
+
+    address: displayDash((u as any).address),
+
+    cardNumber: tableCardNumber(u.cardNumber),
+
+    validFrom: u.validFrom
+      ? formatDateDisplay(u.validFrom)
+      : '-',
+
+    validTo: u.validTo
+      ? formatDateDisplay(u.validTo)
+      : '-',
+
     cardStatus: normalizeNumericEnum(u.cardStatus),
-    isActive: u.isActive,
+
+    isActive: u.isActive ? 'Active' : 'Inactive',
   };
 }
 
-export default function ClubMembersTable({
-  tabs,
-  activeTab,
-  onTabChange,
-}: ClubMembersTableProps) {
+/* ===================== COMPONENT ===================== */
+
+export default function ClubMembersTable() {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const subCategory = useMemo(() => getClubMembersSubCategory(activeTab), [activeTab]);
+  // "" = ALL clubs
+  const [selectedClub, setSelectedClub] = useState('');
 
-  const { data, isLoading, isFetching, error } = useClubMemberUsers(subCategory, currentPage, pageSize);
-  const totalListPages = resolveTableTotalPages(data, pageSize);
+  const { data, isLoading, isFetching, error } = useAllClubMembers();
 
+  const totalListPages = 1;
+
+  /* reset page on filter change */
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab, subCategory]);
+  }, [selectedClub]);
 
-  const members = useMemo(
-    () => (data?.items ?? []).map(mapExternalUserToClubMember),
-    [data?.items]
-  );
+  /* ===================== FILTER + MAP ===================== */
+
+  const members = useMemo(() => {
+    const items = data?.data?.items ?? [];
+
+    const filtered =
+      selectedClub === ''
+        ? items
+        : items.filter((x) => x.subCategory === selectedClub);
+
+    return filtered.map(mapApiClubMemberToTableRow);
+  }, [data, selectedClub]);
+
+  /* ===================== COLUMNS ===================== */
 
   const clubMembersColumns: Column<ClubMember>[] = [
+    {
+      key: 'profilePictureUrl',
+      header: 'Picture',
+      render: (_, row) => (
+        <img
+          src={row.profilePictureUrl}
+          alt={row.userName}
+          style={{
+            width: 45,
+            height: 45,
+            borderRadius: '50%',
+            objectFit: 'cover',
+          }}
+        />
+      ),
+    },
+
     { key: 'userName', header: 'User Name' },
     { key: 'email', header: 'Email' },
-    { key: 'phone', header: 'Phone' },
-    { key: 'cnicNo', header: 'CNIC No.' },
-    { key: 'clubMemberType', header: 'Club member type' },
-    { key: 'rfidCardNo', header: 'RFID Card No.' },
-    { key: 'cardIssueDate', header: 'Card issue date' },
-    { key: 'cardExpiryDate', header: 'Card Expiry Date' },
+    { key: 'phoneNumber', header: 'Phone' },
+    { key: 'cnic', header: 'CNIC' },
+    {key: 'subCategory', header: 'Club' },
+    { key: 'memberNo', header: 'Member No.' },
+    { key: 'cardNumber', header: 'Card Number' },
+    { key: 'validFrom', header: 'Valid From' },
+    { key: 'validTo', header: 'Valid To' },
+
     {
       key: 'cardStatus',
-      header: 'Tag Status',
-      render: (_, row) => <StatusBadge type="cardStatus" value={row.cardStatus} />,
+      header: 'Card Status',
+      render: (_, row) => (
+        <StatusBadge type="cardStatus" value={row.cardStatus} />
+      ),
     },
+
     {
-      key: 'status',
+      key: 'isActive',
       header: 'Status',
-      render: (_, row) => <StatusBadge type="activeInactive" value={row.isActive} />,
+      render: (_, row) => (
+        <StatusBadge status={row.isActive} />
+      ),
     },
   ];
 
-  const loadError = error instanceof Error ? error.message : error ? String(error) : undefined;
+  const loadError =
+    error instanceof Error
+      ? error.message
+      : error
+      ? String(error)
+      : undefined;
+
+  /* ===================== UI ===================== */
 
   return (
-    <DataTable<ClubMember>
-      tabs={tabs}
-      activeTab={activeTab}
-      onTabChange={onTabChange}
-      columns={clubMembersColumns}
-      data={members}
-      showAddButton={false}
-      currentPage={currentPage}
-      totalPages={totalListPages}
-      onPageChange={setCurrentPage}
-      rowsPerPage={pageSize}
-      onRowsPerPageChange={(size) => {
-        setPageSize(size);
-        setCurrentPage(1);
-      }}
-      serverSidePagination
-      getRowStatus={(row) => (row.isActive ? 'Active' : 'Inactive')}
-      loading={isLoading || isFetching}
-      error={loadError}
-      emptyMessage="No club members found for this club"
-      enableFiltering={true}
-      enableSorting={true}
-      filterPlaceholder="Search members..."
-    />
+    <div>
+      <DataTable<ClubMember>
+        columns={clubMembersColumns}
+        data={members}
+        clubOptions={[
+          'All Clubs', // UI label
+          'Golf Club',
+          'Creek Club',
+          'Beach View Club',
+          'Marina Club',
+          'Sunset Club',
+          'DA Creek Club',
+          'Zamzama Club',
+          'DA Sports Club',
+        ]}
+        selectedClub={selectedClub === '' ? 'All Clubs' : selectedClub}
+        onClubChange={(val) =>
+          setSelectedClub(val === 'All Clubs' ? '' : val)
+        }
+        showAddButton={false}
+        currentPage={currentPage}
+        totalPages={totalListPages}
+        onPageChange={setCurrentPage}
+        rowsPerPage={pageSize}
+        onRowsPerPageChange={(size) => {
+          setPageSize(size);
+          setCurrentPage(1);
+        }}
+        serverSidePagination
+        loading={isLoading || isFetching}
+        error={loadError}
+        emptyMessage="No club members found"
+        enableFiltering={true}
+        enableSorting={true}
+        filterPlaceholder="Search members..."
+      />
+    </div>
   );
 }
