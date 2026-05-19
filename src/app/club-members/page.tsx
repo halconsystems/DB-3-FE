@@ -9,9 +9,6 @@ export default function ClubMembersPage() {
   return (
     <DashboardLayout pageTitle="Club Members" showBackButton={false}>
       <ClubMembersTable
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
       />
     </DashboardLayout>
   );

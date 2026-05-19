@@ -377,7 +377,7 @@
   }
 
   .contentSection {
-    padding: 12px;
+    padding: 6px;
   }
 }
 .header {
@@ -539,7 +539,7 @@
   min-height: 0;
   background: transparent;
   border-radius: 0;
-  padding: 12px 24px 24px;
+  padding: 4px 4px 4px;
   overflow: auto;
   display: flex;
   flex-direction: column;
